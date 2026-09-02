@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receipt #{{ $order->id }}</title>
+    <style>
+        @page { size: 80mm auto; margin: 4mm; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #F5F7FA;
+            color: #1E2530;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+        .toolbar {
+            max-width: 80mm;
+            margin: 16px auto 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .toolbar a, .toolbar button {
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 0;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-print { background: #12A594; color: #fff; }
+        .btn-ghost { background: #fff; color: #1E2530; border: 1px solid #e5e7eb; }
+        .receipt {
+            width: 80mm;
+            margin: 0 auto 24px;
+            background: #fff;
+            padding: 10px 12px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        }
+        .center { text-align: center; }
+        .name { font-size: 16px; font-weight: 700; }
+        .muted { color: #6B7A93; font-size: 11px; }
+        hr { border: 0; border-top: 1px dashed #d1d5db; margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        td { padding: 2px 0; vertical-align: top; }
+        .right { text-align: right; white-space: nowrap; }
+        .total { font-weight: 700; font-size: 14px; }
+        @media print {
+            body { background: #fff; }
+            .toolbar { display: none; }
+            .receipt { box-shadow: none; margin: 0; width: 72mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button type="button" class="btn-print" onclick="window.print()">Print receipt</button>
+        <a class="btn-ghost" href="{{ route('dispense.receipt.escpos', $order) }}">Download ESC/POS</a>
+        <a class="btn-ghost" href="{{ route('dispense.show', $order) }}">Back</a>
+    </div>
+
+    <div class="receipt">
+        <div class="center">
+            <div class="name">PMAS</div>
+            <div>{{ $order->branch->name ?? 'Pharmacy' }}</div>
+            @if($order->branch?->address)
+                <div class="muted">{{ $order->branch->address }}</div>
+            @endif
+            @if($order->branch?->phone)
+                <div class="muted">{{ $order->branch->phone }}</div>
+            @endif
+        </div>
+        <hr>
+        <table>
+            <tr><td>Order</td><td class="right">#{{ $order->id }}</td></tr>
+            <tr><td>Date</td><td class="right">{{ $order->created_at->format('M d, Y g:i A') }}</td></tr>
+            <tr><td>Cashier</td><td class="right">{{ $order->user->name ?? '—' }}</td></tr>
+            <tr><td>Customer</td><td class="right">{{ $order->customer->name ?? 'Walk-in' }}</td></tr>
+        </table>
+        <hr>
+        <table>
+            @foreach($order->items as $item)
+                <tr>
+                    <td colspan="2">{{ $item->purchaseBatch->drug->name ?? '—' }}</td>
+                </tr>
+                <tr>
+                    <td class="muted">{{ $item->quantity_issued }} × ${{ number_format($item->selling_price_per_unit, 2) }}</td>
+                    <td class="right">${{ number_format($item->total_amount, 2) }}</td>
+                </tr>
+            @endforeach
+        </table>
+        <hr>
+        <table>
+            <tr class="total">
+                <td>Total</td>
+                <td class="right">${{ number_format($order->total_amount, 2) }}</td>
+            </tr>
+            @foreach($order->payments as $payment)
+                <tr>
+                    <td class="muted">{{ $payment->methodLabel() }}</td>
+                    <td class="right">${{ number_format($payment->amount, 2) }}</td>
+                </tr>
+            @endforeach
+        </table>
+        <hr>
+        <div class="center muted">Thank you</div>
+    </div>
+
+    @if(request()->boolean('autoprint'))
+        <script>window.addEventListener('load', function () { window.print(); });</script>
+    @endif
+</body>
+</html>
