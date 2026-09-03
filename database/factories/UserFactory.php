@@ -30,6 +30,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'pharmacist_clerk',
+            'active' => true,
         ];
     }
 
@@ -41,5 +43,39 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Set the user role.
+     */
+    public function withRole(string $role): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Set the user as owner_admin.
+     */
+    public function ownerAdmin(): static
+    {
+        return $this->withRole('owner_admin');
+    }
+
+    /**
+     * Set the user as branch_manager.
+     */
+    public function branchManager(): static
+    {
+        return $this->withRole('branch_manager');
+    }
+
+    /**
+     * Set the user as pharmacist_clerk.
+     */
+    public function pharmacistClerk(): static
+    {
+        return $this->withRole('pharmacist_clerk');
     }
 }
