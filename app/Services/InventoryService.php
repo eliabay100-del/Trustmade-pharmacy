@@ -10,17 +10,17 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class InventoryService {
-    public function selectBatchesForDispensing($drugId, $branchId, $qtyNeeded) {
+    public function selectBatchesForDispensing(string $itemType, int $itemId, $branchId, $qtyNeeded) {
         // CONCURRENCY FIX: lockForUpdate() locks these rows for the
         // duration of the enclosing DB transaction (already provided by
         // every caller — DispenseController::store, TransferService).
         // If two requests try to sell from the same batch at once, the
         // second one now waits until the first commits, instead of both
         // reading the same "5 remaining" and overselling.
-        $batches = PurchaseBatch::where('drug_id', $drugId)
+        $batches = PurchaseBatch::where($itemType === 'product' ? 'product_id' : 'drug_id', $itemId)
             ->where('branch_id', $branchId)
             ->where('quantity_remaining', '>', 0)
-            ->where('expiry_date', '>=', Carbon::today())
+            ->where(fn ($query) => $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', Carbon::today()))
             ->orderBy('expiry_date', 'asc')
             ->orderBy('purchase_date', 'asc')
             ->lockForUpdate()
@@ -50,8 +50,8 @@ class InventoryService {
         return round($total, 2);
     }
 
-    public function recordIssuance($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId = null) {
-        return DB::transaction(function () use ($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId) {
+    public function recordIssuance($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId = null, $itemType = 'drug', $itemId = null) {
+        return DB::transaction(function () use ($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId, $itemType, $itemId) {
             $totalAmount = 0;
             foreach ($allocations as $item) {
                 $batch = $item['batch'];
@@ -62,6 +62,7 @@ class InventoryService {
 
                 $issued = IssuedItem::create([
                     'order_id' => $orderId,
+                    'product_id' => $itemType === 'product' ? $itemId : null,
                     'purchase_batch_id' => $batch->id,
                     'customer_id' => $customerId,
                     'branch_id' => $branchId,

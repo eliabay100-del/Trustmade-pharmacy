@@ -20,6 +20,10 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            if (!Auth::user()->active) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'This staff account is inactive. Contact an administrator.'])->onlyInput('email');
+            }
             $request->session()->regenerate();
             return redirect()->intended('/dashboard');
         }

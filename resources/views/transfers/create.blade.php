@@ -9,8 +9,9 @@
         @csrf
 
         <div>
-            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Drug</label>
-            <select name="drug_id" id="transfer-drug" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Item</label>
+            <select name="item_type" id="transfer-type" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"><option value="drug">Drug</option><option value="product">Product</option></select>
+            <select name="item_id" id="transfer-drug" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
                 <option value="">-- Select Drug --</option>
                 @foreach($drugs as $drug)
                     <option value="{{ $drug->id }}"
@@ -21,6 +22,7 @@
                     </option>
                 @endforeach
             </select>
+            <select id="transfer-product" class="hidden w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mt-2"><option value="">-- Select Product --</option>@foreach($products as $product)<option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>@endforeach</select>
         </div>
 
         <div class="grid grid-cols-2 gap-4 items-end">
@@ -76,9 +78,18 @@
 <script>
     (function () {
         const drugSelect = document.getElementById('transfer-drug');
+        const productSelect = document.getElementById('transfer-product');
+        const typeSelect = document.getElementById('transfer-type');
         const unitSelect = document.getElementById('transfer-unit');
         const hint = document.getElementById('transfer-unit-hint');
         function sync() {
+            const isProduct = typeSelect.value === 'product';
+            drugSelect.classList.toggle('hidden', isProduct);
+            productSelect.classList.toggle('hidden', !isProduct);
+            drugSelect.required = !isProduct;
+            productSelect.required = isProduct;
+            drugSelect.name = isProduct ? '' : 'item_id';
+            productSelect.name = isProduct ? 'item_id' : '';
             const opt = drugSelect.options[drugSelect.selectedIndex];
             const base = opt && opt.dataset.base ? opt.dataset.base : 'tablet';
             const strip = opt && opt.dataset.strip ? opt.dataset.strip : '1';
@@ -86,6 +97,7 @@
             hint.textContent = '1 strip = ' + strip + ' ' + base + ', 1 pack = ' + pack + ' ' + base + '.';
         }
         drugSelect.addEventListener('change', sync);
+        typeSelect.addEventListener('change', sync);
         unitSelect.addEventListener('change', sync);
         sync();
     })();

@@ -1,4 +1,4 @@
-```
+```php
 # Compiled and build artifacts
 *.pyc
 __pycache__/
@@ -6,12 +6,7 @@ __pycache__/
 *.obj
 dist/
 build/
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
+target/
 
 # Dependencies
 vendor/
@@ -24,38 +19,32 @@ node_modules/
 *.log
 *.tmp
 *.swp
-*.swo
 
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# System files
+# OS
 .DS_Store
 Thumbs.db
 
-# Coverage reports
+# Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Laravel specific
-bootstrap/cache/
-storage/logs/
-storage/framework/cache/
-storage/framework/sessions/
-storage/framework/views/
-public/storage
-
 # PHP specific
 *.php~
-.php_cs.cache
+*.bak
+*.orig
+*.rej
+*.tmp
 
-# Database
-database/seeds/
-database/migrations/
-
-# Tests
-.tests/
-.phpunit.result.cache
+# Laravel/Hydrus specific
+bootstrap/cache/
+storage/logs/
+storage/framework/
+public/storage
 ```

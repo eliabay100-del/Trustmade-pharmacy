@@ -8,6 +8,7 @@ use App\Models\DrugCategory;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\ProductCategory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,10 @@ class DatabaseSeeder extends Seeder
         DrugCategory::create(['name' => 'Antibiotic']);
         DrugCategory::create(['name' => 'Analgesic']);
         DrugCategory::create(['name' => 'Antimalarial']);
+
+        foreach (['Cosmetics', 'Hair Care', 'Skin Care', 'Oral Care', 'Personal Care', 'Baby Care', 'Hygiene Products', 'Medical Supplies', 'Other Products'] as $name) {
+            ProductCategory::create(['name' => $name, 'active' => true]);
+        }
 
         $accounts = [
             ['name' => 'Cash', 'code' => '1001', 'type' => 'asset'],

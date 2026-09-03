@@ -24,8 +24,8 @@ class ReturnController extends Controller
     {
         $user = auth()->user();
 
-        $customerQuery = CustomerReturn::with(['purchaseBatch.drug', 'order', 'user'])->latest();
-        $supplierQuery = SupplierReturn::with(['purchaseBatch.drug', 'supplier', 'user'])->latest();
+        $customerQuery = CustomerReturn::with(['purchaseBatch.drug', 'purchaseBatch.product', 'order', 'user'])->latest();
+        $supplierQuery = SupplierReturn::with(['purchaseBatch.drug', 'purchaseBatch.product', 'supplier', 'user'])->latest();
         if ($user->branch_id) {
             $customerQuery->where('branch_id', $user->branch_id);
             $supplierQuery->where('branch_id', $user->branch_id);
@@ -73,7 +73,7 @@ class ReturnController extends Controller
         ]);
 
         $user = auth()->user();
-        $item = IssuedItem::with('purchaseBatch.drug')->findOrFail($request->issued_item_id);
+        $item = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product'])->findOrFail($request->issued_item_id);
 
         if (!$item->order_id) {
             return back()->withErrors(['error' => 'This sale line is not tied to an order, so it cannot be returned here.'])->withInput();
@@ -82,13 +82,13 @@ class ReturnController extends Controller
             abort(403, 'You do not have access to this sale.');
         }
 
-        $drug = $item->purchaseBatch?->drug;
-        if (!$drug) {
-            return back()->withErrors(['error' => 'This sale line has no drug record.'])->withInput();
+        $catalogItem = $item->purchaseBatch?->drug ?? $item->purchaseBatch?->product;
+        if (!$catalogItem) {
+            return back()->withErrors(['error' => 'This sale line has no catalog item.'])->withInput();
         }
 
         try {
-            $qtyBase = $drug->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
+            $qtyBase = $catalogItem->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
 
             $return = DB::transaction(function () use ($request, $user, $item, $qtyBase) {
                 $return = $this->inventoryService->restockCustomerReturn(
@@ -119,7 +119,7 @@ class ReturnController extends Controller
     public function createSupplier(Request $request)
     {
         $user = auth()->user();
-        $query = PurchaseBatch::with(['drug', 'supplier', 'branch'])
+        $query = PurchaseBatch::with(['drug', 'product', 'supplier', 'branch'])
             ->where('quantity_remaining', '>', 0)
             ->orderBy('expiry_date');
 
@@ -143,17 +143,18 @@ class ReturnController extends Controller
         ]);
 
         $user = auth()->user();
-        $batch = PurchaseBatch::with('drug')->findOrFail($request->purchase_batch_id);
+        $batch = PurchaseBatch::with(['drug', 'product'])->findOrFail($request->purchase_batch_id);
 
         if ($user->branch_id && $batch->branch_id !== $user->branch_id) {
             abort(403, 'You do not have access to this batch.');
         }
-        if (!$batch->drug) {
-            return back()->withErrors(['error' => 'This batch has no drug record.'])->withInput();
+        $catalogItem = $batch->drug ?? $batch->product;
+        if (!$catalogItem) {
+            return back()->withErrors(['error' => 'This batch has no catalog item.'])->withInput();
         }
 
         try {
-            $qtyBase = $batch->drug->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
+            $qtyBase = $catalogItem->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
 
             $return = DB::transaction(function () use ($request, $user, $batch, $qtyBase) {
                 $return = $this->inventoryService->returnToSupplier(

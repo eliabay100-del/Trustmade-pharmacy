@@ -35,7 +35,7 @@
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $order->created_at->format('M d, Y g:i A') }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#1E2530]">{{ $order->customer->name ?? 'Walk-in' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $order->items->count() }} item{{ $order->items->count() === 1 ? '' : 's' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right font-semibold text-[#1E2530]">${{ number_format($order->total_amount, 2) }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right font-semibold text-[#1E2530]">ETB {{ number_format($order->total_amount, 2) }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">
                         @if($order->payments->isEmpty())
                             —

@@ -19,7 +19,7 @@ class StockAdjustmentController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $query = StockAdjustment::with(['purchaseBatch.drug', 'branch', 'user'])->latest();
+        $query = StockAdjustment::with(['purchaseBatch.drug', 'purchaseBatch.product', 'branch', 'user'])->latest();
         if ($user->branch_id) {
             $query->where('branch_id', $user->branch_id);
         }
@@ -31,7 +31,7 @@ class StockAdjustmentController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $query = PurchaseBatch::with(['drug', 'branch'])
+        $query = PurchaseBatch::with(['drug', 'product', 'branch'])
             ->where('quantity_remaining', '>', 0)
             ->orderBy('expiry_date');
 
@@ -57,7 +57,7 @@ class StockAdjustmentController extends Controller
         ]);
 
         $user = auth()->user();
-        $batch = PurchaseBatch::with('drug')->findOrFail($request->purchase_batch_id);
+        $batch = PurchaseBatch::with(['drug', 'product'])->findOrFail($request->purchase_batch_id);
 
         // BUG FIX pattern: a clerk must not write off another branch's batch
         // by posting a guessed purchase_batch_id.
@@ -65,12 +65,13 @@ class StockAdjustmentController extends Controller
             abort(403, 'You do not have access to this batch.');
         }
 
-        if (!$batch->drug) {
-            return back()->withErrors(['error' => 'This batch has no drug record.'])->withInput();
+        $item = $batch->drug ?? $batch->product;
+        if (!$item) {
+            return back()->withErrors(['error' => 'This batch has no catalog item.'])->withInput();
         }
 
         try {
-            $qtyBase = $batch->drug->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
+            $qtyBase = $item->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
 
             $adjustment = DB::transaction(function () use ($request, $user, $batch, $qtyBase) {
                 $adjustment = $this->inventoryService->writeOff(

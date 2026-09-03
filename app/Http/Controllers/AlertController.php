@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PurchaseBatch;
 use App\Models\Customer;
+use App\Models\Drug;
+use App\Models\Product;
 use Carbon\Carbon;
 
 class AlertController extends Controller
@@ -16,6 +18,7 @@ class AlertController extends Controller
         // since every real record has a real branch_id. Owner/Admin was
         // seeing empty alerts everywhere instead of all branches' alerts.
         $user = auth()->user();
+        $branchId = $user->branch_id;
 
         $expiringQuery = PurchaseBatch::whereBetween('expiry_date', [Carbon::today(), Carbon::today()->addDays(30)])
             ->where('quantity_remaining', '>', 0);
@@ -30,6 +33,15 @@ class AlertController extends Controller
         $expiringSoon = $expiringQuery->get();
         $expired = $expiredQuery->get();
 
+        $drugStockQuery = Drug::with(['purchaseBatches' => function ($query) use ($branchId) {
+            if ($branchId) $query->where('branch_id', $branchId);
+        }])->orderBy('name');
+        $productStockQuery = Product::with(['purchaseBatches' => function ($query) use ($branchId) {
+            if ($branchId) $query->where('branch_id', $branchId);
+        }])->orderBy('name');
+        $lowStockDrugs = $drugStockQuery->get()->filter(fn ($drug) => (float) $drug->purchaseBatches->sum('quantity_remaining') <= (float) $drug->minimum_stock_level)->values();
+        $lowStockProducts = $productStockQuery->get()->filter(fn ($product) => (float) $product->purchaseBatches->sum('quantity_remaining') <= (float) $product->minimum_stock_level)->values();
+
         // Customers aren't branch-owned data (no branch_id column), so
         // recurring-customer reminders are intentionally shown to all
         // roles that can reach this page — not scoped further.
@@ -39,6 +51,6 @@ class AlertController extends Controller
             ->filter(fn ($customer) => $customer->isDueForReminder())
             ->values();
 
-        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill'));
+        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts'));
     }
 }

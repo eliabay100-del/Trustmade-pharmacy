@@ -32,23 +32,25 @@
         <tbody class="divide-y divide-gray-50">
             @forelse($purchases as $batch)
                 @php
-                    $isExpired = \Carbon\Carbon::parse($batch->expiry_date)->isPast();
-                    $isNearExpiry = !$isExpired && now()->diffInDays($batch->expiry_date, false) <= 30;
+                    $isExpired = $batch->expiry_date && \Carbon\Carbon::parse($batch->expiry_date)->isPast();
+                    $isNearExpiry = $batch->expiry_date && !$isExpired && now()->diffInDays($batch->expiry_date, false) <= 30;
                 @endphp
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm font-mono text-[#6B7A93]">{{ $batch->batch_number }}</td>
-                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? $batch->product->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $batch->supplier->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $batch->branch->name ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }} {{ $batch->drug->baseUnitLabel() ?? '' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">${{ number_format($batch->cost_per_unit, 2) }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }} {{ $batch->drug?->baseUnitLabel() ?? 'unit' }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
                     <td class="px-5 py-3.5 text-sm">
                         @if($isExpired)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Expired</span>
                         @elseif($isNearExpiry)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">{{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}</span>
-                        @else
+                        @elseif($batch->expiry_date)
                             <span class="text-[#6B7A93]">{{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}</span>
+                        @else
+                            <span class="text-[#6B7A93]">Not tracked</span>
                         @endif
                     </td>
                     <td class="px-5 py-3.5 text-sm text-right">

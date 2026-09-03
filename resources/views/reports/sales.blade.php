@@ -10,13 +10,11 @@
     <a href="{{ route('reports.inventory') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Inventory</a>
     <a href="{{ route('reports.financial') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Financial</a>
     <a href="{{ route('reports.sales') }}" class="px-3 py-1.5 rounded-lg font-medium bg-[#12A594]/10 text-[#12A594]">Sales</a>
-    <a href="{{ route('reports.trial-balance') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Trial Balance</a>
-    <a href="{{ route('reports.income-statement') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Income Statement</a>
 </div>
 
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4 inline-block">
     <p class="text-xs font-medium text-[#6B7A93] uppercase tracking-wide mb-1">Total Sales</p>
-    <p class="text-2xl font-bold text-[#12A594]">${{ number_format($total, 2) }}</p>
+    <p class="text-2xl font-bold text-[#12A594]">ETB {{ number_format($total, 2) }}</p>
 </div>
 
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
@@ -24,7 +22,7 @@
         <thead class="bg-gray-50/50">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Date</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Drug</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Item</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Customer</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Qty</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Total</th>
@@ -34,10 +32,10 @@
             @forelse($sales as $sale)
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ \Carbon\Carbon::parse($sale->issue_date)->format('M d, Y') }}</td>
-                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $sale->purchaseBatch->drug->name ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $sale->purchaseBatch->drug->name ?? $sale->purchaseBatch->product->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $sale->customer->name ?? 'Walk-in' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $sale->quantity_issued }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right font-semibold text-[#1E2530]">${{ number_format($sale->total_amount, 2) }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right font-semibold text-[#1E2530]">ETB {{ number_format($sale->total_amount, 2) }}</td>
                 </tr>
             @empty
                 <tr>

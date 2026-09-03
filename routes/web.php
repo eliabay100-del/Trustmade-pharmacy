@@ -22,10 +22,14 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\TillClosingController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductCategoryController;
 
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+// Keep older cached login pages working while the canonical form uses /login.
+Route::post('/', [AuthController::class, 'login'])->name('login.legacy');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 
 // --- Protected Routes (Requires Login) ---
 Route::middleware(['auth'])->group(function () {
@@ -84,6 +88,20 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/drugs/{drug}', [DrugController::class, 'update'])->name('drugs.update');
         Route::delete('/drugs/{drug}', [DrugController::class, 'destroy'])->name('drugs.destroy');
 
+        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+        Route::get('/product-categories/create', [ProductCategoryController::class, 'create'])->name('product-categories.create');
+        Route::post('/product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
+        Route::get('/product-categories/{productCategory}/edit', [ProductCategoryController::class, 'edit'])->name('product-categories.edit');
+        Route::put('/product-categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('product-categories.update');
+        Route::delete('/product-categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('product-categories.destroy');
+
         Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
         Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
         Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
@@ -128,8 +146,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
         Route::get('/reports/export', [ReportController::class, 'exportForm'])->name('reports.export.form');
         Route::get('/reports/export/download', [ReportController::class, 'export'])->name('reports.export.download');
-        Route::get('/reports/trial-balance', [ReportController::class, 'trialBalance'])->name('reports.trial-balance');
-        Route::get('/reports/income-statement', [ReportController::class, 'incomeStatement'])->name('reports.income-statement');
     });
 
     // ============================================================
@@ -141,10 +157,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-        Route::post('/users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
-        Route::post('/users/{user}/reactivate', [UserController::class, 'reactivate'])->name('users.reactivate');
-        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });

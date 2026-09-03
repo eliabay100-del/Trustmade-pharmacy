@@ -8,10 +8,27 @@ use Illuminate\Http\Request;
 
 class DrugController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $drugs = Drug::with('category')->orderBy('name')->paginate(15);
-        return view('drugs.index', compact('drugs'));
+        $query = Drug::with('category')
+            ->withSum('purchaseBatches as current_stock', 'quantity_remaining')
+            ->orderBy('name')
+            ;
+
+        if ($request->filled('q')) {
+            $term = $request->string('q');
+            $query->where(function ($drugQuery) use ($term) {
+                $drugQuery->where('name', 'like', "%{$term}%")
+                    ->orWhere('generic_name', 'like', "%{$term}%")
+                    ->orWhere('strength', 'like', "%{$term}%")
+                    ->orWhere('form', 'like', "%{$term}%");
+            });
+        }
+        if ($request->filled('category_id')) $query->where('category_id', $request->category_id);
+
+        $drugs = $query->paginate(15)->withQueryString();
+        $categories = DrugCategory::orderBy('name')->get();
+        return view('drugs.index', compact('drugs', 'categories'));
     }
 
     public function create()

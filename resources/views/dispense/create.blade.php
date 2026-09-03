@@ -6,7 +6,7 @@
 @php
     $packingData = $drugs->mapWithKeys(function ($drug) {
         return [
-            $drug->id => [
+            $drug->catalog_key => [
                 'base' => $drug->baseUnitLabel(),
                 'strip' => $drug->unitsPerStrip(),
                 'pack' => $drug->unitsPerPack(),
@@ -16,10 +16,10 @@
 @endphp
 
 <div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Dispense Drug</h1>
+    <h1 class="text-2xl font-bold text-[#1E2530] mb-1">New Sale</h1>
 
     <p class="text-sm text-[#6B7A93] mb-6">
-        Add one or more drugs to the cart, then check out as a single sale.
+        Add drugs or products to the cart, then check out as a single sale.
     </p>
 
     <form method="POST" action="{{ route('dispense.store') }}" class="space-y-5">
@@ -35,10 +35,16 @@
                 Cart
             </label>
 
+            <div class="relative mb-4">
+                <input id="catalog-search" type="search" autocomplete="off" placeholder="Search drugs or products by name, strength, or SKU" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#0f9f8f] focus:ring-4 focus:ring-[#0f9f8f]/10">
+                <span id="catalog-search-status" class="pointer-events-none absolute right-3 top-3 text-xs text-[#9aa6b6]"></span>
+                <div id="catalog-results" class="absolute left-0 right-0 top-full z-20 mt-1 hidden max-h-64 overflow-y-auto rounded-xl border border-[#dfe7ed] bg-white p-1 shadow-lg"></div>
+            </div>
+
             <!-- Cart column headings -->
             <div class="hidden sm:grid grid-cols-12 gap-3 mb-2 px-1">
                 <div class="col-span-5 text-xs font-medium text-[#6B7A93]">
-                    Drug
+                    Item
                 </div>
 
                 <div class="col-span-2 text-xs font-medium text-[#6B7A93]">
@@ -68,12 +74,12 @@
                             class="drug-select w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                             required
                         >
-                            <option value="">-- Select Drug --</option>
+                            <option value="">-- Select Item --</option>
 
                             @foreach($drugs as $drug)
-                                <option value="{{ $drug->id }}">
+                                <option value="{{ $drug->catalog_key }}">
                                     {{ $drug->name }}
-                                    @if($drug->strength)
+                                    @if($drug->strength ?? false)
                                         ({{ $drug->strength }})
                                     @endif
                                 </option>
@@ -137,12 +143,12 @@
                 id="add-line-btn"
                 class="mt-3 text-[#12A594] text-sm font-semibold hover:underline"
             >
-                + Add another drug
+                + Add another item
             </button>
 
             @if($drugs->isEmpty())
                 <p class="text-sm text-red-600 mt-2">
-                    No drugs in stock yet —
+                    No drugs or products in the catalog yet —
                     <a
                         href="{{ route('drugs.create') }}"
                         class="underline"
@@ -569,6 +575,65 @@
             ? firstDrugSelect.innerHTML
             : '';
 
+    const catalogSearch = document.getElementById('catalog-search');
+    const catalogStatus = document.getElementById('catalog-search-status');
+
+    function addCatalogItem(value) {
+        let row = [...document.querySelectorAll('.cart-line')].find(function (cartRow) {
+            return !cartRow.querySelector('.drug-select').value;
+        });
+
+        if (!row) {
+            addLineBtn.click();
+            row = cartLines.lastElementChild;
+        }
+
+        const select = row.querySelector('.drug-select');
+        select.value = value;
+        syncLineUnits(row);
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        catalogSearch.value = '';
+        catalogResults.classList.add('hidden');
+        catalogStatus.textContent = 'Added';
+        updateCartTotal();
+        row.querySelector('input[name*="[quantity]"]')?.focus();
+    }
+
+    function searchCatalog() {
+        const term = catalogSearch.value.trim().toLowerCase();
+        catalogResults.innerHTML = '';
+        if (!term) {
+            catalogResults.classList.add('hidden');
+            catalogStatus.textContent = '';
+            return;
+        }
+
+        const matches = [...firstDrugSelect.options].filter(option => option.value && option.textContent.toLowerCase().includes(term));
+        catalogStatus.textContent = matches.length + ' match' + (matches.length === 1 ? '' : 'es');
+        matches.slice(0, 8).forEach(function (option) {
+            const result = document.createElement('button');
+            result.type = 'button';
+            result.className = 'block w-full rounded-lg px-3 py-2 text-left text-sm text-[#182230] hover:bg-[#e7f7f4]';
+            result.textContent = option.textContent.trim();
+            result.addEventListener('click', () => addCatalogItem(option.value));
+            catalogResults.appendChild(result);
+        });
+        catalogResults.classList.toggle('hidden', matches.length === 0);
+    }
+
+    const catalogResults = document.getElementById('catalog-results');
+    catalogSearch.addEventListener('input', searchCatalog);
+    catalogSearch.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const firstMatch = catalogResults.querySelector('button');
+            if (firstMatch) firstMatch.click();
+        }
+    });
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('#catalog-search') && !event.target.closest('#catalog-results')) catalogResults.classList.add('hidden');
+    });
+
 
     // Packing data prepared safely by PHP.
     const packing =
@@ -934,15 +999,29 @@
             );
 
 
-        // Automatically fill payment amount
-        // when only one payment method exists.
+        updatePaymentBalance(total);
+
+    }
+
+
+    function updatePaymentBalance(total = cartTotal()) {
+
+        const lines = [...paymentLines.querySelectorAll('.payment-line')];
+        const amounts = lines.map(row => row.querySelector('.payment-amount'));
+
         if (amounts.length === 1) {
+            amounts[0].value = total > 0 ? total.toFixed(2) : '';
+            return;
+        }
 
-            amounts[0].value =
-                total > 0
-                    ? total.toFixed(2)
-                    : '';
+        const cashLine = lines.find(row => row.querySelector('select')?.value === 'cash') || lines[0];
+        const cashAmount = cashLine?.querySelector('.payment-amount');
+        const otherTotal = lines
+            .filter(row => row !== cashLine)
+            .reduce((sum, row) => sum + (parseFloat(row.querySelector('.payment-amount')?.value) || 0), 0);
 
+        if (cashAmount) {
+            cashAmount.value = Math.max(0, total - otherTotal).toFixed(2);
         }
 
     }
@@ -1023,8 +1102,13 @@
                 row
             );
 
+            const newPaymentMethod = row.querySelector('select');
+            if (newPaymentMethod.options.length > 1) {
+                newPaymentMethod.selectedIndex = 1;
+            }
 
             paymentIndex++;
+            updatePaymentBalance();
 
         }
     );
@@ -1053,6 +1137,26 @@
 
             }
 
+        }
+    );
+
+
+    paymentLines.addEventListener(
+        'input',
+        function (e) {
+            if (e.target.matches('.payment-amount') && e.target.closest('.payment-line')?.querySelector('select')?.value !== 'cash') {
+                updatePaymentBalance();
+            }
+        }
+    );
+
+
+    paymentLines.addEventListener(
+        'change',
+        function (e) {
+            if (e.target.matches('select')) {
+                updatePaymentBalance();
+            }
         }
     );
 

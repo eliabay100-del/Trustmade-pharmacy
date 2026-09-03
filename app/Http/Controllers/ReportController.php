@@ -17,10 +17,15 @@ class ReportController extends Controller
     {
         $user = auth()->user();
         $query = PurchaseBatch::with(['drug', 'branch'])->where('quantity_remaining', '>', 0);
+        $query->with('product');
+        if ($request = request()) {
+            if ($request->input('type') === 'drug') $query->whereNotNull('drug_id');
+            if ($request->input('type') === 'product') $query->whereNotNull('product_id');
+        }
         if ($user->branch_id) {
             $query->where('branch_id', $user->branch_id);
         }
-        $stock = $query->orderBy('expiry_date')->get();
+        $stock = $query->with('product')->orderBy('expiry_date')->get();
 
         return view('reports.inventory', compact('stock'));
     }
@@ -41,7 +46,7 @@ class ReportController extends Controller
     {
         $user = auth()->user();
 
-        $query = IssuedItem::with(['purchaseBatch.drug', 'customer']);
+        $query = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product', 'customer']);
         $totalQuery = IssuedItem::query();
         if ($user->branch_id) {
             $query->where('branch_id', $user->branch_id);
@@ -79,116 +84,5 @@ class ReportController extends Controller
             new MonthlyAccountingExport($branchId, $validated['month'], $validated['year']),
             $filename
         );
-    }
-
-    /**
-     * Trial Balance Report
-     * Shows sum of debits and credits per account, with net balance.
-     */
-    public function trialBalance(Request $request)
-    {
-        $user = auth()->user();
-        
-        $query = Ledger::query()->selectRaw('account_id, SUM(debit) as total_debit, SUM(credit) as total_credit');
-        
-        if ($user->branch_id) {
-            $query->where('branch_id', $user->branch_id);
-        }
-        
-        $query->groupBy('account_id');
-        
-        $balances = $query->get()->map(function ($item) {
-            return [
-                'account_id' => $item->account_id,
-                'total_debit' => $item->total_debit ?? 0,
-                'total_credit' => $item->total_credit ?? 0,
-                'balance' => ($item->total_debit ?? 0) - ($item->total_credit ?? 0),
-            ];
-        });
-        
-        // Load account details
-        $accounts = Account::whereIn('id', $balances->pluck('account_id'))->get()->keyBy('id');
-        
-        $trialBalance = $balances->map(function ($item) use ($accounts) {
-            $account = $accounts[$item['account_id']] ?? null;
-            return [
-                'code' => $account?->code ?? 'N/A',
-                'name' => $account?->name ?? 'Unknown Account',
-                'type' => $account?->type ?? 'unknown',
-                'debit' => $item['total_debit'],
-                'credit' => $item['total_credit'],
-                'balance' => $item['balance'],
-            ];
-        });
-        
-        $totalDebit = $trialBalance->sum('debit');
-        $totalCredit = $trialBalance->sum('credit');
-        
-        return view('reports.trial-balance', compact('trialBalance', 'totalDebit', 'totalCredit'));
-    }
-
-    /**
-     * Income Statement Report
-     * Revenue accounts minus COGS and expense accounts, grouped by Account::type
-     */
-    public function incomeStatement(Request $request)
-    {
-        $user = auth()->user();
-        
-        $query = Ledger::query()
-            ->join('accounts', 'ledgers.account_id', '=', 'accounts.id')
-            ->selectRaw('accounts.type, accounts.code, accounts.name, SUM(ledgers.debit) as total_debit, SUM(ledgers.credit) as total_credit');
-        
-        if ($user->branch_id) {
-            $query->where('ledgers.branch_id', $user->branch_id);
-        }
-        
-        $query->groupBy('accounts.type', 'accounts.code', 'accounts.name');
-        $query->orderBy('accounts.code');
-        
-        $entries = $query->get();
-        
-        // Group by type and calculate net amounts
-        $grouped = $entries->groupBy('type');
-        
-        $revenue = $grouped->get('revenue', collect())->map(function ($item) {
-            return [
-                'code' => $item->code,
-                'name' => $item->name,
-                'amount' => $item->total_credit - $item->total_debit, // Revenue has credit balance
-            ];
-        });
-        
-        $cogs = $grouped->get('expense', collect())->filter(function ($item) {
-            return strpos($item->code, '5000') === 0 || $item->name === 'Cost of Goods Sold';
-        })->map(function ($item) {
-            return [
-                'code' => $item->code,
-                'name' => $item->name,
-                'amount' => $item->total_debit - $item->total_credit, // Expenses have debit balance
-            ];
-        });
-        
-        $expenses = $grouped->get('expense', collect())->filter(function ($item) {
-            return strpos($item->code, '5000') !== 0 && $item->name !== 'Cost of Goods Sold';
-        })->map(function ($item) {
-            return [
-                'code' => $item->code,
-                'name' => $item->name,
-                'amount' => $item->total_debit - $item->total_credit,
-            ];
-        });
-        
-        $totalRevenue = $revenue->sum('amount');
-        $totalCogs = $cogs->sum('amount');
-        $totalExpenses = $expenses->sum('amount');
-        $grossProfit = $totalRevenue - $totalCogs;
-        $netIncome = $grossProfit - $totalExpenses;
-        
-        return view('reports.income-statement', compact(
-            'revenue', 'cogs', 'expenses',
-            'totalRevenue', 'totalCogs', 'totalExpenses',
-            'grossProfit', 'netIncome'
-        ));
     }
 }

@@ -15,12 +15,12 @@
                 @foreach($batches as $batch)
                     <option value="{{ $batch->id }}"
                             @selected((int) old('purchase_batch_id', $selectedBatchId) === $batch->id)
-                            data-base="{{ $batch->drug?->baseUnitLabel() ?? 'tablet' }}"
-                            data-strip="{{ $batch->drug?->unitsPerStrip() ?? 1 }}"
-                            data-pack="{{ $batch->drug?->unitsPerPack() ?? 1 }}">
-                        {{ $batch->drug->name ?? 'Drug' }}
+                            data-base="{{ ($batch->drug ?? $batch->product)?->baseUnitLabel() ?? 'unit' }}"
+                            data-strip="{{ ($batch->drug ?? $batch->product)?->unitsPerStrip() ?? 1 }}"
+                            data-pack="{{ ($batch->drug ?? $batch->product)?->unitsPerPack() ?? 1 }}">
+                        {{ ($batch->drug ?? $batch->product)->name ?? 'Item' }}
                         — {{ $batch->batch_number }}
-                        ({{ $batch->quantity_remaining }} {{ $batch->drug?->baseUnitLabel() ?? 'unit' }} left
+                        ({{ $batch->quantity_remaining }} {{ ($batch->drug ?? $batch->product)?->baseUnitLabel() ?? 'unit' }} left
                         @if($batch->supplier) · {{ $batch->supplier->name }}@endif)
                     </option>
                 @endforeach

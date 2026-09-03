@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Drug;
+use App\Models\Product;
 use App\Models\StockTransfer;
 use App\Services\TransferService;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class StockTransferController extends Controller
         // is either the source OR the destination — filtered for
         // non-admin users, unfiltered (all branches) for Owner/Admin.
         $user = auth()->user();
-        $query = StockTransfer::with(['fromBranch', 'toBranch', 'purchaseBatch.drug']);
+        $query = StockTransfer::with(['fromBranch', 'toBranch', 'purchaseBatch.drug', 'purchaseBatch.product']);
         if ($user->branch_id) {
             $query->where(function ($q) use ($user) {
                 $q->where('from_branch_id', $user->branch_id)
@@ -44,25 +45,31 @@ class StockTransferController extends Controller
         // reach this page at all via route middleware.
         $branches = Branch::all();
         $drugs = Drug::all();
-        return view('transfers.create', compact('branches', 'drugs'));
+        $products = Product::where('active', true)->orderBy('name')->get();
+        return view('transfers.create', compact('branches', 'drugs', 'products'));
     }
 
     public function store(Request $request)
     {
+        if (!$request->filled('item_type') && $request->filled('drug_id')) {
+            $request->merge(['item_type' => 'drug', 'item_id' => $request->drug_id]);
+        }
         $request->validate([
             'from_branch_id' => 'required|exists:branches,id',
             'to_branch_id' => 'required|different:from_branch_id|exists:branches,id',
-            'drug_id' => 'required|exists:drugs,id',
+            'item_type' => 'required|in:drug,product',
+            'item_id' => 'required|integer',
             'quantity' => 'required|integer|min:1',
             'quantity_unit' => 'required|in:tablet,strip,pack',
         ]);
 
         try {
-            $drug = Drug::findOrFail($request->drug_id);
-            $qtyBase = $drug->toBaseQuantity((int) $request->quantity, $request->quantity_unit);
+            $item = $request->item_type === 'product' ? Product::findOrFail($request->item_id) : Drug::findOrFail($request->item_id);
+            $qtyBase = $item instanceof Drug ? $item->toBaseQuantity((int) $request->quantity, $request->quantity_unit) : (int) $request->quantity;
 
             $this->transferService->transfer(
-                $request->drug_id,
+                $request->item_type,
+                $request->item_id,
                 $request->from_branch_id,
                 $request->to_branch_id,
                 $qtyBase,

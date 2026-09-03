@@ -13,7 +13,7 @@ class IssuedItem extends Model
 
     protected $fillable = [
         'order_id',
-        'purchase_batch_id', 'customer_id', 'branch_id',
+        'purchase_batch_id', 'product_id', 'customer_id', 'branch_id',
         'quantity_issued', 'selling_price_per_unit', 'total_amount', 'issue_date'
     ];
 
@@ -26,6 +26,7 @@ class IssuedItem extends Model
 
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
     public function purchaseBatch(): BelongsTo { return $this->belongsTo(PurchaseBatch::class); }
+    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
     public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function branch(): BelongsTo { return $this->belongsTo(Branch::class); }
 

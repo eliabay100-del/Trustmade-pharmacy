@@ -1,155 +1,49 @@
 @extends('layouts.app')
 
 @section('content')
-
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-[#1E2530]">Dashboard</h1>
-    <p class="text-sm text-[#6B7A93] mt-1">Today's snapshot across your pharmacy.</p>
-</div>
-
-{{-- Stat cards — restrained palette matching the sidebar theme --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="w-8 h-8 rounded-lg bg-[#12A594]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 4h8l-1 4H9L8 4zm0 4v10a2 2 0 002 2h4a2 2 0 002-2V8H8z" />
-                </svg>
-            </span>
-            <p class="text-[#6B7A93] text-xs font-medium uppercase tracking-wide">Total Drugs</p>
-        </div>
-        <p class="text-2xl font-bold text-[#1E2530]">{{ $totalDrugs }}</p>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="w-8 h-8 rounded-lg bg-[#12A594]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-2c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <p class="text-[#6B7A93] text-xs font-medium uppercase tracking-wide">Stock Value</p>
-        </div>
-        <p class="text-2xl font-bold text-[#1E2530]">${{ number_format($totalValue, 2) }}</p>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="w-8 h-8 rounded-lg bg-[#101B2D]/5 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#101B2D]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l7 7-7 7zM3 5v14" />
-                </svg>
-            </span>
-            <p class="text-[#6B7A93] text-xs font-medium uppercase tracking-wide">Today's Sales</p>
-        </div>
-        <p class="text-2xl font-bold text-[#1E2530]">${{ number_format($todaySales, 2) }}</p>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="w-8 h-8 rounded-lg {{ $lowStockCount > 0 ? 'bg-amber-50' : 'bg-gray-50' }} flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 {{ $lowStockCount > 0 ? 'text-amber-600' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <p class="text-[#6B7A93] text-xs font-medium uppercase tracking-wide">Low Stock</p>
-        </div>
-        <p class="text-2xl font-bold {{ $lowStockCount > 0 ? 'text-amber-600' : 'text-[#1E2530]' }}">{{ $lowStockCount }}</p>
-    </div>
-
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="flex items-center gap-3 mb-2">
-            <span class="w-8 h-8 rounded-lg {{ $expiringSoonCount > 0 ? 'bg-red-50' : 'bg-gray-50' }} flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 {{ $expiringSoonCount > 0 ? 'text-red-600' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <p class="text-[#6B7A93] text-xs font-medium uppercase tracking-wide">Expiring Soon</p>
-        </div>
-        <p class="text-2xl font-bold {{ $expiringSoonCount > 0 ? 'text-red-600' : 'text-[#1E2530]' }}">{{ $expiringSoonCount }}</p>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-    {{-- Quick Actions — clean icon buttons instead of solid color blocks --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 class="text-base font-bold text-[#1E2530] mb-4">Quick Actions</h2>
-        <div class="space-y-2">
-            <a href="{{ route('purchases.create') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-[#12A594] hover:bg-[#12A594]/5 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-[#12A594]/10 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                </span>
-                <span class="font-medium text-[#1E2530] group-hover:text-[#12A594]">Record New Purchase</span>
-            </a>
-            <a href="{{ route('dispense.create') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-[#12A594] hover:bg-[#12A594]/5 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-[#12A594]/10 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </span>
-                <span class="font-medium text-[#1E2530] group-hover:text-[#12A594]">Dispense Drug</span>
-            </a>
-            <a href="{{ route('transfers.create') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-[#12A594] hover:bg-[#12A594]/5 transition-colors group">
-                <span class="w-8 h-8 rounded-lg bg-[#12A594]/10 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                </span>
-                <span class="font-medium text-[#1E2530] group-hover:text-[#12A594]">Transfer Stock</span>
-            </a>
-        </div>
-    </div>
-
-    {{-- Recent Alerts --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 class="text-base font-bold text-[#1E2530] mb-4">Recent Alerts</h2>
-
-        @if($expiringSoonCount > 0 || $lowStockCount > 0)
-            <ul class="space-y-3">
-                @if($expiringSoonCount > 0)
-                    <li class="flex items-start gap-3">
-                        <span class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </span>
-                        <span class="text-sm text-[#1E2530]">
-                            <span class="font-semibold text-red-600">{{ $expiringSoonCount }}</span> drug{{ $expiringSoonCount === 1 ? '' : 's' }} expiring within 30 days
-                        </span>
-                    </li>
-                @endif
-                @if($lowStockCount > 0)
-                    <li class="flex items-start gap-3">
-                        <span class="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </span>
-                        <span class="text-sm text-[#1E2530]">
-                            <span class="font-semibold text-amber-600">{{ $lowStockCount }}</span> drug{{ $lowStockCount === 1 ? '' : 's' }} below minimum stock level
-                        </span>
-                    </li>
-                @endif
-            </ul>
-            <a href="{{ route('alerts.index') }}" class="inline-block mt-4 text-sm font-medium text-[#12A594] hover:underline">
-                View all alerts →
-            </a>
-        @else
-            <div class="text-center py-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p class="text-sm text-[#6B7A93]">No active alerts. All systems normal.</p>
+<div class="space-y-6">
+    <section class="relative overflow-hidden rounded-2xl bg-[#10253b] px-6 py-7 text-white shadow-sm sm:px-8">
+        <div class="absolute -right-12 -top-20 h-56 w-56 rounded-full border border-[#58c6b6]/20"></div>
+        <div class="absolute right-16 -bottom-24 h-48 w-48 rounded-full border border-white/10"></div>
+        <div class="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-[.18em] text-[#72d4c5]">Pharmacy operations</p>
+                <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Good morning, {{ explode(' ', trim(auth()->user()->name))[0] }}.</h1>
+                <p class="mt-2 max-w-xl text-sm text-white/65">Here is the live picture of your pharmacy today.</p>
             </div>
-        @endif
-    </div>
-</div>
+            <div class="shrink-0 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-left backdrop-blur-sm sm:text-right">
+                <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
+                <p class="mt-1 text-sm font-semibold">{{ auth()->user()->branch->name ?? 'All branches' }}</p>
+            </div>
+        </div>
+    </section>
 
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Pharmacy summary">
+        <a href="{{ route('drugs.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[#0f9f8f] hover:shadow-md">
+            <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Drugs</span><span class="rounded-lg bg-[#e7f7f4] px-2 py-1 text-[#0f9f8f]">RX</span></div>
+            <p class="mt-5 text-3xl font-bold text-[#182230] group-hover:text-[#0f9f8f]">{{ $totalDrugs }}</p><p class="mt-1 text-xs text-[#6b7a93]">View drug catalogue</p>
+        </a>
+        <a href="{{ route('products.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[#0f9f8f] hover:shadow-md">
+            <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Products</span><span class="rounded-lg bg-[#fff2dc] px-2 py-1 text-[#b36b00]">RET</span></div>
+            <p class="mt-5 text-3xl font-bold text-[#182230] group-hover:text-[#0f9f8f]">{{ $totalProducts }}</p><p class="mt-1 text-xs text-[#6b7a93]">View retail catalogue</p>
+        </a>
+        <div class="rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Today's sales</span><p class="mt-5 text-2xl font-bold text-[#182230]">ETB {{ number_format($todaySales, 2) }}</p><p class="mt-1 text-xs text-[#6b7a93]">Collected today</p></div>
+        <a href="{{ route('alerts.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Low stock</span><p class="mt-5 text-3xl font-bold {{ $lowStockCount ? 'text-amber-600' : 'text-[#182230]' }}">{{ $lowStockCount }}</p><p class="mt-1 text-xs text-[#6b7a93]">Open stock alerts</p></a>
+        <a href="{{ route('alerts.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-red-400 hover:shadow-md"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Expiring soon</span><p class="mt-5 text-3xl font-bold {{ $expiringSoonCount ? 'text-red-600' : 'text-[#182230]' }}">{{ $expiringSoonCount }}</p><p class="mt-1 text-xs text-[#6b7a93]">Next 30 days</p></a>
+    </section>
+
+    <section class="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_.8fr]">
+        <div class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
+            <div class="flex items-start justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Today's pulse</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Keep the shelves moving</h2></div><a href="{{ route('reports.sales') }}" class="text-sm font-semibold text-[#0f9f8f] hover:underline">Sales report</a></div>
+            <div class="mt-7 space-y-5">
+                <div><div class="mb-2 flex justify-between text-sm"><span class="text-[#6b7a93]">Sales, last 7 days</span><strong class="text-[#182230]">ETB {{ number_format($recentSales, 2) }}</strong></div><div class="h-2 overflow-hidden rounded-full bg-[#e8eef1]"><div class="h-full rounded-full bg-[#0f9f8f]" style="width: {{ min(100, max(4, (float) $recentSales / max(1, (float) $recentSales + (float) $recentPurchases) * 100)) }}%"></div></div></div>
+                <div><div class="mb-2 flex justify-between text-sm"><span class="text-[#6b7a93]">Purchases, last 7 days</span><strong class="text-[#182230]">ETB {{ number_format($recentPurchases, 2) }}</strong></div><div class="h-2 overflow-hidden rounded-full bg-[#e8eef1]"><div class="h-full rounded-full bg-[#e8a43a]" style="width: {{ min(100, max(4, (float) $recentPurchases / max(1, (float) $recentSales + (float) $recentPurchases) * 100)) }}%"></div></div></div>
+            </div>
+            <div class="mt-7 grid grid-cols-2 gap-3 border-t border-[#edf1f3] pt-5"><div><p class="text-xs text-[#6b7a93]">Total units on hand</p><p class="mt-1 text-lg font-bold text-[#182230]">{{ number_format($totalQuantity) }}</p></div><div><p class="text-xs text-[#6b7a93]">Product sales</p><p class="mt-1 text-lg font-bold text-[#182230]">ETB {{ number_format($productSales, 2) }}</p></div></div>
+        </div>
+        <div class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-start justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Shortcuts</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Common tasks</h2></div><span class="text-xl text-[#0f9f8f]">+</span></div><div class="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1"><a href="{{ route('dispense.create') }}" class="rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm font-semibold text-[#08796f] hover:bg-[#d7f1ed]">Start a sale <span class="float-right">→</span></a><a href="{{ route('purchases.create') }}" class="rounded-lg bg-[#fff2dc] px-4 py-3 text-sm font-semibold text-[#8a5700] hover:bg-[#ffebc8]">Record purchase <span class="float-right">→</span></a><a href="{{ route('adjustments.create') }}" class="rounded-lg bg-[#eef1f5] px-4 py-3 text-sm font-semibold text-[#405166] hover:bg-[#e5eaf0]">Adjust stock <span class="float-right">→</span></a></div></div>
+    </section>
+
+    <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Attention needed</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Recent alerts</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[#0f9f8f] hover:underline">View all</a></div>@if($expiringSoonCount || $lowStockCount)<div class="mt-5 grid gap-3 sm:grid-cols-2">@if($expiringSoonCount)<div class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ $expiringSoonCount }} drug{{ $expiringSoonCount === 1 ? '' : 's' }} expire within 30 days</div>@endif @if($lowStockCount)<div class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ $lowStockCount }} item{{ $lowStockCount === 1 ? '' : 's' }} need restocking</div>@endif</div>@else<div class="mt-5 rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm text-[#08796f]">Everything is in good shape. No active alerts.</div>@endif</section>
+</div>
 @endsection

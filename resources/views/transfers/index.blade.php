@@ -20,7 +20,7 @@
         <thead class="bg-gray-50/50">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Date</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Drug</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Item</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">From</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide"></th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">To</th>
@@ -32,7 +32,7 @@
             @forelse($transfers as $transfer)
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ \Carbon\Carbon::parse($transfer->transfer_date)->format('M d, Y') }}</td>
-                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $transfer->purchaseBatch->drug->name ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $transfer->purchaseBatch->drug->name ?? $transfer->purchaseBatch->product->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $transfer->fromBranch->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-gray-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

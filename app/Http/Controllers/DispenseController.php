@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\IssuedItem;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Services\InventoryService;
 use App\Services\AccountingService;
 use Illuminate\Http\Request;
@@ -42,6 +43,10 @@ class DispenseController extends Controller
     public function create()
     {
         $drugs = Drug::all();
+        $products = Product::where('active', true)->orderBy('name')->get();
+        foreach ($drugs as $drug) $drug->catalog_key = 'drug:' . $drug->id;
+        foreach ($products as $product) $product->catalog_key = 'product:' . $product->id;
+        $drugs = $drugs->concat($products);
         $recurringCustomers = Customer::where('is_recurring', true)->orderBy('name')->get();
         $branchId = auth()->user()->branch_id;
         $paymentMethods = Payment::METHODS;
@@ -50,9 +55,17 @@ class DispenseController extends Controller
 
     public function store(Request $request)
     {
+        $items = collect($request->input('items', []))->map(function ($item) {
+            if (isset($item['drug_id']) && !str_contains((string) $item['drug_id'], ':')) {
+                $item['drug_id'] = 'drug:' . $item['drug_id'];
+            }
+            return $item;
+        })->all();
+        $request->merge(['items' => $items]);
+
         $request->validate([
             'items' => 'required|array|min:1',
-            'items.*.drug_id' => 'required|exists:drugs,id',
+            'items.*.drug_id' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit' => 'required|in:tablet,strip,pack',
             'items.*.selling_price' => 'required|numeric|min:0',
@@ -102,18 +115,19 @@ class DispenseController extends Controller
                 $orderCogs = 0;
 
                 foreach ($request->items as $item) {
-                    $drug = Drug::findOrFail($item['drug_id']);
-                    $qtyBase = $drug->toBaseQuantity((int) $item['quantity'], $item['unit']);
-                    $pricePerBase = $drug->pricePerBase((float) $item['selling_price'], $item['unit']);
+                    [$itemType, $itemId] = explode(':', $item['drug_id'], 2);
+                    $itemModel = $itemType === 'product' ? Product::findOrFail($itemId) : Drug::findOrFail($itemId);
+                    $qtyBase = $itemModel->toBaseQuantity((int) $item['quantity'], $item['unit']);
+                    $pricePerBase = $itemModel->pricePerBase((float) $item['selling_price'], $item['unit']);
 
                     $allocations = $this->inventoryService->selectBatchesForDispensing(
-                        $item['drug_id'], $branchId, $qtyBase
+                        $itemType, (int) $itemId, $branchId, $qtyBase
                     );
 
                     $orderCogs += $this->inventoryService->calculateCOGS($allocations);
 
                     $orderTotal += $this->inventoryService->recordIssuance(
-                        $allocations, $customerId, $branchId, $pricePerBase, $order->id
+                        $allocations, $customerId, $branchId, $pricePerBase, $order->id, $itemType, (int) $itemId
                     );
                 }
 
@@ -169,15 +183,9 @@ class DispenseController extends Controller
     public function searchDrug(Request $request)
     {
         $query = $request->input('q');
-        $results = Drug::where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('barcode', 'like', "%{$query}%")
-                  ->orWhere('generic_name', 'like', "%{$query}%");
-            })
-            ->limit(5)
-            ->get([
-                'id', 'name', 'barcode', 'generic_name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
-            ]);
+        $results = Drug::where('name', 'like', "%{$query}%")->limit(5)->get([
+            'id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
+        ]);
         return response()->json($results);
     }
 }

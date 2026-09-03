@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Add User</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Create a login for a staff member.</p>
+    <p class="text-sm text-[#6B7A93] mb-6">Create a staff login and choose the branch where they work.</p>
 
     <form method="POST" action="{{ route('users.store') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         @csrf
@@ -34,7 +34,7 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Role</label>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Staff role</label>
             <select name="role" id="role-select" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
                 <option value="">-- Select Role --</option>
                 @foreach($roles as $value => $label)
@@ -44,14 +44,14 @@
         </div>
 
         <div id="branch-field">
-            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Branch</label>
-            <select name="branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Assigned branch <span id="branch-required" class="text-red-500">*</span></label>
+            <select name="branch_id" id="branch-select" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
                 <option value="">-- Select Branch --</option>
                 @foreach($branches as $branch)
                     <option value="{{ $branch->id }}" @selected(old('branch_id') == $branch->id)>{{ $branch->name }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-[#6B7A93] mt-1">Not required for Owner/Admin — they get access to all branches.</p>
+            <p id="branch-help" class="text-xs text-[#6B7A93] mt-1">Branch managers and pharmacists can access this branch only. Owner/Admin accounts can access all branches.</p>
         </div>
 
         <div class="flex gap-3 pt-2">
@@ -71,8 +71,13 @@
         const roleSelect = document.getElementById('role-select');
         const branchField = document.getElementById('branch-field');
 
+        const branchSelect = document.getElementById('branch-select');
+        const requiredMark = document.getElementById('branch-required');
         function updateBranchField() {
-            branchField.style.opacity = roleSelect.value === 'owner_admin' ? '0.5' : '1';
+            const isOwner = roleSelect.value === 'owner_admin';
+            branchField.style.opacity = isOwner ? '0.65' : '1';
+            branchSelect.required = !isOwner;
+            requiredMark.classList.toggle('hidden', isOwner);
         }
 
         roleSelect.addEventListener('change', updateBranchField);

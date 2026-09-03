@@ -57,7 +57,7 @@ return new class extends Migration
             $table->integer('quantity_remaining');
             $table->decimal('cost_per_unit', 10, 2);
             $table->decimal('selling_price_per_unit', 10, 2);
-            $table->date('expiry_date');
+            $table->date('expiry_date')->nullable();
             $table->date('purchase_date');
             $table->timestamps();
         });

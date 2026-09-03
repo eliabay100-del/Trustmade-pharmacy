@@ -50,9 +50,10 @@
                 <p class="text-xs text-[#6B7A93] mt-1">Existing stock is already in this unit and is not converted.</p>
             </div>
             <div>
-                <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Minimum Stock Level</label>
+                  <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Minimum stock level</label>
                 <input type="number" step="0.01" name="minimum_stock_level" value="{{ old('minimum_stock_level', $drug->minimum_stock_level) }}"
                        class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+                  <p class="text-xs text-[#6B7A93] mt-1">Show a low-stock alert when available stock reaches this amount.</p>
             </div>
         </div>
 

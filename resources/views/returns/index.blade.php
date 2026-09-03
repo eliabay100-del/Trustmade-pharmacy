@@ -37,11 +37,11 @@
                     <tr class="hover:bg-gray-50/50">
                         <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
                         <td class="px-5 py-3.5 text-sm">
-                            <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? '—' }}</span>
+                            <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? $return->purchaseBatch->product->name ?? '—' }}</span>
                             <span class="block text-xs text-[#6B7A93]">Order #{{ $return->order_id }} · {{ $return->refundMethodLabel() }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $return->quantity }}</td>
-                        <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">${{ number_format($return->refund_amount, 2) }}</td>
+                            <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($return->refund_amount, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -70,11 +70,11 @@
                     <tr class="hover:bg-gray-50/50">
                         <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
                         <td class="px-5 py-3.5 text-sm">
-                            <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? '—' }}</span>
+                            <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? $return->purchaseBatch->product->name ?? '—' }}</span>
                             <span class="block text-xs text-[#6B7A93]">{{ $return->purchaseBatch->batch_number ?? '—' }} · {{ $return->supplier->name ?? '—' }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $return->quantity }}</td>
-                        <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">${{ number_format($return->total_amount, 2) }}</td>
+                            <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($return->total_amount, 2) }}</td>
                     </tr>
                 @empty
                     <tr>

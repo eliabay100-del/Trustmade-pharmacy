@@ -8,6 +8,26 @@
 
 <div class="space-y-6">
 
+    {{-- Low Stock --}}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold">!</span>
+            <div><h2 class="font-bold text-[#1E2530]">Low Stock — Restock Soon</h2><p class="text-xs text-[#6B7A93] mt-0.5">Items at or below their minimum stock level.</p></div>
+        </div>
+        @if($lowStockDrugs->count() || $lowStockProducts->count())
+            <table class="min-w-full divide-y divide-gray-50"><tbody class="divide-y divide-gray-50">
+                @foreach($lowStockDrugs as $drug)
+                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $drug->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Drug</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $drug->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $drug->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('drugs.index', ['q' => $drug->name]) }}" class="text-xs font-medium text-[#12A594] hover:underline">View drug</a></td></tr>
+                @endforeach
+                @foreach($lowStockProducts as $product)
+                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $product->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Product</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $product->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $product->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('products.index', ['q' => $product->name]) }}" class="text-xs font-medium text-[#12A594] hover:underline">View product</a></td></tr>
+                @endforeach
+            </tbody></table>
+        @else
+            <p class="px-5 py-6 text-sm text-[#6B7A93]">No items are currently below their minimum stock level.</p>
+        @endif
+    </div>
+
     {{-- Expired --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">

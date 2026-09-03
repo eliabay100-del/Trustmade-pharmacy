@@ -5,20 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PMAS - Pharmacy System</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
-    </style>
 </head>
-<body class="bg-[#F5F7FA] text-[#1E2530]" x-data="{ sidebarOpen: false }">
+<body class="bg-[#F5F7FA] text-[#1E2530]">
 
     @auth
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between bg-[#101B2D] text-white px-4 py-3">
         <a href="{{ route('dashboard') }}" class="font-bold text-lg tracking-tight">PMAS</a>
-        <button @click="sidebarOpen = !sidebarOpen" class="p-2 -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12A594] rounded" aria-label="Toggle menu">
+        <button data-sidebar-toggle aria-expanded="false" class="p-2 -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12A594] rounded" aria-label="Toggle menu">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -26,20 +20,18 @@
     </div>
 
     {{-- Mobile overlay --}}
-    <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
-         class="fixed inset-0 bg-black/40 z-30 lg:hidden" style="display: none;"></div>
+    <div data-sidebar-overlay class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden"></div>
 
     {{-- Sidebar --}}
     <aside
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        class="fixed top-0 left-0 h-full w-64 bg-[#101B2D] text-[#B9C2D0] z-40 transform transition-transform duration-200 ease-in-out lg:translate-x-0 flex flex-col">
+        data-mobile-sidebar class="fixed top-0 left-0 h-full w-64 bg-[#101B2D] text-[#B9C2D0] z-40 transform transition-transform duration-200 ease-in-out -translate-x-full lg:translate-x-0 flex flex-col shadow-[8px_0_24px_rgba(16,27,45,0.08)]">
 
         <div class="px-5 py-5 border-b border-white/10 flex items-center justify-between">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-[#12A594] flex items-center justify-center text-white font-bold text-sm">Rx</span>
                 <span class="text-white font-bold text-lg tracking-tight">PMAS</span>
             </a>
-            <button @click="sidebarOpen = false" class="lg:hidden text-white/60 hover:text-white focus:outline-none" aria-label="Close menu">
+            <button data-sidebar-close class="lg:hidden text-white/60 hover:text-white focus:outline-none" aria-label="Close menu">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -85,6 +77,12 @@
                 <x-nav-link route="drugs.index" label="Drugs">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 4H9L8 4zm0 4v10a2 2 0 002 2h4a2 2 0 002-2V8H8z" />
                 </x-nav-link>
+                <x-nav-link route="products.index" label="Products">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4-8-4V7m16 0l-8 4-8-4m8 4v10" />
+                </x-nav-link>
+                <x-nav-link route="product-categories.index" label="Product Categories">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                </x-nav-link>
                 <x-nav-link route="categories.index" label="Categories">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5.586 5.586a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 10V5a2 2 0 012-2z" />
                 </x-nav-link>
@@ -110,12 +108,6 @@
                 </x-nav-link>
                 <x-nav-link route="reports.inventory" label="Reports">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l7 7-7 7zM3 5v14" />
-                </x-nav-link>
-                <x-nav-link route="reports.trial-balance" label="Trial Balance">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM5.5 10.5L12 17l6.5-6.5" />
-                </x-nav-link>
-                <x-nav-link route="reports.income-statement" label="Income Statement">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </x-nav-link>
                 <x-nav-link route="reports.export.form" label="Export Excel">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
@@ -159,7 +151,7 @@
 
     {{-- Main content --}}
     <div class="{{ auth()->check() ? 'lg:pl-64' : '' }}">
-        <main class="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <main class="px-4 py-6 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg mb-4 text-sm">
                     {{ session('success') }}

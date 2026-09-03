@@ -6,7 +6,7 @@ use App\Models\PurchaseBatch;
 use Illuminate\Support\Facades\DB;
 
 class TransferService {
-    public function transfer($drugId, $sourceId, $destId, $qty, $userId) {
+    public function transfer($itemType, $itemId, $sourceId, $destId, $qty, $userId) {
         if ($sourceId === $destId) {
             throw new \Exception("Source and destination must differ.");
         }
@@ -15,10 +15,10 @@ class TransferService {
             // CONCURRENCY FIX: same lockForUpdate() protection as
             // InventoryService — prevents a transfer and a dispense (or
             // two transfers) from racing on the same batch's stock.
-            $sourceBatches = PurchaseBatch::where('drug_id', $drugId)
+            $sourceBatches = PurchaseBatch::where($itemType === 'product' ? 'product_id' : 'drug_id', $itemId)
                 ->where('branch_id', $sourceId)
                 ->where('quantity_remaining', '>', 0)
-                ->where('expiry_date', '>=', now()->toDateString())
+                ->where(fn ($query) => $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString()))
                 ->orderBy('expiry_date', 'asc')
                 ->orderBy('purchase_date', 'asc')
                 ->lockForUpdate()
@@ -53,6 +53,7 @@ class TransferService {
 
                 $destBatch = PurchaseBatch::create([
                     'drug_id' => $batch->drug_id,
+                    'product_id' => $batch->product_id,
                     'supplier_id' => $batch->supplier_id,
                     'branch_id' => $destId,
                     'batch_number' => $batch->batch_number . '-T' . now()->format('YmdHis'),

@@ -6,7 +6,6 @@ use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\DB;
 
 class Drug extends Model
 {
@@ -17,7 +16,7 @@ class Drug extends Model
     public const UNIT_PACK = 'pack';
 
     protected $fillable = [
-        'name', 'barcode', 'generic_name', 'strength', 'form',
+        'name', 'generic_name', 'strength', 'form',
         'category_id', 'unit_of_measure', 'units_per_strip',
         'strips_per_pack', 'minimum_stock_level'
     ];
@@ -42,9 +41,7 @@ class Drug extends Model
 
     public function getCurrentStockAttribute()
     {
-        return DB::table('current_stock')
-            ->where('drug_id', $this->id)
-            ->sum('current_quantity');
+        return $this->purchaseBatches()->sum('quantity_remaining');
     }
 
     public function baseUnitLabel(): string

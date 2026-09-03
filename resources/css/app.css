@@ -4,6 +4,39 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Trebuchet MS', 'Segoe UI', sans-serif;
+}
+
+:root {
+    --pmas-ink: #182230;
+    --pmas-muted: #6b7a93;
+    --pmas-teal: #0f9f8f;
+    --pmas-teal-dark: #08796f;
+    --pmas-line: #e5eaf0;
+    --pmas-surface: #ffffff;
+    --pmas-canvas: #f3f6f8;
+}
+
+html { background: var(--pmas-canvas); }
+body {
+    color: var(--pmas-ink);
+    background: var(--pmas-canvas);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+}
+
+button, a, input, select, textarea { transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease, color .16s ease, transform .16s ease; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(15, 159, 143, .22); outline-offset: 2px; }
+input, select, textarea { background: var(--pmas-surface); }
+input::placeholder, textarea::placeholder { color: #9aa6b6; }
+table tbody tr { transition: background-color .14s ease; }
+table tbody tr:hover { background-color: #f7fbfb; }
+
+@media (max-width: 640px) {
+    main { padding-top: 1.25rem; }
+    table th, table td { white-space: nowrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

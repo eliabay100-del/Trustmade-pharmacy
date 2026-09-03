@@ -29,7 +29,7 @@
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $adjustment->created_at->format('M d, Y g:i A') }}</td>
                     <td class="px-5 py-3.5 text-sm">
-                        <span class="font-medium text-[#1E2530]">{{ $adjustment->purchaseBatch->drug->name ?? '—' }}</span>
+                        <span class="font-medium text-[#1E2530]">{{ $adjustment->purchaseBatch->drug->name ?? $adjustment->purchaseBatch->product->name ?? '—' }}</span>
                         <span class="block text-xs text-[#6B7A93]">Batch {{ $adjustment->purchaseBatch->batch_number ?? '—' }}</span>
                     </td>
                     <td class="px-5 py-3.5 text-sm text-[#1E2530]">
