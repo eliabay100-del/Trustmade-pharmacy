@@ -169,9 +169,15 @@ class DispenseController extends Controller
     public function searchDrug(Request $request)
     {
         $query = $request->input('q');
-        $results = Drug::where('name', 'like', "%{$query}%")->limit(5)->get([
-            'id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
-        ]);
+        $results = Drug::where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('barcode', 'like', "%{$query}%")
+                  ->orWhere('generic_name', 'like', "%{$query}%");
+            })
+            ->limit(5)
+            ->get([
+                'id', 'name', 'barcode', 'generic_name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
+            ]);
         return response()->json($results);
     }
 }

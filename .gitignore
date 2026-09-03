@@ -1,1 +1,3 @@
-Nothing needs to be added to .gitignore since the changes only include Blade template files (.blade.php) which are source code files and should not be ignored.
+```
+node_modules/
+```
