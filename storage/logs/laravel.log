@@ -1,0 +1,56 @@
+[2026-09-03 11:51:57] production.ERROR: The /workspace/bootstrap/cache directory must be present and writable. {"exception":"[object] (Exception(code: 0): The /workspace/bootstrap/cache directory must be present and writable. at /workspace/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php:179)
+[stacktrace]
+#0 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(132): Illuminate\\Foundation\\PackageManifest->write()
+#1 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(108): Illuminate\\Foundation\\PackageManifest->build()
+#2 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(90): Illuminate\\Foundation\\PackageManifest->getManifest()
+#3 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/PackageManifest.php(79): Illuminate\\Foundation\\PackageManifest->config()
+#4 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterFacades.php(26): Illuminate\\Foundation\\PackageManifest->aliases()
+#5 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(349): Illuminate\\Foundation\\Bootstrap\\RegisterFacades->bootstrap()
+#6 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(494): Illuminate\\Foundation\\Application->bootstrapWith()
+#7 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#8 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1242): Illuminate\\Foundation\\Console\\Kernel->handle()
+#9 /workspace/artisan(16): Illuminate\\Foundation\\Application->handleCommand()
+#10 {main}
+"} 
+[2026-09-03 11:52:09] production.ERROR: syntax error, unexpected token "{", expecting "," or ";" {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"{\", expecting \",\" or \";\" at /workspace/vendor/symfony/http-foundation/Request.php:117)
+[stacktrace]
+#0 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#1 /workspace/vendor/laravel/framework/src/Illuminate/Http/Request.php(29): Composer\\Autoload\\ClassLoader->loadClass()
+#2 /workspace/vendor/composer/ClassLoader.php(576): include('...')
+#3 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#4 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/SetRequestForConsole.php(31): Composer\\Autoload\\ClassLoader->loadClass()
+#5 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(349): Illuminate\\Foundation\\Bootstrap\\SetRequestForConsole->bootstrap()
+#6 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(494): Illuminate\\Foundation\\Application->bootstrapWith()
+#7 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#8 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1242): Illuminate\\Foundation\\Console\\Kernel->handle()
+#9 /workspace/artisan(16): Illuminate\\Foundation\\Application->handleCommand()
+#10 {main}
+"} 
+[2026-09-03 11:52:16] production.ERROR: syntax error, unexpected token "{", expecting "," or ";" {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"{\", expecting \",\" or \";\" at /workspace/vendor/symfony/http-foundation/Request.php:117)
+[stacktrace]
+#0 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#1 /workspace/vendor/laravel/framework/src/Illuminate/Http/Request.php(29): Composer\\Autoload\\ClassLoader->loadClass()
+#2 /workspace/vendor/composer/ClassLoader.php(576): include('...')
+#3 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#4 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/SetRequestForConsole.php(31): Composer\\Autoload\\ClassLoader->loadClass()
+#5 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(349): Illuminate\\Foundation\\Bootstrap\\SetRequestForConsole->bootstrap()
+#6 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(494): Illuminate\\Foundation\\Application->bootstrapWith()
+#7 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#8 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1242): Illuminate\\Foundation\\Console\\Kernel->handle()
+#9 /workspace/artisan(16): Illuminate\\Foundation\\Application->handleCommand()
+#10 {main}
+"} 
+[2026-09-03 11:53:11] production.ERROR: syntax error, unexpected token "{", expecting "," or ";" {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"{\", expecting \",\" or \";\" at /workspace/vendor/symfony/http-foundation/Request.php:117)
+[stacktrace]
+#0 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#1 /workspace/vendor/laravel/framework/src/Illuminate/Http/Request.php(29): Composer\\Autoload\\ClassLoader->loadClass()
+#2 /workspace/vendor/composer/ClassLoader.php(576): include('...')
+#3 /workspace/vendor/composer/ClassLoader.php(427): Composer\\Autoload\\{closure}()
+#4 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/SetRequestForConsole.php(31): Composer\\Autoload\\ClassLoader->loadClass()
+#5 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(349): Illuminate\\Foundation\\Bootstrap\\SetRequestForConsole->bootstrap()
+#6 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(507): Illuminate\\Foundation\\Application->bootstrapWith()
+#7 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
+#8 /workspace/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1242): Illuminate\\Foundation\\Console\\Kernel->handle()
+#9 /workspace/artisan(16): Illuminate\\Foundation\\Application->handleCommand()
+#10 {main}
+"} 

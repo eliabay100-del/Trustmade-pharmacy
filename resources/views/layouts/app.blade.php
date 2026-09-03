@@ -111,6 +111,12 @@
                 <x-nav-link route="reports.inventory" label="Reports">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l7 7-7 7zM3 5v14" />
                 </x-nav-link>
+                <x-nav-link route="reports.trial-balance" label="Trial Balance">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM5.5 10.5L12 17l6.5-6.5" />
+                </x-nav-link>
+                <x-nav-link route="reports.income-statement" label="Income Statement">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </x-nav-link>
                 <x-nav-link route="reports.export.form" label="Export Excel">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                 </x-nav-link>

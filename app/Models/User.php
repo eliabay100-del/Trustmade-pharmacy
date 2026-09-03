@@ -29,6 +29,7 @@ class User extends Authenticatable
         'password',
         'role',
         'branch_id',
+        'active',
     ];
 
     protected $hidden = [
@@ -39,6 +40,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'active' => 'boolean',
     ];
 
     public function branch(): BelongsTo

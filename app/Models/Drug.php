@@ -17,7 +17,7 @@ class Drug extends Model
     public const UNIT_PACK = 'pack';
 
     protected $fillable = [
-        'name', 'generic_name', 'strength', 'form',
+        'name', 'barcode', 'generic_name', 'strength', 'form',
         'category_id', 'unit_of_measure', 'units_per_strip',
         'strips_per_pack', 'minimum_stock_level'
     ];
