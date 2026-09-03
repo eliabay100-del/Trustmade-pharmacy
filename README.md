@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pharmacy Management Accounting System (PMAS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive pharmacy management system built with Laravel + MySQL + Blade, featuring inventory management with FEFO batch allocation, double-entry accounting, and role-based access control.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL 8.0+ or SQLite (for testing)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation Steps
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone and Install Dependencies
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd /workspace
+composer install
+npm install && npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Environment Configuration
 
-## Contributing
+Copy the example environment file and configure your database:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+Update `.env` with your database credentials:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pmas
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
 
-## Security Vulnerabilities
+For testing, the system uses SQLite in-memory database (configured in `phpunit.xml`).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 3. Database Migration and Seeding
+
+```bash
+php artisan migrate --seed
+```
+
+### ⚠️ CRITICAL: AccountSeeder Must Run First
+
+**IMPORTANT**: Before any sale or purchase transactions can be processed, you MUST run the `AccountSeeder`. The `AccountingService` uses `Account::where('code', ...)->firstOrFail()` to find accounts, and will throw an exception if the required accounts don't exist.
+
+The seeder creates the following chart of accounts:
+- `1000` - Cash
+- `1100` - Bank
+- `1200` - Inventory
+- `2000` - Accounts Payable
+- `3000` - Equity
+- `4000` - Revenue
+- `5000` - Cost of Goods Sold (COGS)
+- `5100` - Inventory Shrinkage
+
+If you encounter errors like "Account with code XXXX not found", re-run:
+```bash
+php artisan db:seed --class=AccountSeeder
+```
+
+### 4. Start Development Server
+
+```bash
+php artisan serve
+```
+
+Visit `http://localhost:8000` in your browser.
+
+## Default Login Credentials
+
+After seeding, use these credentials to log in:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Owner/Admin | admin@pmas.com | password |
+
+## Running Tests
+
+```bash
+php artisan test
+```
+
+## Role-Based Access Control
+
+The system implements three-tier RBAC via `role:` middleware:
+
+- **Tier 1** (`owner_admin`, `branch_manager`, `pharmacist_clerk`): Day-to-day operations (dispensing, purchases, returns, adjustments)
+- **Tier 2** (`owner_admin`, `branch_manager`): Stock transfers, branch management, financial reports
+- **Tier 3** (`owner_admin` only): User/staff management
+
+## Core Features
+
+- **Inventory Management**: FEFO (First Expiry, First Out) batch allocation with concurrency-locked stock
+- **Double-Entry Accounting**: Automatic journal entries for all transactions
+- **Multi-branch Support**: Branch-level stock tracking and reporting
+- **Expiry Alerts**: Configurable notifications for near-expiry and low-stock items
+- **Customer Returns**: Full return processing with stock restoration
+- **Supplier Returns**: Return to supplier with AP reversal
+- **Stock Adjustments**: Write-off workflow with accounting integration
+- **Till Closing**: Cashier reconciliation and shift closing
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary software - All rights reserved.

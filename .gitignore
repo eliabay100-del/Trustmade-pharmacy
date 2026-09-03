@@ -1,50 +1,43 @@
-```php
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
+```
+# Dependency directories
+vendor/
+node_modules/
+
+# Build artifacts
 dist/
 build/
 target/
 
-# Dependencies
-vendor/
-node_modules/
+# Logs
+*.log
+
+# Environment specific
 .env
 .env.local
 .env.*
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+# Cache directories
+.cache/
+*.cache
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
 
-# Editors
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# PHP specific
-*.php~
-*.bak
-*.orig
-*.rej
-*.tmp
-
-# Laravel/Hydrus specific
+# Laravel specific
 bootstrap/cache/
-storage/logs/
-storage/framework/
 public/storage
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
 ```

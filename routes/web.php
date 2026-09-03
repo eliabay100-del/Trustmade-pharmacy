@@ -128,6 +128,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
         Route::get('/reports/export', [ReportController::class, 'exportForm'])->name('reports.export.form');
         Route::get('/reports/export/download', [ReportController::class, 'export'])->name('reports.export.download');
+        Route::get('/reports/trial-balance', [ReportController::class, 'trialBalance'])->name('reports.trial-balance');
+        Route::get('/reports/income-statement', [ReportController::class, 'incomeStatement'])->name('reports.income-statement');
     });
 
     // ============================================================
@@ -137,6 +139,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+        Route::post('/users/{user}/reactivate', [UserController::class, 'reactivate'])->name('users.reactivate');
+        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
