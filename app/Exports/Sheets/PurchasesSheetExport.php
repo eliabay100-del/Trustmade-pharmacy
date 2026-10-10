@@ -43,12 +43,19 @@ class PurchasesSheetExport implements FromCollection, WithTitle, WithHeadings, W
             $batch->quantity_received,
             round($batch->cost_per_unit, 2),
             round($batch->quantity_received * $batch->cost_per_unit, 2),
+            // Part A — how it was paid and whether anything is still owed.
+            $batch->payment_label(),
+            $batch->status_label(),
+            (float) $batch->amount_paid,
+            (float) $batch->balance_owed,
+            $batch->due_date ? \Carbon\Carbon::parse($batch->due_date)->format('Y-m-d') : '',
         ];
     }
 
     public function headings(): array
     {
-        return ['Date', 'Drug', 'Supplier', 'Batch #', 'Quantity Received', 'Cost/Unit', 'Total Cost'];
+        return ['Date', 'Drug', 'Supplier', 'Batch #', 'Quantity Received', 'Cost/Unit', 'Total Cost',
+                'How Paid', 'Payment Status', 'Amount Paid', 'Balance Owed', 'Due Date'];
     }
 
     public function title(): string

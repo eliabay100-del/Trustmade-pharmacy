@@ -51,6 +51,14 @@ class AlertController extends Controller
             ->filter(fn ($customer) => $customer->isDueForReminder())
             ->values();
 
-        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts'));
+        // PART B — "Payments due within N days" / "Overdue" owed to suppliers.
+        // Owner/Admin only (clerks don't see supplier debts). Calculated live.
+        $supplierReminders = null;
+        if ($user->role === 'owner_admin') {
+            $soonDays = max(1, (int) \App\Models\Setting::value('supplier_alert_days', '7'));
+            $supplierReminders = app(\App\Services\SupplierOwedService::class)->reminderData($branchId, $soonDays);
+        }
+
+        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts', 'supplierReminders'));
     }
 }

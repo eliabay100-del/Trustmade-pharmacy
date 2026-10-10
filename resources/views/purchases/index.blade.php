@@ -25,6 +25,8 @@
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Branch</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Qty Remaining</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Cost/Unit</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Paying</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Status</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Expiry</th>
                 <th class="px-5 py-3"></th>
             </tr>
@@ -42,6 +44,25 @@
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $batch->branch->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }} {{ $batch->drug?->baseUnitLabel() ?? 'unit' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
+                    {{-- Part A: how this purchase is being paid (plain language). --}}
+                    <td class="px-5 py-3.5 text-sm text-[#6B7A93]">
+                        {{ $batch->payment_label() }}
+                        @if($batch->payment_reference)
+                            <span class="block text-xs font-mono text-[#9aa6ba]">{{ $batch->payment_reference }}</span>
+                        @endif
+                    </td>
+                    <td class="px-5 py-3.5 text-sm">
+                        @if($batch->payment_status === 'paid' || !$batch->payment_status)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">Paid</span>
+                        @elseif($batch->payment_status === 'partial')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700">Partly paid</span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">Not paid yet</span>
+                            @if($batch->due_date)
+                                <span class="block text-xs mt-0.5 {{ \Carbon\Carbon::parse($batch->due_date)->isBefore(today()) ? 'text-red-600 font-medium' : 'text-[#6B7A93]' }}">Due {{ \Carbon\Carbon::parse($batch->due_date)->format('M d, Y') }}</span>
+                            @endif
+                        @endif
+                    </td>
                     <td class="px-5 py-3.5 text-sm">
                         @if($isExpired)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Expired</span>
@@ -61,7 +82,7 @@
                 </tr>
             @empty
                 <tr>
-                        <td colspan="8" class="px-5 py-12 text-center">
+                        <td colspan="10" class="px-5 py-12 text-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>

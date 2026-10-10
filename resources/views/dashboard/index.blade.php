@@ -45,5 +45,20 @@
     </section>
 
     <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Attention needed</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Recent alerts</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[#0f9f8f] hover:underline">View all</a></div>@if($expiringSoonCount || $lowStockCount)<div class="mt-5 grid gap-3 sm:grid-cols-2">@if($expiringSoonCount)<div class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ $expiringSoonCount }} drug{{ $expiringSoonCount === 1 ? '' : 's' }} expire within 30 days</div>@endif @if($lowStockCount)<div class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ $lowStockCount }} item{{ $lowStockCount === 1 ? '' : 's' }} need restocking</div>@endif</div>@else<div class="mt-5 rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm text-[#08796f]">Everything is in good shape. No active alerts.</div>@endif</section>
+
+    {{-- PART B — Owed to suppliers reminders (owner/admin only). Live numbers, no cron. --}}
+    @if(!empty($supplierReminders) && (count($supplierReminders['overdue']) || count($supplierReminders['due_soon'])))
+        <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Owed to suppliers</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Payments coming due</h2></div><a href="{{ route('supplier-owed.index') }}" class="text-sm font-semibold text-[#0f9f8f] hover:underline">See all</a></div>
+            <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                @if(count($supplierReminders['overdue']))
+                    <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800 hover:border-red-300 min-h-[44px]"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ count($supplierReminders['overdue']) }} payment{{ count($supplierReminders['overdue']) === 1 ? '' : 's' }} overdue — ETB {{ number_format(array_sum(array_column($supplierReminders['overdue'], 'balance')), 2) }}</a>
+                @endif
+                @if(count($supplierReminders['due_soon']))
+                    <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:border-amber-300 min-h-[44px]"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ count($supplierReminders['due_soon']) }} due within {{ $supplierReminders['soon_days'] }} days — ETB {{ number_format(array_sum(array_column($supplierReminders['due_soon'], 'balance')), 2) }}</a>
+                @endif
+            </div>
+        </section>
+    @endif
 </div>
 @endsection

@@ -16,17 +16,27 @@ class Payment extends Model
         'cbe_birr' => 'CBE Birr',
         'bank_transfer' => 'Bank Transfer',
         'card' => 'Card',
+        'check' => 'Check',
     ];
+
+    // "Pay later" is not a payment method with an account of its own — it is
+    // a purchase-only choice meaning "no money moved yet", which posts to the
+    // single liability account below instead of one of the asset accounts.
+    const PAY_LATER = 'pay_later';
+    const OWED_TO_SUPPLIERS_ACCOUNT = '2000';
 
     // Each method posts to its own asset account so till-closing (Phase 1)
     // can later compare counted cash against cash-paid orders only —
     // Telebirr/CBE/bank/card sit in separate books, not in the till.
+    // Checks share the Bank account: a check drawn on our bank reduces the
+    // same book as any other bank movement (no separate clearing account).
     const ACCOUNT_CODES = [
         'cash' => '1001',
         'telebirr' => '1010',
         'cbe_birr' => '1011',
         'bank_transfer' => '1012',
         'card' => '1013',
+        'check' => '1012',
     ];
 
     protected $fillable = [

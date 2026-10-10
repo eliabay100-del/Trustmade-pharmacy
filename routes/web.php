@@ -11,6 +11,7 @@ use App\Http\Controllers\AlertController;
 use App\Http\Controllers\DrugController;
 use App\Http\Controllers\DrugCategoryController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AccountController;
@@ -117,6 +118,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
 
         Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
+    });
+
+    // ============================================================
+    // PART B — Owed to suppliers / Pay supplier. Owner/Admin only;
+    // clerks and branch managers cannot see supplier debts or pay them.
+    // Plain-language names: "Owed to suppliers", "Pay supplier".
+    // ============================================================
+    Route::middleware(['role:owner_admin'])->group(function () {
+        Route::get('/supplier-owed', [SupplierPaymentController::class, 'index'])->name('supplier-owed.index');
+        Route::get('/supplier-owed/{supplier}', [SupplierPaymentController::class, 'show'])->name('supplier-owed.show');
+        Route::get('/supplier-payments/{supplier}/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
+        Route::post('/supplier-payments/{supplier}', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
+        Route::get('/supplier-payments/{supplier}/history', [SupplierPaymentController::class, 'history'])->name('supplier-payments.history');
     });
 
     // ============================================================

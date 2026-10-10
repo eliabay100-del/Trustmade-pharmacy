@@ -78,6 +78,14 @@ class DashboardController extends Controller
             ->distinct('p.id')->count('p.id');
         $lowStockCount += $productLowStockCount;
 
+        // PART B — supplier payment reminders (owner/admin only). Live from
+        // the purchases; the 7-day window is a setting.
+        $supplierReminders = null;
+        if ($user->role === 'owner_admin') {
+            $supplierReminders = app(\App\Services\SupplierOwedService::class)
+                ->reminderData($branchId, max(1, (int) \App\Models\Setting::value('supplier_alert_days', '7')));
+        }
+
         return view('dashboard.index', compact(
             'totalDrugs',
             'totalQuantity',
@@ -86,7 +94,7 @@ class DashboardController extends Controller
             'recentSales',
             'recentPurchases',
             'todaySales',
-            'expiringSoonCount', 'totalProducts', 'productStockValue', 'productSales'
+            'expiringSoonCount', 'totalProducts', 'productStockValue', 'productSales', 'supplierReminders'
         ), [
             'expiringSoon' => $expiringSoon // Add the array separately here
         ]);
