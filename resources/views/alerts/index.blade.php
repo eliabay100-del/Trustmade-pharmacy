@@ -8,6 +8,61 @@
 
 <div class="space-y-6">
 
+    {{-- PART B — Supplier payment reminders (owner/admin only, live from purchases) --}}
+    @if(!empty($supplierReminders))
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </span>
+                <div><h2 class="font-bold text-[#1E2530]">Owed to suppliers — Overdue</h2><p class="text-xs text-[#6B7A93] mt-0.5">Past their due date. Pay these first.</p></div>
+            </div>
+            @if(count($supplierReminders['overdue']))
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-50"><tbody class="divide-y divide-gray-50">
+                        @foreach($supplierReminders['overdue'] as $item)
+                            <tr class="hover:bg-gray-50/50">
+                                <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $item['supplier_name'] }}</td>
+                                <td class="px-5 py-3 text-xs text-[#6B7A93]">{{ $item['supplier_invoice_no'] ?: $item['purchase_ref'] }}</td>
+                                <td class="px-5 py-3 text-sm text-right text-red-600 font-semibold">ETB {{ number_format($item['balance'], 2) }}</td>
+                                <td class="px-5 py-3 text-sm text-right text-red-600">Due {{ $item['due_date']->format('d M Y') }}</td>
+                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[#12A594] hover:underline">Pay supplier</a></td>
+                            </tr>
+                        @endforeach
+                    </tbody></table>
+                </div>
+            @else
+                <p class="px-5 py-6 text-sm text-[#6B7A93]">Nothing is overdue. Good.</p>
+            @endif
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold">7</span>
+                <div><h2 class="font-bold text-[#1E2530]">Payments due within {{ $supplierReminders['soon_days'] }} days</h2><p class="text-xs text-[#6B7A93] mt-0.5">Get ready to pay these suppliers.</p></div>
+            </div>
+            @if(count($supplierReminders['due_soon']))
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-50"><tbody class="divide-y divide-gray-50">
+                        @foreach($supplierReminders['due_soon'] as $item)
+                            <tr class="hover:bg-gray-50/50">
+                                <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $item['supplier_name'] }}</td>
+                                <td class="px-5 py-3 text-xs text-[#6B7A93]">{{ $item['supplier_invoice_no'] ?: $item['purchase_ref'] }}</td>
+                                <td class="px-5 py-3 text-sm text-right text-amber-600 font-semibold">ETB {{ number_format($item['balance'], 2) }}</td>
+                                <td class="px-5 py-3 text-sm text-right text-amber-600">Due {{ $item['due_date']->format('d M Y') }}</td>
+                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[#12A594] hover:underline">Pay supplier</a></td>
+                            </tr>
+                        @endforeach
+                    </tbody></table>
+                </div>
+            @else
+                <p class="px-5 py-6 text-sm text-[#6B7A93]">No supplier payments are due in the next {{ $supplierReminders['soon_days'] }} days.</p>
+            @endif
+        </div>
+    @endif
+
     {{-- Low Stock --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">

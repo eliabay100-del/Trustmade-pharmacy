@@ -25,6 +25,7 @@ class SupplierController extends Controller
             'address' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
+            'default_credit_days' => 'nullable|integer|min:1|max:365',
             'email' => 'nullable|email|max:255',
         ]);
 
@@ -45,6 +46,7 @@ class SupplierController extends Controller
             'address' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
+            'default_credit_days' => 'nullable|integer|min:1|max:365',
             'email' => 'nullable|email|max:255',
         ]);
 

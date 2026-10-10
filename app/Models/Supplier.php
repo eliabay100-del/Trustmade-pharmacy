@@ -13,6 +13,7 @@ class Supplier extends Model
 
     protected $fillable = [
         'name', 'address', 'contact_person', 'phone', 'email',
+        'default_credit_days', // Part A — optional credit period for "Pay later"
     ];
 
     public function purchaseBatches(): HasMany

@@ -89,6 +89,23 @@
                 <x-nav-link route="suppliers.index" label="Suppliers">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 13h13V6H3v7zm0 0l-1 5h16l-2-5m-4 5a2 2 0 11-4 0m8 0a2 2 0 11-4 0M16 9h3l2 3v4h-2" />
                 </x-nav-link>
+                @if(auth()->user()->role === 'owner_admin')
+                {{-- PART B — plain language: "Owed to suppliers", never accounting terms --}}
+                <a href="{{ route('supplier-owed.index') }}"
+                   class="flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12A594]
+                   {{ request()->routeIs('supplier-owed.*') || request()->routeIs('supplier-payments.*')
+                        ? 'bg-[#12A594]/15 text-white border-l-2 border-[#12A594]'
+                        : 'text-[#B9C2D0] hover:bg-white/5 hover:text-white border-l-2 border-transparent' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ request()->routeIs('supplier-owed.*') || request()->routeIs('supplier-payments.*') ? 'text-[#12A594]' : 'text-[#6B7A93]' }}"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-2c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm {{ request()->routeIs('supplier-owed.*') || request()->routeIs('supplier-payments.*') ? 'font-medium' : '' }} flex-1">Owed to suppliers</span>
+                    @if(($owedBadgeCount ?? 0) > 0)
+                        <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">{{ $owedBadgeCount }}</span>
+                    @endif
+                </a>
+                @endif
                 <x-nav-link route="customers.index" label="Customers">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-4a4 4 0 100-8 4 4 0 000 8zm6 4a4 4 0 00-8 0" />
                 </x-nav-link>

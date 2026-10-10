@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Payment;
 use App\Traits\LogsActivity;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,10 @@ class PurchaseBatch extends Model
         'drug_id', 'product_id', 'supplier_id', 'branch_id', 'batch_number',
         'quantity_received', 'quantity_remaining', 'cost_per_unit',
         'selling_price_per_unit', 'expiry_date', 'purchase_date',
+        // Part A — how the purchase is being paid.
+        'payment_status', 'amount_paid', 'due_date', 'payment_method',
+        'payment_reference', 'check_number', 'check_date', 'check_bank',
+        'purchase_ref', 'supplier_invoice_no',
     ];
 
     protected $casts = [
@@ -25,7 +30,42 @@ class PurchaseBatch extends Model
         'quantity_remaining' => 'integer',
         'cost_per_unit' => 'decimal:2',
         'selling_price_per_unit' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'due_date' => 'date',
+        'check_date' => 'date',
     ];
+
+    public function getTotalCostAttribute(): float
+    {
+        return round((float) $this->quantity_received * (float) $this->cost_per_unit, 2);
+    }
+
+    public function getBalanceOwedAttribute(): float
+    {
+        return max(0, round($this->total_cost - (float) $this->amount_paid, 2));
+    }
+
+    /**
+     * Plain-language label for the purchases list / reports. Never shows
+     * accounting words to the owner — "Pay later" not "accounts payable".
+     */
+    public function payment_label(): string
+    {
+        if ($this->payment_method === Payment::PAY_LATER) {
+            return 'Pay later';
+        }
+
+        return Payment::METHODS[$this->payment_method] ?? '—';
+    }
+
+    public function status_label(): string
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'Not paid yet',
+            'partial' => 'Partly paid',
+            default => 'Paid',
+        };
+    }
 
     public function drug(): BelongsTo
     {
