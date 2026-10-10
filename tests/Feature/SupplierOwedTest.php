@@ -51,6 +51,9 @@ class SupplierOwedTest extends TestCase
     protected function postPurchase(array $overrides = [])
     {
         return $this->actingAs($this->owner)->post(route('purchases.store'), array_merge([
+            // Unique ref per submission so separate purchases never merge
+            // into one invoice group (mimics the controller's behaviour).
+            'purchase_ref' => 'REF-' . uniqid(),
             'supplier_id' => $this->supplier->id,
             'branch_id' => $this->branch->id,
             'purchase_date' => now()->toDateString(),
