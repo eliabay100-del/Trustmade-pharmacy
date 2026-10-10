@@ -1,9 +1,14 @@
+<?php
+    // PART D — branding from settings (nothing hard-coded; falls back to config default).
+    $brandName = \App\Models\Setting::value('business_name', config('pmas.default_business_name'));
+    $brandLogo = \App\Models\Setting::value('logo_path');
+?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign in | PMAS</title>
+    <title>Sign in | <?php echo e($brandName); ?></title>
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     <style>
         .login-shell { background: #edf4f3; min-height: 100vh; overflow: hidden; }
@@ -22,12 +27,12 @@
         <div class="login-shape login-shape-a"></div><div class="login-shape login-shape-b"></div><div class="login-shape login-shape-c hidden sm:block"></div>
         <main class="relative grid w-full max-w-5xl overflow-hidden rounded-3xl login-glass lg:grid-cols-[1fr_1.05fr]">
             <section class="hidden bg-[#10253b] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
-                <div><div class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f9f8f] text-sm font-bold">Rx</span><span class="text-lg font-bold tracking-tight">PMAS</span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, sales, and branches from one local workspace.</p></div>
+                <div><div class="flex items-center gap-3"><?php if($brandLogo): ?><img src="<?php echo e(Storage::url($brandLogo)); ?>" alt="<?php echo e($brandName); ?> logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1"><?php else: ?><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f9f8f] text-sm font-bold">Rx</span><?php endif; ?><span class="text-lg font-bold tracking-tight"><?php echo e($brandName); ?></span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, sales, and branches from one local workspace.</p></div>
                 <div class="flex items-center gap-3 text-xs text-white/50"><span class="h-2 w-2 rounded-full bg-[#72d4c5]"></span>Offline pharmacy operations</div>
             </section>
             <section class="login-fade bg-white/72 p-7 sm:p-10 lg:p-14">
-                <div class="mb-10 lg:hidden"><div class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#10253b] text-sm font-bold text-[#72d4c5]">Rx</span><span class="text-lg font-bold tracking-tight">PMAS</span></div></div>
-                <div class="mb-8"><p class="text-xs font-bold uppercase tracking-[.2em] text-[#0f9f8f]">Welcome back</p><h1 class="mt-2 text-3xl font-bold tracking-tight text-[#182230]">Sign in to PMAS</h1><p class="mt-2 text-sm leading-6 text-[#6b7a93]">Use your staff account to continue managing the pharmacy.</p></div>
+                <div class="mb-10 lg:hidden"><div class="flex items-center gap-3"><?php if($brandLogo): ?><img src="<?php echo e(Storage::url($brandLogo)); ?>" alt="<?php echo e($brandName); ?> logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1"><?php else: ?><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#10253b] text-sm font-bold text-[#72d4c5]">Rx</span><?php endif; ?><span class="text-lg font-bold tracking-tight"><?php echo e($brandName); ?></span></div></div>
+                <div class="mb-8"><p class="text-xs font-bold uppercase tracking-[.2em] text-[#0f9f8f]">Welcome back</p><h1 class="mt-2 text-3xl font-bold tracking-tight text-[#182230]">Sign in to <?php echo e($brandName); ?></h1><p class="mt-2 text-sm leading-6 text-[#6b7a93]">Use your staff account to continue managing the pharmacy.</p></div>
                 <?php if($errors->any()): ?><div role="alert" class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"><?php echo e($errors->first()); ?></div><?php endif; ?>
                 <form action="<?php echo e(route('login.submit')); ?>" method="POST" class="space-y-5">
                     <?php echo csrf_field(); ?>
@@ -35,7 +40,7 @@
                     <div><div class="mb-2 flex items-center justify-between"><label for="password" class="block text-sm font-semibold text-[#182230]">Password</label><span class="text-xs text-[#9aa6b6]">Staff access</span></div><input id="password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password" class="w-full rounded-xl border border-[#d8e1e6] px-4 py-3 text-sm shadow-sm focus:border-[#0f9f8f] focus:ring-4 focus:ring-[#0f9f8f]/10" required></div>
                     <button type="submit" class="flex w-full items-center justify-center gap-3 rounded-xl bg-[#10253b] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#10253b]/15 hover:-translate-y-0.5 hover:bg-[#183753]">Sign in <span class="text-[#72d4c5]">→</span></button>
                 </form>
-                <p class="mt-8 border-t border-[#edf1f3] pt-5 text-center text-xs leading-5 text-[#8a98a8]">PMAS runs locally on this device. Your pharmacy data stays in your local system.</p>
+                <p class="mt-8 border-t border-[#edf1f3] pt-5 text-center text-xs leading-5 text-[#8a98a8]"><?php echo e($brandName); ?> runs locally on this device. Your pharmacy data stays in your local system.</p>
             </section>
         </main>
     </div>

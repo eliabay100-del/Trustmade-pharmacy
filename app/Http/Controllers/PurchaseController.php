@@ -111,7 +111,11 @@ class PurchaseController extends Controller
 
         // One ref shared by every line created in this submission, so the
         // purchase behaves as one invoice in "Owed to suppliers" (Part B).
-        $purchaseRef = 'PUR-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4));
+        // Honour a client-supplied ref when present (tests / integrations);
+        // otherwise generate one. uniqid() keeps submissions made within the
+        // same second distinct.
+        $purchaseRef = trim((string) $request->input('purchase_ref'))
+            ?: ('PUR-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)) . '-' . substr(uniqid(), -5));
 
         DB::beginTransaction();
         try {
