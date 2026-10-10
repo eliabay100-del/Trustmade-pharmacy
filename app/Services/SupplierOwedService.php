@@ -110,10 +110,12 @@ class SupplierOwedService
         $overdue = $groups->filter(fn ($s) => $s['status'] === 'overdue')->values()->all();
         $dueSoon = $groups->filter(fn ($s) => $s['status'] === 'soon')->values()->all();
 
-        // Per-invoice detail for the Alerts page listing.
+        // Per-invoice detail for the Alerts page listing. Group by an
+        // explicit string key (collection group keys are cast to strings,
+        // so a raw array key would break when a value inside is null).
         $invoices = collect();
-        foreach ($this->openLinesQuery($branchId)->get()->groupBy(fn ($l) => [$l->supplier_id, $l->purchase_ref]) as $key => $group) {
-            [$supplierId, $ref] = $key;
+        foreach ($this->openLinesQuery($branchId)->get()->groupBy(fn ($l) => ((int) $l->supplier_id).'|'.($l->purchase_ref ?? ('BATCH-'.$l->id))) as $key => $group) {
+            [$supplierId, $ref] = explode('|', (string) $key, 2);
             $balance = $group->sum(fn ($l) => max(0, round((float) $l->total_cost - (float) $l->amount_paid, 2)));
             if ($balance <= 0) {
                 continue;

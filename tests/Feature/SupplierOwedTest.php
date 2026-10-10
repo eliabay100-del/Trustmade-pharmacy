@@ -23,12 +23,12 @@ class SupplierOwedTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $owner;
-    private User $clerk;
-    private Branch $branch;
-    private Branch $otherBranch;
-    private Supplier $supplier;
-    private Drug $drug;
+    protected User $owner;
+    protected User $clerk;
+    protected Branch $branch;
+    protected Branch $otherBranch;
+    protected Supplier $supplier;
+    protected Drug $drug;
 
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ class SupplierOwedTest extends TestCase
         ]);
     }
 
-    private function postPurchase(array $overrides = [])
+    protected function postPurchase(array $overrides = [])
     {
         return $this->actingAs($this->owner)->post(route('purchases.store'), array_merge([
             'supplier_id' => $this->supplier->id,
@@ -173,7 +173,9 @@ class SupplierOwedTest extends TestCase
 
     public function test_reminders_separate_overdue_from_due_within_window(): void
     {
-        $this->postPurchase(['payment_method' => Payment::PAY_LATER, 'due_date' => now()->subDay()->toDateString()]);   // overdue
+        // Use a supplier with no credit-period default so the form's due date is honoured.
+        $s1 = Supplier::create(['name' => 'Late Supply']);
+        $this->postPurchase(['supplier_id' => $s1->id, 'payment_method' => Payment::PAY_LATER, 'due_date' => now()->subDay()->toDateString()]);   // overdue
         $s2 = Supplier::create(['name' => 'Soon Supply']);
         $this->postPurchase(['supplier_id' => $s2->id, 'payment_method' => Payment::PAY_LATER, 'due_date' => now()->addDays(5)->toDateString()]); // soon
         $s3 = Supplier::create(['name' => 'Later Supply']);
@@ -223,7 +225,9 @@ class SupplierOwedTest extends TestCase
     public function test_alert_window_is_a_setting(): void
     {
         Setting::put('supplier_alert_days', '14');
-        $this->postPurchase(['payment_method' => Payment::PAY_LATER, 'due_date' => now()->addDays(10)->toDateString()]);
+        // Supplier with no credit-period default so the 10-day due date is honoured.
+        $s = Supplier::create(['name' => 'Window Supply']);
+        $this->postPurchase(['supplier_id' => $s->id, 'payment_method' => Payment::PAY_LATER, 'due_date' => now()->addDays(10)->toDateString()]);
 
         $data = app(\App\Services\SupplierOwedService::class)->reminderData(null, (int) Setting::value('supplier_alert_days', '7'));
         $this->assertCount(1, $data['due_soon']);
