@@ -1,2 +1,7 @@
-/storage/framework/views/*.php
+/vendor
+/node_modules
+/storage/logs/laravel.log
 /.phpunit.result.cache
+/public/build
+/public/hot
+/public/storage
