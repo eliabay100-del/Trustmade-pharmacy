@@ -1,2 +1,2 @@
-*.log
-.phpunit.result.cache
+/storage/framework/views/*.php
+/.phpunit.result.cache
