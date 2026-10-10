@@ -25,6 +25,9 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\SettingController;
 
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -131,6 +134,30 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/supplier-payments/{supplier}/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
         Route::post('/supplier-payments/{supplier}', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
         Route::get('/supplier-payments/{supplier}/history', [SupplierPaymentController::class, 'history'])->name('supplier-payments.history');
+
+        // ============================================================
+        // PART C — Expenses. Owner/Admin only. Plain-language UI; the
+        // posting (expense account up, paying method's account down)
+        // happens behind the scenes in ExpenseController.
+        // ============================================================
+        Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+        Route::post('/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('/expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+
+        Route::get('/expense-categories', [ExpenseCategoryController::class, 'index'])->name('expense-categories.index');
+        Route::post('/expense-categories', [ExpenseCategoryController::class, 'store'])->name('expense-categories.store');
+        Route::put('/expense-categories/{category}', [ExpenseCategoryController::class, 'update'])->name('expense-categories.update');
+
+        // ============================================================
+        // PART D — Branding / business settings. Owner/Admin only.
+        // Nothing about a specific pharmacy is hard-coded: changing
+        // these settings re-brands the whole system.
+        // ============================================================
+        Route::get('/settings/branding', [SettingController::class, 'edit'])->name('settings.branding');
+        Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update');
     });
 
     // ============================================================

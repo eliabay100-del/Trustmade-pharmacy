@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CatalogSeeder::class);
 
+        // PART C — default expense categories + their GL accounts (idempotent).
+        $this->call(ExpenseCategorySeeder::class);
+
         $accounts = [
             ['name' => 'Cash', 'code' => '1001', 'type' => 'asset'],
             ['name' => 'Inventory', 'code' => '1200', 'type' => 'asset'],

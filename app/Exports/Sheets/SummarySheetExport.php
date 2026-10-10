@@ -4,6 +4,7 @@ namespace App\Exports\Sheets;
 
 use App\Models\IssuedItem;
 use App\Models\PurchaseBatch;
+use App\Models\Expense;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -47,6 +48,13 @@ class SummarySheetExport implements FromArray, WithTitle, WithHeadings, WithStyl
 
         $grossProfit = $totalSalesRevenue - $totalCogs;
 
+        // PART C — total expenses for the period (soft-deleted ones are
+        // excluded because their posting was reversed).
+        $totalExpenses = (float) Expense::where('branch_id', $this->branchId)
+            ->whereMonth('expense_date', $this->month)
+            ->whereYear('expense_date', $this->year)
+            ->sum('amount');
+
         return [
             ['Period', \Carbon\Carbon::create($this->year, $this->month, 1)->format('F Y')],
             ['', ''],
@@ -55,6 +63,8 @@ class SummarySheetExport implements FromArray, WithTitle, WithHeadings, WithStyl
             ['Gross Profit', round($grossProfit, 2)],
             ['', ''],
             ['Total Purchases (New Stock Cost)', round($totalPurchaseCost, 2)],
+            ['Total Expenses', round($totalExpenses, 2)],
+            ['Net (Gross Profit - Expenses)', round($grossProfit - $totalExpenses, 2)],
             ['Number of Sales Transactions', $sales->count()],
             ['Number of Purchase Batches Received', $purchases->count()],
         ];
