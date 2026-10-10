@@ -1,9 +1,15 @@
+@php
+    // PART D — receipt branding from settings (nothing hard-coded).
+    $receiptBusinessName = \App\Models\Setting::value('business_name', config('pmas.default_business_name'));
+    $receiptHeader = \App\Models\Setting::value('receipt_header');
+    $receiptFooter = \App\Models\Setting::value('receipt_footer');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Receipt #{{ $order->id }}</title>
+    <title>Receipt #{{ $order->id }} | {{ $receiptBusinessName }}</title>
     <style>
         @page { size: 80mm auto; margin: 4mm; }
         * { box-sizing: border-box; }
@@ -62,8 +68,11 @@
 
     <div class="receipt">
         <div class="center">
-            <div class="name">PMAS</div>
+            <div class="name">{{ $receiptBusinessName }}</div>
             <div>{{ $order->branch->name ?? 'Pharmacy' }}</div>
+            @if($receiptHeader)
+                <div class="muted">{{ $receiptHeader }}</div>
+            @endif
             @if($order->branch?->address)
                 <div class="muted">{{ $order->branch->address }}</div>
             @endif
@@ -104,7 +113,7 @@
             @endforeach
         </table>
         <hr>
-        <div class="center muted">Thank you</div>
+        <div class="center muted">{{ $receiptFooter ?? 'Thank you' }}</div>
     </div>
 
     @if(request()->boolean('autoprint'))

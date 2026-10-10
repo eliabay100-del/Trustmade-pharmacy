@@ -59,6 +59,27 @@ class AlertController extends Controller
             $supplierReminders = app(\App\Services\SupplierOwedService::class)->reminderData($branchId, $soonDays);
         }
 
-        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts', 'supplierReminders'));
+        // PART C — monthly repeating bills that are due now (optional flag on
+        // an expense: next_due_date reached). Same window as supplier reminders
+        // so the owner sees them together. Calculated live, no cron needed.
+        $recurringExpensesDue = collect();
+        if ($user->role === 'owner_admin') {
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('expenses')) {
+                    $recurringQuery = \App\Models\Expense::with('category')
+                        ->where('repeat_monthly', true)
+                        ->whereNotNull('next_due_date')
+                        ->whereDate('next_due_date', '<=', Carbon::today()->addDays($soonDays ?? 7));
+                    if ($branchId) {
+                        $recurringQuery->where('branch_id', $branchId);
+                    }
+                    $recurringExpensesDue = $recurringQuery->orderBy('next_due_date')->get();
+                }
+            } catch (\Throwable $e) {
+                $recurringExpensesDue = collect(); // never break alerts over this
+            }
+        }
+
+        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts', 'supplierReminders', 'recurringExpensesDue'));
     }
 }

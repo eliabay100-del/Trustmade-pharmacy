@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\Setting;
 
 /**
  * Builds a raw ESC/POS byte string for 80mm thermal printers.
@@ -19,12 +20,20 @@ class EscPosReceipt
         $ESC = "\x1B";
         $GS = "\x1D";
 
+        // PART D — business name and receipt header/footer come from settings.
+        $businessName = Setting::value('business_name', config('pmas.default_business_name'));
+        $header = Setting::value('receipt_header');
+        $footer = Setting::value('receipt_footer');
+
         $out = $ESC . '@';
         $out .= $ESC . 'a' . chr(1);
         $out .= $ESC . '!' . chr(0x18);
-        $out .= $this->line('PMAS');
+        $out .= $this->line($businessName);
         $out .= $ESC . '!' . chr(0);
         $out .= $this->line($order->branch->name ?? 'Pharmacy');
+        if ($header) {
+            $out .= $this->line($header);
+        }
         if ($order->branch?->address) {
             $out .= $this->line($order->branch->address);
         }
@@ -59,7 +68,7 @@ class EscPosReceipt
 
         $out .= $this->line(str_repeat('-', self::WIDTH));
         $out .= $ESC . 'a' . chr(1);
-        $out .= $this->line('Thank you');
+        $out .= $this->line($footer ?: 'Thank you');
         $out .= "\n\n\n";
         $out .= $GS . 'V' . chr(66) . chr(3);
 

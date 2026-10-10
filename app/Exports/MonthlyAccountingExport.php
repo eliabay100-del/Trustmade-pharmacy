@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Exports\Sheets\SummarySheetExport;
 use App\Exports\Sheets\SalesSheetExport;
 use App\Exports\Sheets\PurchasesSheetExport;
+use App\Exports\Sheets\ExpensesSheetExport;
 use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -33,6 +34,8 @@ class MonthlyAccountingExport implements Export, WithMultipleSheets
             new SummarySheetExport($this->branchId, $this->month, $this->year),
             new SalesSheetExport($this->branchId, $this->month, $this->year),
             new PurchasesSheetExport($this->branchId, $this->month, $this->year),
+            // PART C — Expenses sheet.
+            new ExpensesSheetExport($this->branchId, $this->month, $this->year),
         ];
     }
 }
