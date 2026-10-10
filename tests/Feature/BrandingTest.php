@@ -110,9 +110,9 @@ class BrandingTest extends TestCase
         $branch = \App\Models\Branch::create(['name' => 'Main', 'address' => 'Addis', 'phone' => '0911']);
         $drug = \App\Models\Drug::create(['name' => 'Paracetamol', 'generic_name' => 'Paracetamol', 'category_id' => \App\Models\DrugCategory::create(['name' => 'Analgesic'])->id, 'unit_size' => 10, 'minimum_stock_level' => 0, 'cost_price' => 5, 'selling_price' => 8]);
         $supplier = \App\Models\Supplier::create(['name' => 'Test Supplier']);
-        $batch = \App\Models\PurchaseBatch::create(['branch_id' => $branch->id, 'drug_id' => $drug->id, 'supplier_id' => $supplier->id, 'batch_number' => 'B-'.uniqid(), 'quantity_initial' => 10, 'quantity_received' => 10, 'quantity_remaining' => 10, 'cost_price_per_unit' => 5, 'quantity_initial' => 10, 'quantity_remaining' => 10, 'cost_price_per_unit' => 5, 'selling_price_per_unit' => 8, 'expiry_date' => now()->addYear(), 'purchase_date' => now()]);
+        $batch = \App\Models\PurchaseBatch::create(['branch_id' => $branch->id, 'drug_id' => $drug->id, 'supplier_id' => $supplier->id, 'batch_number' => 'B-'.uniqid(), 'quantity_received' => 10, 'quantity_remaining' => 10, 'cost_per_unit' => 5, 'selling_price_per_unit' => 8, 'payment_status' => 'paid', 'amount_paid' => 50, 'expiry_date' => now()->addYear(), 'purchase_date' => now()]);
         $order = \App\Models\Order::create(['branch_id' => $branch->id, 'user_id' => $owner->id, 'total_amount' => 8, 'payment_method' => 'cash']);
-        $order->items()->create(['purchase_batch_id' => $batch->id, 'quantity_issued' => 1, 'unit_cost_price' => 5, 'selling_price_per_unit' => 8, 'total_amount' => 8]);
+        $order->items()->create(['order_id' => $order->id, 'branch_id' => $branch->id, 'purchase_batch_id' => $batch->id, 'quantity_issued' => 1, 'unit_cost_price' => 5, 'selling_price_per_unit' => 8, 'total_amount' => 8, 'issue_date' => now()]);
 
         $this->actingAs($owner)->get(route('dispense.receipt', $order))
             ->assertOk()

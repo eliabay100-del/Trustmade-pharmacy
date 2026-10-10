@@ -62,6 +62,28 @@
     <?php endif; ?>
 
     
+    <?php if(!empty($recurringExpensesDue) && $recurringExpensesDue->count()): ?>
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 font-bold">↻</span>
+                <div><h2 class="font-bold text-[#1E2530]">Monthly bills due now</h2><p class="text-xs text-[#6B7A93] mt-0.5">Repeating expenses that need to be paid this month.</p></div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-50"><tbody class="divide-y divide-gray-50">
+                    <?php $__currentLoopData = $recurringExpensesDue; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bill): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <tr class="hover:bg-gray-50/50">
+                            <td class="px-5 py-3 text-sm font-medium text-[#1E2530]"><?php echo e($bill->category->name ?? '—'); ?></td>
+                            <td class="px-5 py-3 text-sm text-right text-[#1E2530] font-semibold">ETB <?php echo e(number_format($bill->amount, 2)); ?></td>
+                            <td class="px-5 py-3 text-sm text-right text-sky-700">Due <?php echo e($bill->next_due_date->format('d M Y')); ?></td>
+                            <td class="px-5 py-3 text-right"><a href="<?php echo e(route('expenses.create')); ?>" class="text-xs font-medium text-[#12A594] hover:underline">Record payment</a></td>
+                        </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </tbody></table>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
             <span class="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold">!</span>
