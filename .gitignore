@@ -1,2 +1,28 @@
-storage/framework/views/*.php
+# Dependencies (install with composer install / npm ci)
+/vendor
+/node_modules
+/auth.json
+
+# Build output (regenerate with npm run build)
+/public/build
+/public/hot
+/public/storage
+
+# Local environment — real credentials never belong in git; copy .env.example
+.env*
+!.env.example
+
+# Runtime artifacts (each storage sub-directory carries its own .gitignore)
+/storage/*.key
+
+# Tooling and editor state
+/.phpunit.cache
 .phpunit.result.cache
+.phpactor.json
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
