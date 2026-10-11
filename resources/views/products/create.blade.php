@@ -7,7 +7,7 @@
         @csrf
         @php($product = null)
         @include('products.create-fields')
-        <div class="flex gap-3 pt-2"><button class="bg-[#12A594] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Product</button><a href="{{ route('products.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
+        <div class="flex gap-3 pt-2"><button class="bg-[var(--brand-primary)] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Product</button><a href="{{ route('products.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
     </form>
 </div>
 @endsection

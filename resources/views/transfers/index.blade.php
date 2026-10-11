@@ -7,7 +7,7 @@
         <p class="text-sm text-[#6B7A93] mt-1">Stock moved between branches.</p>
     </div>
     <a href="{{ route('transfers.create') }}"
-       class="inline-flex items-center gap-2 bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+       class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -54,7 +54,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
                         </svg>
                         <p class="text-sm text-[#6B7A93]">No transfers yet.</p>
-                        <a href="{{ route('transfers.create') }}" class="text-sm font-medium text-[#12A594] hover:underline mt-1 inline-block">Move stock between branches</a>
+                        <a href="{{ route('transfers.create') }}" class="text-sm font-medium text-[var(--brand-primary)] hover:underline mt-1 inline-block">Move stock between branches</a>
                     </td>
                 </tr>
             @endforelse

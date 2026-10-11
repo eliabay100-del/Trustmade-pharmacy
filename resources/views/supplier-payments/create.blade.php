@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('supplier-owed.show', $supplier) }}" class="text-sm text-[#12A594] hover:underline">&larr; Back to {{ $supplier->name }}</a>
+    <a href="{{ route('supplier-owed.show', $supplier) }}" class="text-sm text-[var(--brand-primary)] hover:underline">&larr; Back to {{ $supplier->name }}</a>
     <h1 class="text-2xl font-bold text-[#1E2530] mt-2">Pay supplier: {{ $supplier->name }}</h1>
     <p class="text-sm text-[#6B7A93] mt-1">Total owed right now: <strong>ETB {{ number_format($totalOwed, 2) }}</strong>. Tick the purchases you are paying for, or just enter an amount — it is applied to the oldest purchases first.</p>
 </div>
@@ -37,7 +37,7 @@
                 <label class="flex items-start gap-3 px-5 py-4 cursor-pointer hover:bg-gray-50/50 min-h-[44px]">
                     <input type="checkbox" name="invoices[{{ $inv['purchase_ref'] }}]" value="{{ $inv['balance'] }}"
                            @checked((bool) $checked)
-                           class="mt-1 h-5 w-5 rounded border-gray-300 text-[#12A594] focus:ring-[#12A594]">
+                           class="mt-1 h-5 w-5 rounded border-gray-300 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)]">
                     <span class="flex-1">
                         <span class="block text-sm font-medium text-[#1E2530]">
                             Invoice {{ $inv['supplier_invoice_no'] ?: $inv['purchase_ref'] }}
@@ -64,21 +64,21 @@
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">Amount you are paying (ETB) <span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" min="0.01" max="{{ $totalOwed }}" name="amount" x-model="amount" required
-                       class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                 <p class="text-xs mt-1" :class="Number(amount) > totalOwed ? 'text-red-600' : 'text-[#6B7A93]'"
                    x-text="Number(amount) > totalOwed ? 'You can\'t pay more than what is owed (ETB ' + totalOwed.toFixed(2) + ').' : 'Maximum you can pay: ETB ' + totalOwed.toFixed(2)"></p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">Payment date <span class="text-red-500">*</span></label>
                 <input type="date" name="payment_date" value="{{ old('payment_date', now()->toDateString()) }}" required
-                       class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             </div>
             <div class="sm:col-span-2">
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">How are you paying? <span class="text-red-500">*</span></label>
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     @foreach(App\Models\Payment::METHODS as $code => $label)
                         <label class="relative flex items-center justify-center rounded-lg border px-3 py-3 text-sm cursor-pointer min-h-[44px] transition-colors"
-                               :class="method === '{{ $code }}' ? 'border-[#12A594] bg-[#12A594]/10 text-[#0e8f80] font-semibold' : 'border-gray-200 text-[#6B7A93] hover:border-gray-300'">
+                               :class="method === '{{ $code }}' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/10 text-[var(--brand-primary-dark)] font-semibold' : 'border-gray-200 text-[#6B7A93] hover:border-gray-300'">
                             <input type="radio" name="payment_method" value="{{ $code }}" x-model="method" class="sr-only">
                             {{ $label }}
                         </label>
@@ -89,38 +89,38 @@
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">Transaction / reference number <span class="text-red-500">*</span></label>
                 <input type="text" name="payment_reference" value="{{ old('payment_reference') }}" maxlength="255"
                        :required="needsRef" placeholder="e.g. transfer or terminal number"
-                       class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             </div>
             <template x-if="isCheck">
                 <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-[#1E2530] mb-1">Check number <span class="text-red-500">*</span></label>
                         <input type="text" name="check_number" value="{{ old('check_number') }}" maxlength="100" required
-                               class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                               class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-[#1E2530] mb-1">Check date <span class="text-red-500">*</span></label>
                         <input type="date" name="check_date" value="{{ old('check_date') }}" required
-                               class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                               class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                         <p class="text-xs text-[#6B7A93] mt-1">If the check is post-dated, enter its date here — it will be shown with the payment.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-[#1E2530] mb-1">Bank <span class="text-red-500">*</span></label>
                         <input type="text" name="check_bank" value="{{ old('check_bank') }}" maxlength="255" required
-                               class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                               class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                     </div>
                 </div>
             </template>
             <div class="sm:col-span-2">
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">Note (optional)</label>
-                <textarea name="note" rows="2" maxlength="1000" class="w-full rounded-lg border-gray-300 focus:border-[#12A594] focus:ring-[#12A594]" placeholder="Anything worth remembering about this payment">{{ old('note') }}</textarea>
+                <textarea name="note" rows="2" maxlength="1000" class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]" placeholder="Anything worth remembering about this payment">{{ old('note') }}</textarea>
             </div>
         </div>
     </div>
 
     <div class="flex items-center justify-end gap-3">
         <a href="{{ route('supplier-owed.show', $supplier) }}" class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-[#6B7A93] hover:bg-gray-50 min-h-[44px]">Cancel</a>
-        <button type="submit" class="inline-flex items-center rounded-lg bg-[#12A594] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0e8f80] min-h-[44px]">Record payment</button>
+        <button type="submit" class="inline-flex items-center rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-primary-dark)] min-h-[44px]">Record payment</button>
     </div>
 </form>
 @endsection

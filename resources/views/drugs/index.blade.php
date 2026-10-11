@@ -3,7 +3,7 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <div><h1 class="text-2xl font-bold text-[#1E2530]">Drugs</h1><p class="text-sm text-[#6B7A93] mt-1">Search by name, generic name, strength, or category.</p></div>
-    <a href="{{ route('drugs.create') }}" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-bold py-2 px-4 rounded-lg text-sm">+ Add New Drug</a>
+    <a href="{{ route('drugs.create') }}" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-4 rounded-lg text-sm">+ Add New Drug</a>
 </div>
 
 <form method="GET" class="bg-white rounded-xl border border-gray-100 p-4 mb-4 flex flex-wrap gap-3">
@@ -43,7 +43,7 @@
                     </td>
                     <td class="px-5 py-3.5 text-sm text-right font-semibold {{ (float) ($drug->current_stock ?? 0) <= (float) $drug->minimum_stock_level ? 'text-amber-600' : 'text-[#1E2530]' }}">{{ number_format((float) ($drug->current_stock ?? 0), 0) }}</td>
                     <td class="px-5 py-3.5 text-sm text-right whitespace-nowrap">
-                        <a href="{{ route('drugs.edit', $drug->id) }}" class="text-[#12A594] hover:underline mr-3">Edit</a>
+                        <a href="{{ route('drugs.edit', $drug->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('drugs.destroy', $drug->id) }}" method="POST" class="inline"
                               onsubmit="return confirm('Delete {{ $drug->name }}? This cannot be undone.');">
                             @csrf
@@ -55,7 +55,7 @@
             @empty
                 <tr>
                     <td colspan="7" class="px-5 py-12 text-center text-sm text-[#6B7A93]">
-                        No drugs yet. <a href="{{ route('drugs.create') }}" class="text-[#12A594] underline">Add your first one</a>.
+                        No drugs yet. <a href="{{ route('drugs.create') }}" class="text-[var(--brand-primary)] underline">Add your first one</a>.
                     </td>
                 </tr>
             @endforelse

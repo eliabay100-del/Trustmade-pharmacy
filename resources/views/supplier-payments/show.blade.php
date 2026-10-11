@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('supplier-owed.index') }}" class="text-sm text-[#12A594] hover:underline">&larr; Back to Owed to suppliers</a>
+    <a href="{{ route('supplier-owed.index') }}" class="text-sm text-[var(--brand-primary)] hover:underline">&larr; Back to Owed to suppliers</a>
     <h1 class="text-2xl font-bold text-[#1E2530] mt-2">{{ $supplier->name }}</h1>
     <p class="text-sm text-[#6B7A93] mt-1">Purchases marked "Pay later" that are not fully paid yet.</p>
 </div>
@@ -17,7 +17,7 @@
         <div class="flex items-center gap-3">
             <p class="text-xl font-bold text-[#1E2530]">ETB {{ number_format($totalOwed, 2) }}</p>
             @if($totalOwed > 0)
-                <a href="{{ route('supplier-payments.create', $supplier) }}" class="inline-flex items-center rounded-lg bg-[#12A594] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0e8f80] min-h-[44px]">Pay supplier</a>
+                <a href="{{ route('supplier-payments.create', $supplier) }}" class="inline-flex items-center rounded-lg bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-primary-dark)] min-h-[44px]">Pay supplier</a>
             @endif
         </div>
     </div>
@@ -47,7 +47,7 @@
                     @else
                         <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">Unpaid</span>
                     @endif
-                    <button type="button" @click="open = !open" class="text-xs font-medium text-[#12A594] hover:underline min-h-[44px] min-w-[44px]" x-text="open ? 'Hide lines' : 'View lines'">View lines</button>
+                    <button type="button" @click="open = !open" class="text-xs font-medium text-[var(--brand-primary)] hover:underline min-h-[44px] min-w-[44px]" x-text="open ? 'Hide lines' : 'View lines'">View lines</button>
                 </div>
             </div>
             <div x-show="open" x-cloak class="border-t border-gray-100 overflow-x-auto">
@@ -86,7 +86,7 @@
 
 @if(count($invoices))
     <div class="mt-6 flex justify-end">
-        <a href="{{ route('supplier-payments.history', $supplier) }}" class="text-sm font-medium text-[#12A594] hover:underline">Payment history</a>
+        <a href="{{ route('supplier-payments.history', $supplier) }}" class="text-sm font-medium text-[var(--brand-primary)] hover:underline">Payment history</a>
     </div>
 @endif
 @endsection

@@ -36,7 +36,7 @@
             </label>
 
             <div class="relative mb-4">
-                <input id="catalog-search" type="search" autocomplete="off" placeholder="Search drugs or products by name, strength, or SKU" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#0f9f8f] focus:ring-4 focus:ring-[#0f9f8f]/10">
+                <input id="catalog-search" type="search" autocomplete="off" placeholder="Search drugs or products by name, strength, or SKU" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10">
                 <span id="catalog-search-status" class="pointer-events-none absolute right-3 top-3 text-xs text-[#9aa6b6]"></span>
                 <div id="catalog-results" class="absolute left-0 right-0 top-full z-20 mt-1 hidden max-h-64 overflow-y-auto rounded-xl border border-[#dfe7ed] bg-white p-1 shadow-lg"></div>
             </div>
@@ -141,7 +141,7 @@
             <button
                 type="button"
                 id="add-line-btn"
-                class="mt-3 text-[#12A594] text-sm font-semibold hover:underline"
+                class="mt-3 text-[var(--brand-primary)] text-sm font-semibold hover:underline"
             >
                 + Add another item
             </button>
@@ -179,7 +179,7 @@
                         name="customer_mode"
                         value="anonymous"
                         checked
-                        class="customer-mode-radio text-[#12A594]"
+                        class="customer-mode-radio text-[var(--brand-primary)]"
                     >
                     Walk-in (no name)
                 </label>
@@ -189,7 +189,7 @@
                         type="radio"
                         name="customer_mode"
                         value="new"
-                        class="customer-mode-radio text-[#12A594]"
+                        class="customer-mode-radio text-[var(--brand-primary)]"
                     >
                     New customer
                 </label>
@@ -201,7 +201,7 @@
                             type="radio"
                             name="customer_mode"
                             value="existing"
-                            class="customer-mode-radio text-[#12A594]"
+                            class="customer-mode-radio text-[var(--brand-primary)]"
                         >
                         Returning (recurring) customer
                     </label>
@@ -436,7 +436,7 @@
             <button
                 type="button"
                 id="add-payment-btn"
-                class="mt-3 text-[#12A594] text-sm font-semibold hover:underline"
+                class="mt-3 text-[var(--brand-primary)] text-sm font-semibold hover:underline"
             >
                 + Split with another method
             </button>
@@ -452,7 +452,7 @@
 
             <button
                 type="submit"
-                class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors"
+                class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors"
             >
                 Complete Sale
             </button>

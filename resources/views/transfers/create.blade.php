@@ -11,7 +11,7 @@
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Item</label>
             <select name="item_type" id="transfer-type" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"><option value="drug">Drug</option><option value="product">Product</option></select>
-            <select name="item_id" id="transfer-drug" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+            <select name="item_id" id="transfer-drug" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
                 <option value="">-- Select Drug --</option>
                 @foreach($drugs as $drug)
                     <option value="{{ $drug->id }}"
@@ -28,7 +28,7 @@
         <div class="grid grid-cols-2 gap-4 items-end">
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1.5">From Branch</label>
-                <select name="from_branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+                <select name="from_branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
                     <option value="">-- Select --</option>
                     @foreach($branches as $branch)
                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
@@ -37,7 +37,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1.5">To Branch</label>
-                <select name="to_branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+                <select name="to_branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
                     <option value="">-- Select --</option>
                     @foreach($branches as $branch)
                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
@@ -53,11 +53,11 @@
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Quantity</label>
                 <input type="number" min="1" name="quantity" value="{{ old('quantity') }}"
-                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
             </div>
             <div>
                 <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Unit</label>
-                <select name="quantity_unit" id="transfer-unit" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+                <select name="quantity_unit" id="transfer-unit" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
                     <option value="tablet" @selected(old('quantity_unit', 'tablet') === 'tablet')>Base unit</option>
                     <option value="strip" @selected(old('quantity_unit') === 'strip')>Strip</option>
                     <option value="pack" @selected(old('quantity_unit') === 'pack')>Pack</option>
@@ -67,7 +67,7 @@
         <p id="transfer-unit-hint" class="text-xs text-[#6B7A93] -mt-2">Quantity is converted to base units before the existing FEFO transfer runs.</p>
 
         <div class="flex gap-3 pt-2">
-            <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
+            <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                 Transfer Stock
             </button>
             <a href="{{ route('transfers.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>

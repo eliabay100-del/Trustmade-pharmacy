@@ -7,7 +7,7 @@
         <p class="text-sm text-[#6B7A93] mt-1">Staff accounts, roles, and assigned branches.</p>
     </div>
     <a href="{{ route('users.create') }}"
-       class="inline-flex items-center gap-2 bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+       class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -34,13 +34,13 @@
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $user->email }}</td>
                     <td class="px-5 py-3.5 text-sm">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                            {{ $user->role === 'owner_admin' ? 'bg-[#12A594]/10 text-[#12A594]' : 'bg-gray-100 text-[#6B7A93]' }}">
+                            {{ $user->role === 'owner_admin' ? 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]' : 'bg-gray-100 text-[#6B7A93]' }}">
                             {{ $user->roleLabel() }}
                         </span>
                     </td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $user->branch->name ?? 'All Branches' }}</td>
                     <td class="px-5 py-3.5 text-sm"><span class="rounded-full px-2 py-1 text-xs font-medium {{ $user->active ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600' }}">{{ $user->active ? 'Active' : 'Inactive' }}</span></td>
-                    <td class="px-5 py-3.5 text-right text-sm"><a href="{{ route('users.edit', $user) }}" class="text-[#12A594] hover:underline">Edit</a></td>
+                    <td class="px-5 py-3.5 text-right text-sm"><a href="{{ route('users.edit', $user) }}" class="text-[var(--brand-primary)] hover:underline">Edit</a></td>
                 </tr>
             @empty
                 <tr>

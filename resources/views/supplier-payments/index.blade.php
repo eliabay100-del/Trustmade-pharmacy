@@ -49,8 +49,8 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-right whitespace-nowrap">
-                                <a href="{{ route('supplier-owed.show', $s['supplier_id']) }}" class="text-xs font-medium text-[#12A594] hover:underline">View purchases</a>
-                                <a href="{{ route('supplier-payments.create', $s['supplier_id']) }}" class="ml-3 inline-flex items-center rounded-lg bg-[#12A594] px-3 py-2 text-xs font-semibold text-white hover:bg-[#0e8f80] min-h-[44px]">Pay supplier</a>
+                                <a href="{{ route('supplier-owed.show', $s['supplier_id']) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">View purchases</a>
+                                <a href="{{ route('supplier-payments.create', $s['supplier_id']) }}" class="ml-3 inline-flex items-center rounded-lg bg-[var(--brand-primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--brand-primary-dark)] min-h-[44px]">Pay supplier</a>
                             </td>
                         </tr>
                     @endforeach

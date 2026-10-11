@@ -13,7 +13,7 @@
         <div><label class="block text-sm font-medium mb-1.5">Staff role</label><select name="role" id="role-select" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required>@foreach($roles as $value => $label)<option value="{{ $value }}" @selected(old('role', $user->role) === $value)>{{ $label }}</option>@endforeach</select></div>
         <div><label class="block text-sm font-medium mb-1.5">Assigned branch <span id="branch-required" class="text-red-500">*</span></label><select name="branch_id" id="branch-select" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"><option value="">All branches</option>@foreach($branches as $branch)<option value="{{ $branch->id }}" @selected(old('branch_id', $user->branch_id) == $branch->id)>{{ $branch->name }}</option>@endforeach</select><p class="text-xs text-[#6B7A93] mt-1">Owner/Admin accounts can access all branches.</p></div>
         <label class="flex items-center gap-2 border-t border-gray-100 pt-4 text-sm"><input type="checkbox" name="active" value="1" @checked(old('active', $user->active))> Account is active and can sign in</label>
-        <div class="flex gap-3 pt-2"><button class="bg-[#12A594] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Changes</button><a href="{{ route('users.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
+        <div class="flex gap-3 pt-2"><button class="bg-[var(--brand-primary)] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Changes</button><a href="{{ route('users.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
     </form>
 </div>
 <script>

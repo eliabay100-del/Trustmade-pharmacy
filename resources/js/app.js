@@ -1,3 +1,17 @@
+import Alpine from 'alpinejs';
+
+// Alpine powers the interactive forms (purchase payment choice, supplier
+// payments, expenses). Views register their components on the page with a
+// `alpine:init` listener, which only fires from start() — so start it after
+// the document has been parsed (module scripts are deferred, so the inline
+// listeners are already registered by then).
+window.Alpine = Alpine;
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => Alpine.start(), { once: true });
+} else {
+	Alpine.start();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('wheel', (event) => {
 		if (event.target.closest?.('input[type="number"]')) {

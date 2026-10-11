@@ -16,17 +16,17 @@
         </div>
 
         {{-- Part A: How are you paying? (plain language, no accounting terms) --}}
-        <div x-data="purchasePayment(@js(array_values(Payment::METHODS)))" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
+        <div x-data="purchasePayment(@js(array_keys(\App\Models\Payment::METHODS)))" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
             <h2 class="font-semibold text-[#1E2530]">How are you paying?</h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                @foreach(Payment::METHODS as $key => $label)
-                    <label class="flex items-center justify-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-sm font-medium cursor-pointer touch-manipulation min-h-[44px]" :class="method === '{{ $key }}' ? 'border-[#12A594] bg-[#12A594]/5 text-[#0e8a7d]' : ''">
-                        <input type="radio" name="payment_method" value="{{ $key }}" x-model="method" class="accent-[#12A594] w-4 h-4" @checked(old('payment_method', 'cash') === $key)>
+                @foreach(\App\Models\Payment::METHODS as $key => $label)
+                    <label class="flex items-center justify-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-sm font-medium cursor-pointer touch-manipulation min-h-[44px]" :class="method === '{{ $key }}' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/5 text-[var(--brand-primary-dark)]' : ''">
+                        <input type="radio" name="payment_method" value="{{ $key }}" x-model="method" class="accent-[var(--brand-primary)] w-4 h-4" @checked(old('payment_method', 'cash') === $key)>
                         {{ $label }}
                     </label>
                 @endforeach
                 <label class="flex items-center justify-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-sm font-medium cursor-pointer touch-manipulation min-h-[44px]" :class="method === 'pay_later' ? 'border-amber-500 bg-amber-50 text-amber-700' : ''">
-                    <input type="radio" name="payment_method" value="pay_later" x-model="method" class="accent-[#12A594] w-4 h-4" @checked(old('payment_method') === 'pay_later')>
+                    <input type="radio" name="payment_method" value="pay_later" x-model="method" class="accent-[var(--brand-primary)] w-4 h-4" @checked(old('payment_method') === 'pay_later')>
                     Pay later
                 </label>
             </div>
@@ -35,15 +35,15 @@
             {{-- For a check the check number below is used as the reference, so the field is optional there. --}}
             <div x-show="method !== 'cash' && method !== 'pay_later' && method !== 'check'" x-cloak>
                 <label class="block text-sm font-medium mb-1.5">Transaction number / reference</label>
-                <input type="text" name="payment_reference" value="{{ old('payment_reference') }}" x-bind.required="method !== 'cash' && method !== 'pay_later' && method !== 'check'"
+                <input type="text" name="payment_reference" value="{{ old('payment_reference') }}" x-bind:required="method !== 'cash' && method !== 'pay_later' && method !== 'check'"
                        placeholder="e.g. transfer ID or slip number" class="w-full sm:w-1/2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]">
             </div>
 
             {{-- Check: also store check number, check date and bank --}}
             <div x-show="method === 'check'" x-cloak class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div><label class="block text-sm font-medium mb-1.5">Check number</label><input type="text" name="check_number" value="{{ old('check_number') }}" x-bind.required="method === 'check'" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
-                <div><label class="block text-sm font-medium mb-1.5">Check date</label><input type="date" name="check_date" value="{{ old('check_date') }}" x-bind.required="method === 'check'" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
-                <div><label class="block text-sm font-medium mb-1.5">Bank</label><input type="text" name="check_bank" value="{{ old('check_bank') }}" x-bind.required="method === 'check'" placeholder="Bank the check is drawn on" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
+                <div><label class="block text-sm font-medium mb-1.5">Check number</label><input type="text" name="check_number" value="{{ old('check_number') }}" x-bind:required="method === 'check'" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
+                <div><label class="block text-sm font-medium mb-1.5">Check date</label><input type="date" name="check_date" value="{{ old('check_date') }}" x-bind:required="method === 'check'" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
+                <div><label class="block text-sm font-medium mb-1.5">Bank</label><input type="text" name="check_bank" value="{{ old('check_bank') }}" x-bind:required="method === 'check'" placeholder="Bank the check is drawn on" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]"></div>
             </div>
 
             {{-- Pay later: due date with quick choices --}}
@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Due date</label>
-                    <input type="date" name="due_date" x-model="dueDate" x-bind.required="method === 'pay_later'" @change="dueChoice = 'custom'" class="w-full sm:w-1/2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]">
+                    <input type="date" name="due_date" x-model="dueDate" x-bind:required="method === 'pay_later'" @change="dueChoice = 'custom'" class="w-full sm:w-1/2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]">
                     <p class="text-xs text-[#6B7A93] mt-1">Default is <span x-text="defaultDays"></span> days after the purchase date.</p>
                 </div>
             </div>
@@ -69,7 +69,7 @@
         </div>
 
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <div class="flex justify-between items-center mb-3"><h2 class="font-semibold">Purchase items</h2><button type="button" id="add-purchase-line" class="text-[#12A594] text-sm font-semibold">+ Add item</button></div>
+            <div class="flex justify-between items-center mb-3"><h2 class="font-semibold">Purchase items</h2><button type="button" id="add-purchase-line" class="text-[var(--brand-primary)] text-sm font-semibold">+ Add item</button></div>
             <div id="purchase-lines" class="space-y-4">
                 <div class="purchase-line border border-gray-100 rounded-lg p-4 space-y-3" data-index="0">
                     <div class="flex items-start gap-3">
@@ -93,7 +93,7 @@
             <p class="text-xs text-[#6B7A93] mt-3">Drug quantities support base units, strips, and packs. Product quantities are individual units. Product expiry is optional.</p>
         </div>
 
-        <div class="flex gap-3"><button class="bg-[#12A594] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Purchase</button><a href="{{ route('purchases.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
+        <div class="flex gap-3"><button class="bg-[var(--brand-primary)] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Purchase</button><a href="{{ route('purchases.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
     </form>
 </div>
 

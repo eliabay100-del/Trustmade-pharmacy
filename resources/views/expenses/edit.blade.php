@@ -10,12 +10,12 @@
         <div>
             <label class="block text-sm font-semibold text-[#1E2530] mb-1">Date</label>
             <input type="date" name="expense_date" value="{{ old('expense_date', $expense->expense_date->toDateString()) }}" required
-                   class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                   class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             @error('expense_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="block text-sm font-semibold text-[#1E2530] mb-1">Category</label>
-            <select name="expense_category_id" required class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+            <select name="expense_category_id" required class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}" @selected(old('expense_category_id', $expense->expense_category_id) == $cat->id)>{{ $cat->name }}</option>
                 @endforeach
@@ -28,7 +28,7 @@
         <div>
             <label class="block text-sm font-semibold text-[#1E2530] mb-1">Amount</label>
             <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount', $expense->amount) }}" required
-                   class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                   class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             @error('amount')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
     </div>
@@ -38,7 +38,7 @@
         <div class="flex flex-wrap gap-2">
             @foreach($methods as $value => $label)
                 <label class="inline-flex items-center gap-2 border rounded-lg px-3 py-2 min-h-[44px] cursor-pointer">
-                    <input type="radio" name="payment_method" value="{{ $value }}" x-model="method" class="accent-[#12A594]" @checked(old('payment_method', $expense->payment_method) === $value)>
+                    <input type="radio" name="payment_method" value="{{ $value }}" x-model="method" class="accent-[var(--brand-primary)]" @checked(old('payment_method', $expense->payment_method) === $value)>
                     <span class="text-sm">{{ $label }}</span>
                 </label>
             @endforeach
@@ -48,7 +48,7 @@
         <div x-show="method !== 'cash' && method !== 'check'" x-cloak class="mt-4">
             <label class="block text-sm font-semibold text-[#1E2530] mb-1">Transaction number / reference</label>
             <input type="text" name="payment_reference" value="{{ old('payment_reference', $expense->payment_reference) }}"
-                   class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                   class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             @error('payment_reference')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
 
@@ -56,35 +56,35 @@
             <div>
                 <label class="block text-sm font-semibold text-[#1E2530] mb-1">Check number</label>
                 <input type="text" name="check_number" value="{{ old('check_number', $expense->check_number) }}"
-                       class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             </div>
             <div>
                 <label class="block text-sm font-semibold text-[#1E2530] mb-1">Check date</label>
                 <input type="date" name="check_date" value="{{ old('check_date', $expense->check_date?->toDateString()) }}"
-                       class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             </div>
             <div>
                 <label class="block text-sm font-semibold text-[#1E2530] mb-1">Bank name</label>
                 <input type="text" name="check_bank" value="{{ old('check_bank', $expense->check_bank) }}"
-                       class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             </div>
         </div>
     </div>
 
     <div>
         <label class="block text-sm font-semibold text-[#1E2530] mb-1">Note (optional)</label>
-        <textarea name="note" rows="2" class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594]">{{ old('note', $expense->note) }}</textarea>
+        <textarea name="note" rows="2" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]">{{ old('note', $expense->note) }}</textarea>
     </div>
 
     <label class="flex items-center gap-3 cursor-pointer min-h-[44px]">
-        <input type="checkbox" name="repeat_monthly" value="1" class="rounded accent-[#12A594] w-5 h-5" @checked(old('repeat_monthly', $expense->repeat_monthly))>
+        <input type="checkbox" name="repeat_monthly" value="1" class="rounded accent-[var(--brand-primary)] w-5 h-5" @checked(old('repeat_monthly', $expense->repeat_monthly))>
         <span class="text-sm text-[#1E2530]">This happens every month (I'll get a reminder when the next one is due)</span>
     </label>
 
     <p class="text-xs text-[#6B7A93]">Saving will cancel out the old entry and record the new one — nothing disappears from the books.</p>
 
     <div class="flex gap-3 pt-2">
-        <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-bold py-2 px-6 rounded-lg min-h-[44px]">Save Changes</button>
+        <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-6 rounded-lg min-h-[44px]">Save Changes</button>
         <a href="{{ route('expenses.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] py-2 px-4 min-h-[44px] inline-flex items-center">Cancel</a>
     </div>
 </form>

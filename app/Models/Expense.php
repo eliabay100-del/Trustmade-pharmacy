@@ -50,4 +50,26 @@ class Expense extends Model
     {
         return Payment::METHODS[$this->payment_method] ?? ucfirst($this->payment_method);
     }
+
+    /**
+     * The date this bill's reminder counts for: a monthly bill keeps its day
+     * of the month and rolls forward to the current cycle, so a bill that was
+     * never re-recorded reminds once a month instead of every day after its
+     * first due date passed.
+     */
+    public function reminderDate(): ?\Carbon\Carbon
+    {
+        $due = $this->next_due_date?->copy();
+
+        if (!$due || !$this->repeat_monthly) {
+            return $due;
+        }
+
+        $today = \Carbon\Carbon::today();
+        while ($due->lt($today)) {
+            $due->addMonthNoOverflow();
+        }
+
+        return $due;
+    }
 }

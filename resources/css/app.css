@@ -15,9 +15,20 @@
     --pmas-line: #e5eaf0;
     --pmas-surface: #ffffff;
     --pmas-canvas: #f3f6f8;
+
+    /* PART D — fallbacks only; the layout sets these from the settings table. */
+    --brand-primary: #12A594;
+    --brand-primary-dark: #0e8a7d;
+    --brand-accent: #101B2D;
 }
 
 html { background: var(--pmas-canvas); }
+/* Alpine hides these once it starts; without this they would flash on screen first. */
+[x-cloak] { display: none !important; }
+/* Collapsible sidebar sections: the chevron turns to point at the open list. */
+[data-nav-section-toggle][aria-expanded="true"] .nav-chevron { transform: rotate(90deg); }
+/* Touch screens get a full-size target without stretching the desktop sidebar. */
+@media (pointer: coarse) { [data-nav-section-toggle] { min-height: 44px; } }
 body {
     color: var(--pmas-ink);
     background: var(--pmas-canvas);

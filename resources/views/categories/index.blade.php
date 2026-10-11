@@ -3,7 +3,7 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-[#1E2530]">Drug Categories</h1>
-    <a href="{{ route('categories.create') }}" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-bold py-2 px-4 rounded-lg text-sm">+ Add New Category</a>
+    <a href="{{ route('categories.create') }}" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-4 rounded-lg text-sm">+ Add New Category</a>
 </div>
 
 <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -25,7 +25,7 @@
                         <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">{{ $category->drugs_count }}</span>
                     </td>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                        <a href="{{ route('categories.edit', $category->id) }}" class="text-[#12A594] hover:underline mr-3">Edit</a>
+                        <a href="{{ route('categories.edit', $category->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline"
                               onsubmit="return confirm('Delete {{ $category->name }}?');">
                             @csrf @method('DELETE')
@@ -34,7 +34,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="px-5 py-8 text-center text-[#6B7A93]">No categories yet. <a href="{{ route('categories.create') }}" class="text-[#12A594] underline">Add your first one</a>.</td></tr>
+                <tr><td colspan="4" class="px-5 py-8 text-center text-[#6B7A93]">No categories yet. <a href="{{ route('categories.create') }}" class="text-[var(--brand-primary)] underline">Add your first one</a>.</td></tr>
             @endforelse
         </tbody>
     </table>

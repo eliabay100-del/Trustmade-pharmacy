@@ -39,4 +39,16 @@ class Setting extends Model
         static::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget('settings.all');
     }
+
+    /**
+     * The VAT percentage already contained in the prices the pharmacy charges
+     * (15 in Ethiopia). 0 means the owner has not set a rate, so receipts show
+     * no breakdown rather than inventing one.
+     */
+    public static function vatRatePercent(): float
+    {
+        $rate = round((float) (string) static::value('vat_rate_percent', 0), 2);
+
+        return ($rate > 0 && $rate < 100) ? $rate : 0.0;
+    }
 }

@@ -17,19 +17,19 @@
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Business Name</label>
             <input type="text" name="business_name" value="{{ old('business_name', $settings['business_name']) }}"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30" required>
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Phone</label>
             <input type="text" name="business_phone" value="{{ old('business_phone', $settings['business_phone']) }}"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Address</label>
             <textarea name="business_address" rows="2"
-                      class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">{{ old('business_address', $settings['business_address']) }}</textarea>
+                      class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">{{ old('business_address', $settings['business_address']) }}</textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -41,7 +41,7 @@
                            onchange="this.form.brand_primary_color.value = this.value"
                            class="h-11 w-11 rounded-lg border border-gray-200 cursor-pointer p-1">
                     <input type="text" name="brand_primary_color" value="{{ old('brand_primary_color', $settings['brand_primary_color']) }}"
-                           class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
                 </div>
             </div>
             <div>
@@ -52,7 +52,7 @@
                            onchange="this.form.brand_accent_color.value = this.value"
                            class="h-11 w-11 rounded-lg border border-gray-200 cursor-pointer p-1">
                     <input type="text" name="brand_accent_color" value="{{ old('brand_accent_color', $settings['brand_accent_color']) }}"
-                           class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
                 </div>
             </div>
         </div>
@@ -68,32 +68,39 @@
                 </div>
             @endif
             <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#12A594]/10 file:text-[#12A594] file:text-sm file:font-medium">
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[var(--brand-primary)]/10 file:text-[var(--brand-primary)] file:text-sm file:font-medium">
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Receipt Header Text</label>
             <input type="text" name="receipt_header" value="{{ old('receipt_header', $settings['receipt_header']) }}"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30"
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30"
                    placeholder="e.g. Thank you for your purchase!">
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Receipt Footer Text</label>
             <input type="text" name="receipt_footer" value="{{ old('receipt_footer', $settings['receipt_footer']) }}"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30"
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30"
                    placeholder="e.g. Goods once sold are not returnable.">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">VAT included in your selling prices (%)</label>
+            <input type="number" step="0.01" min="0" max="99.99" name="vat_rate_percent" value="{{ old('vat_rate_percent', $settings['vat_rate_percent']) }}"
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
+            <p class="text-xs text-[#6B7A93] mt-1">Your prices already contain VAT, so nothing changes for the customer — receipts just show how much of each price is VAT. In Ethiopia that is 15. Enter 0 to hide the VAT lines.</p>
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Payment reminder window (days)</label>
             <input type="number" min="1" max="90" name="supplier_alert_days" value="{{ old('supplier_alert_days', $settings['supplier_alert_days']) }}"
-                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#12A594]/30">
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
             <p class="text-xs text-[#6B7A93] mt-1">Supplier payments due within this many days show as reminders on Alerts and the dashboard.</p>
         </div>
 
         <div class="flex gap-3 pt-2">
-            <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Settings</button>
+            <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Settings</button>
             <a href="{{ route('dashboard') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>

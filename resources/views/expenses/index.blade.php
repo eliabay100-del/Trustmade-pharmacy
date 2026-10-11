@@ -3,22 +3,22 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-[#1E2530]">Expenses</h1>
-    <a href="{{ route('expenses.create') }}" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-bold py-2 px-4 rounded-lg text-sm min-h-[44px] inline-flex items-center">+ Add Expense</a>
+    <a href="{{ route('expenses.create') }}" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-4 rounded-lg text-sm min-h-[44px] inline-flex items-center">+ Add Expense</a>
 </div>
 
 {{-- Filters --}}
 <form method="GET" action="{{ route('expenses.index') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6 grid grid-cols-1 sm:grid-cols-4 gap-3">
     <div>
         <label class="block text-xs font-semibold text-[#6B7A93] mb-1">From date</label>
-        <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+        <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
     </div>
     <div>
         <label class="block text-xs font-semibold text-[#6B7A93] mb-1">To date</label>
-        <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+        <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
     </div>
     <div>
         <label class="block text-xs font-semibold text-[#6B7A93] mb-1">Category</label>
-        <select name="category_id" class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+        <select name="category_id" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             <option value="">All categories</option>
             @foreach($categories as $cat)
                 <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}@unless($cat->active) (inactive) @endunless</option>
@@ -26,7 +26,7 @@
         </select>
     </div>
     <div class="flex items-end gap-2">
-        <button type="submit" class="bg-[#101B2D] hover:bg-[#1a2b47] text-white font-semibold py-2 px-4 rounded-lg text-sm min-h-[44px]">Filter</button>
+        <button type="submit" class="bg-[var(--brand-accent)] hover:bg-[#1a2b47] text-white font-semibold py-2 px-4 rounded-lg text-sm min-h-[44px]">Filter</button>
         <a href="{{ route('expenses.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2 px-2 min-h-[44px] inline-flex items-center">Clear</a>
     </div>
 </form>
@@ -59,7 +59,7 @@
                     <td class="px-5 py-3.5 text-[#6B7A93]">{{ $expense->branch->name ?? '—' }}</td>
                     @endif
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
-                        <a href="{{ route('expenses.edit', $expense->id) }}" class="text-[#12A594] hover:underline mr-3">Edit</a>
+                        <a href="{{ route('expenses.edit', $expense->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST" class="inline"
                               onsubmit="return confirm('Remove this {{ $expense->category->name }} expense of {{ number_format($expense->amount, 2) }}? It will be cancelled out in the books.');">
                             @csrf @method('DELETE')

@@ -23,6 +23,9 @@ class SettingController extends Controller
         'business_address' => 'nullable|string|max:255',
         'receipt_header' => 'nullable|string|max:255',
         'receipt_footer' => 'nullable|string|max:255',
+        // Receipts: the VAT percentage already included in the prices shown.
+        // 0 or empty means "don't break VAT out on receipts".
+        'vat_rate_percent' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
         // Part B — how many days ahead supplier payment reminders appear.
         'supplier_alert_days' => 'nullable|integer|min:1|max:90',
     ];
@@ -35,8 +38,9 @@ class SettingController extends Controller
             'business_address' => Setting::value('business_address'),
             'receipt_header' => Setting::value('receipt_header'),
             'receipt_footer' => Setting::value('receipt_footer'),
-            'brand_primary_color' => Setting::value('brand_primary_color', '#12A594'),
-            'brand_accent_color' => Setting::value('brand_accent_color', '#101B2D'),
+            'vat_rate_percent' => Setting::value('vat_rate_percent', '0'),
+            'brand_primary_color' => Setting::value('brand_primary_color', config('pmas.default_brand_primary_color')),
+            'brand_accent_color' => Setting::value('brand_accent_color', config('pmas.default_brand_accent_color')),
             'logo_path' => Setting::value('logo_path'),
             'supplier_alert_days' => Setting::value('supplier_alert_days', '7'),
         ];
@@ -61,6 +65,8 @@ class SettingController extends Controller
             'logo.image' => 'The logo must be an image (JPG, PNG or WebP).',
             'logo.max' => 'The logo must be smaller than 2 MB.',
             'business_name.required' => 'Please enter the business name.',
+            'vat_rate_percent.numeric' => 'Please enter the VAT percentage as a number, like 15.',
+            'vat_rate_percent.max' => 'The VAT percentage must be less than 100.',
         ]);
 
         // --- Text / color settings ---

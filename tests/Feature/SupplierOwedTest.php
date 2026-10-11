@@ -236,4 +236,71 @@ class SupplierOwedTest extends TestCase
         $this->assertCount(1, $data['due_soon']);
         $this->assertSame(14, $data['soon_days']);
     }
+
+    public function test_check_purchase_stores_check_details_and_pays_from_the_bank_account(): void
+    {
+        $due = now()->addDays(20)->toDateString();
+
+        $this->postPurchase([
+            'payment_method' => 'check',
+            'check_number' => 'CHQ-0042',
+            'check_date' => $due,
+            'check_bank' => 'Commercial Bank of Ethiopia',
+        ])->assertRedirect(route('purchases.index'));
+
+        $batch = PurchaseBatch::firstOrFail();
+        $this->assertSame('paid', $batch->payment_status);
+        $this->assertSame('CHQ-0042', $batch->check_number);
+        $this->assertSame($due, $batch->check_date->toDateString());
+        $this->assertSame('Commercial Bank of Ethiopia', $batch->check_bank);
+        // The check number is kept as the reference, so the clerk sees one number.
+        $this->assertSame('CHQ-0042', $batch->payment_reference);
+
+        // Money leaves the bank book (checks share it), nothing is owed.
+        $entry = \App\Models\JournalEntry::where('reference_type', 'purchase')->firstOrFail();
+        $credit = Ledger::where('journal_entry_id', $entry->id)->where('credit', '>', 0)->firstOrFail();
+        $this->assertSame('1012', Account::find($credit->account_id)->code);
+        $this->assertSame('check', $batch->payment_method);
+    }
+
+    public function test_a_check_must_carry_its_number_date_and_bank(): void
+    {
+        $this->postPurchase(['payment_method' => 'check'])
+            ->assertSessionHasErrors(['check_number', 'check_date', 'check_bank']);
+    }
+
+    public function test_non_cash_paid_now_methods_need_a_reference(): void
+    {
+        $this->postPurchase(['payment_method' => 'telebirr'])->assertSessionHasErrors('payment_reference');
+        // Cash moves no traceable record, so it stays optional.
+        $this->postPurchase(['payment_method' => 'cash'])->assertSessionHasNoErrors();
+    }
+
+    public function test_pay_later_requires_a_supplier_and_a_due_date(): void
+    {
+        $this->postPurchase(['payment_method' => Payment::PAY_LATER])
+            ->assertSessionHasErrors('due_date');
+
+        $this->postPurchase([
+            'payment_method' => Payment::PAY_LATER,
+            'due_date' => now()->addDays(30)->toDateString(),
+            'supplier_id' => '',
+        ])->assertSessionHasErrors('supplier_id');
+    }
+
+    public function test_pay_later_keeps_the_supplier_and_stays_unpaid_until_paid(): void
+    {
+        // The 30/60-day quick choice is client-side; what matters on the row is
+        // that the supplier and the agreed due date are stored, nothing paid.
+        $this->postPurchase([
+            'payment_method' => Payment::PAY_LATER,
+            'due_date' => now()->addDays(45)->toDateString(),
+        ])->assertSessionHasNoErrors();
+
+        $batch = PurchaseBatch::firstOrFail();
+        $this->assertSame('unpaid', $batch->payment_status);
+        $this->assertEquals(0.0, (float) $batch->amount_paid);
+        $this->assertSame(now()->addDays(45)->toDateString(), $batch->due_date->toDateString());
+        $this->assertSame($this->supplier->id, $batch->supplier_id);
+    }
 }

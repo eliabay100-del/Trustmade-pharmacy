@@ -1,11 +1,18 @@
 @php
     // PART D — receipt branding from settings (nothing hard-coded).
     $receiptBusinessName = \App\Models\Setting::value('business_name', config('pmas.default_business_name'));
+    $brandPrimary = \App\Models\Setting::value('brand_primary_color', config('pmas.default_brand_primary_color'));
+    $brandAccent = \App\Models\Setting::value('brand_accent_color', config('pmas.default_brand_accent_color'));
     $receiptHeader = \App\Models\Setting::value('receipt_header');
     $receiptFooter = \App\Models\Setting::value('receipt_footer');
+    // Business-wide contact from settings; the branch's own details are the fallback.
+    $receiptAddress = \App\Models\Setting::value('business_address') ?: ($order->branch?->address);
+    $receiptPhone = \App\Models\Setting::value('business_phone') ?: ($order->branch?->phone);
+    // Prices charged include VAT; the breakdown is printed, not charged again.
+    $vat = $order->vatBreakdown();
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="@include('partials.brand-vars')">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +42,7 @@
             cursor: pointer;
             text-decoration: none;
         }
-        .btn-print { background: #12A594; color: #fff; }
+        .btn-print { background: var(--brand-primary); color: #fff; }
         .btn-ghost { background: #fff; color: #1E2530; border: 1px solid #e5e7eb; }
         .receipt {
             width: 80mm;
@@ -47,6 +54,7 @@
         .center { text-align: center; }
         .name { font-size: 16px; font-weight: 700; }
         .muted { color: #6B7A93; font-size: 11px; }
+        .fine { color: #6B7A93; font-size: 10px; }
         hr { border: 0; border-top: 1px dashed #d1d5db; margin: 8px 0; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         td { padding: 2px 0; vertical-align: top; }
@@ -73,11 +81,11 @@
             @if($receiptHeader)
                 <div class="muted">{{ $receiptHeader }}</div>
             @endif
-            @if($order->branch?->address)
-                <div class="muted">{{ $order->branch->address }}</div>
+            @if($receiptAddress)
+                <div class="muted">{{ $receiptAddress }}</div>
             @endif
-            @if($order->branch?->phone)
-                <div class="muted">{{ $order->branch->phone }}</div>
+            @if($receiptPhone)
+                <div class="muted">{{ $receiptPhone }}</div>
             @endif
         </div>
         <hr>
@@ -91,20 +99,41 @@
         <table>
             @foreach($order->items as $item)
                 <tr>
-                    <td colspan="2">{{ $item->purchaseBatch->drug->name ?? '—' }}</td>
+                    <td colspan="2">{{ $item->purchaseBatch->drug->name ?? $item->product->name ?? '—' }}</td>
                 </tr>
                 <tr>
-                    <td class="muted">{{ $item->quantity_issued }} × ${{ number_format($item->selling_price_per_unit, 2) }}</td>
+                    <td class="muted">{{ $item->quantity_issued }} × ${{ number_format($item->selling_price_per_unit, 2) }}@if($vat) (incl. VAT) @endif</td>
                     <td class="right">${{ number_format($item->total_amount, 2) }}</td>
                 </tr>
+                @if($vat)
+                    <tr>
+                        <td class="fine">before VAT ${{ number_format($vat['items'][$item->id]['net'], 2) }}</td>
+                        <td class="fine right">VAT ${{ number_format($vat['items'][$item->id]['vat'], 2) }}</td>
+                    </tr>
+                @endif
             @endforeach
         </table>
         <hr>
         <table>
-            <tr class="total">
-                <td>Total</td>
-                <td class="right">${{ number_format($order->total_amount, 2) }}</td>
-            </tr>
+            @if($vat)
+                <tr>
+                    <td class="muted">Before VAT</td>
+                    <td class="right">${{ number_format($vat['net'], 2) }}</td>
+                </tr>
+                <tr>
+                    <td class="muted">VAT {{ $vat['rate_label'] }}%</td>
+                    <td class="right">${{ number_format($vat['vat'], 2) }}</td>
+                </tr>
+                <tr class="total">
+                    <td>Total (incl. VAT)</td>
+                    <td class="right">${{ number_format($vat['total'], 2) }}</td>
+                </tr>
+            @else
+                <tr class="total">
+                    <td>Total</td>
+                    <td class="right">${{ number_format($order->total_amount, 2) }}</td>
+                </tr>
+            @endif
             @foreach($order->payments as $payment)
                 <tr>
                     <td class="muted">{{ $payment->methodLabel() }}</td>
@@ -112,6 +141,9 @@
                 </tr>
             @endforeach
         </table>
+        @if($vat)
+            <div class="fine center">Prices include VAT. VAT = ${{ number_format($vat['total'], 2) }} × {{ $vat['rate_label'] }} ÷ {{ $vat['divisor_label'] }} = ${{ number_format($vat['vat'], 2) }}</div>
+        @endif
         <hr>
         <div class="center muted">{{ $receiptFooter ?? 'Thank you' }}</div>
     </div>

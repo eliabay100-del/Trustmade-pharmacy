@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Customer return</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Restocks the original batch and reverses the sale journals. One line per submit.</p>
+    <p class="text-sm text-[#6B7A93] mb-6">Restocks the original batch and corrects the sale record. One line per submit.</p>
 
     <form method="GET" action="{{ route('returns.customer.create') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-4 space-y-4">
         <div>
@@ -76,7 +76,7 @@
             </div>
 
             <div class="flex gap-3 pt-2">
-                <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
+                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                     Record return
                 </button>
                 <a href="{{ route('returns.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>

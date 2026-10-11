@@ -25,17 +25,17 @@
                         <form method="POST" action="{{ route('expense-categories.update', $cat->id) }}">
                             @csrf @method('PUT')
                             <td class="px-5 py-3">
-                                <input type="text" name="name" value="{{ $cat->name }}" class="w-full max-w-[220px] rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px] text-sm font-medium">
+                                <input type="text" name="name" value="{{ $cat->name }}" class="w-full max-w-[220px] rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px] text-sm font-medium">
                             </td>
                             <td class="px-5 py-3 text-[#6B7A93]">{{ $cat->expenses_count }}</td>
                             <td class="px-5 py-3">
                                 <label class="inline-flex items-center gap-2 cursor-pointer min-h-[44px]">
-                                    <input type="checkbox" name="active" value="1" class="rounded accent-[#12A594] w-5 h-5" @checked($cat->active)>
+                                    <input type="checkbox" name="active" value="1" class="rounded accent-[var(--brand-primary)] w-5 h-5" @checked($cat->active)>
                                     <span class="text-sm">{{ $cat->active ? 'Active' : 'Turned off' }}</span>
                                 </label>
                             </td>
                             <td class="px-5 py-3 text-right">
-                                <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-semibold py-2 px-4 rounded-lg text-sm min-h-[44px]">Save</button>
+                                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-semibold py-2 px-4 rounded-lg text-sm min-h-[44px]">Save</button>
                             </td>
                         </form>
                     </tr>
@@ -54,10 +54,10 @@
             <div>
                 <label class="block text-sm font-semibold text-[#1E2530] mb-1">Name</label>
                 <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. Cleaning"
-                       class="w-full rounded-lg border-gray-200 focus:border-[#12A594] focus:ring-[#12A594] min-h-[44px]">
+                       class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                 @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
             </div>
-            <button type="submit" class="w-full bg-[#12A594] hover:bg-[#0e8a7d] text-white font-bold py-2 px-4 rounded-lg min-h-[44px]">Add Category</button>
+            <button type="submit" class="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-4 rounded-lg min-h-[44px]">Add Category</button>
         </form>
     </div>
 </div>

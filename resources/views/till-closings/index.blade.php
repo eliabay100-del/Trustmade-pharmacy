@@ -17,7 +17,7 @@
                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2 px-4 rounded-lg">Continue</button>
+                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2 px-4 rounded-lg">Continue</button>
             </div>
             <p class="text-xs text-[#6B7A93] mt-2">Owner/Admin accounts are not tied to one till — pick the branch whose drawer you are counting.</p>
         </form>
@@ -30,7 +30,7 @@
 
             <div class="flex justify-between items-baseline mb-1">
                 <span class="text-sm text-[#6B7A93]">Expected cash in till</span>
-                <span class="text-2xl font-bold text-[#12A594]">${{ number_format($expectedCash, 2) }}</span>
+                <span class="text-2xl font-bold text-[var(--brand-primary)]">${{ number_format($expectedCash, 2) }}</span>
             </div>
             <p class="text-xs text-[#6B7A93] mb-4">Cash-method payments only. Digital payments never enter the drawer.</p>
 
@@ -66,7 +66,7 @@
                            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"
                            placeholder="e.g. short a 50 note">
                 </div>
-                <button type="submit" class="bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
+                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                     Record till close
                 </button>
             </form>
@@ -92,7 +92,7 @@
                         <td class="px-5 py-3.5 text-sm text-[#1E2530]">{{ $closing->user->name ?? '—' }}</td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">${{ number_format($closing->expected_cash, 2) }}</td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">${{ number_format($closing->counted_cash, 2) }}</td>
-                        <td class="px-5 py-3.5 text-sm text-right font-semibold {{ (float) $closing->variance === 0.0 ? 'text-[#12A594]' : ((float) $closing->variance < 0 ? 'text-red-600' : 'text-amber-600') }}">
+                        <td class="px-5 py-3.5 text-sm text-right font-semibold {{ (float) $closing->variance === 0.0 ? 'text-[var(--brand-primary)]' : ((float) $closing->variance < 0 ? 'text-red-600' : 'text-amber-600') }}">
                             {{ (float) $closing->variance > 0 ? '+' : '' }}{{ number_format($closing->variance, 2) }}
                         </td>
                     </tr>

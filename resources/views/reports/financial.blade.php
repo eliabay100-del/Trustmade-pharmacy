@@ -8,7 +8,7 @@
 
 <div class="flex gap-2 mb-4 text-sm">
     <a href="{{ route('reports.inventory') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Inventory</a>
-    <a href="{{ route('reports.financial') }}" class="px-3 py-1.5 rounded-lg font-medium bg-[#12A594]/10 text-[#12A594]">Financial</a>
+    <a href="{{ route('reports.financial') }}" class="px-3 py-1.5 rounded-lg font-medium bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">Financial</a>
     <a href="{{ route('reports.sales') }}" class="px-3 py-1.5 rounded-lg font-medium text-[#6B7A93] hover:bg-gray-100">Sales</a>
 </div>
 

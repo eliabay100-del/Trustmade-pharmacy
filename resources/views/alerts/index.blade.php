@@ -28,7 +28,7 @@
                                 <td class="px-5 py-3 text-xs text-[#6B7A93]">{{ $item['supplier_invoice_no'] ?: $item['purchase_ref'] }}</td>
                                 <td class="px-5 py-3 text-sm text-right text-red-600 font-semibold">ETB {{ number_format($item['balance'], 2) }}</td>
                                 <td class="px-5 py-3 text-sm text-right text-red-600">Due {{ $item['due_date']->format('d M Y') }}</td>
-                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[#12A594] hover:underline">Pay supplier</a></td>
+                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Pay supplier</a></td>
                             </tr>
                         @endforeach
                     </tbody></table>
@@ -52,7 +52,7 @@
                                 <td class="px-5 py-3 text-xs text-[#6B7A93]">{{ $item['supplier_invoice_no'] ?: $item['purchase_ref'] }}</td>
                                 <td class="px-5 py-3 text-sm text-right text-amber-600 font-semibold">ETB {{ number_format($item['balance'], 2) }}</td>
                                 <td class="px-5 py-3 text-sm text-right text-amber-600">Due {{ $item['due_date']->format('d M Y') }}</td>
-                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[#12A594] hover:underline">Pay supplier</a></td>
+                                <td class="px-5 py-3 text-right"><a href="{{ route('supplier-payments.create', $item['supplier_id']) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Pay supplier</a></td>
                             </tr>
                         @endforeach
                     </tbody></table>
@@ -76,8 +76,8 @@
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $bill->category->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-sm text-right text-[#1E2530] font-semibold">ETB {{ number_format($bill->amount, 2) }}</td>
-                            <td class="px-5 py-3 text-sm text-right text-sky-700">Due {{ $bill->next_due_date->format('d M Y') }}</td>
-                            <td class="px-5 py-3 text-right"><a href="{{ route('expenses.create') }}" class="text-xs font-medium text-[#12A594] hover:underline">Record payment</a></td>
+                            <td class="px-5 py-3 text-sm text-right text-sky-700">Due {{ $bill->reminderDate()?->format('d M Y') }}</td>
+                            <td class="px-5 py-3 text-right"><a href="{{ route('expenses.create') }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Record payment</a></td>
                         </tr>
                     @endforeach
                 </tbody></table>
@@ -94,10 +94,10 @@
         @if($lowStockDrugs->count() || $lowStockProducts->count())
             <table class="min-w-full divide-y divide-gray-50"><tbody class="divide-y divide-gray-50">
                 @foreach($lowStockDrugs as $drug)
-                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $drug->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Drug</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $drug->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $drug->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('drugs.index', ['q' => $drug->name]) }}" class="text-xs font-medium text-[#12A594] hover:underline">View drug</a></td></tr>
+                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $drug->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Drug</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $drug->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $drug->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('drugs.index', ['q' => $drug->name]) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">View drug</a></td></tr>
                 @endforeach
                 @foreach($lowStockProducts as $product)
-                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $product->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Product</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $product->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $product->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('products.index', ['q' => $product->name]) }}" class="text-xs font-medium text-[#12A594] hover:underline">View product</a></td></tr>
+                    <tr class="hover:bg-gray-50/50"><td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $product->name }}</td><td class="px-5 py-3 text-xs text-[#6B7A93]">Product</td><td class="px-5 py-3 text-sm text-right text-amber-600">{{ number_format((float) $product->purchaseBatches->sum('quantity_remaining'), 0) }} left <span class="text-xs text-[#6B7A93]">/ minimum {{ number_format((float) $product->minimum_stock_level, 0) }}</span></td><td class="px-5 py-3 text-right"><a href="{{ route('products.index', ['q' => $product->name]) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">View product</a></td></tr>
                 @endforeach
             </tbody></table>
         @else
@@ -124,7 +124,7 @@
                             <td class="px-5 py-3 text-sm text-[#6B7A93]">Batch {{ $batch->batch_number }}</td>
                             <td class="px-5 py-3 text-sm text-right text-[#6B7A93]">{{ $batch->quantity_remaining }} units</td>
                             <td class="px-5 py-3 text-sm text-right">
-                                <a href="{{ route('adjustments.create', ['batch_id' => $batch->id]) }}" class="text-[#12A594] hover:underline text-xs font-medium">Write off</a>
+                                <a href="{{ route('adjustments.create', ['batch_id' => $batch->id]) }}" class="text-[var(--brand-primary)] hover:underline text-xs font-medium">Write off</a>
                             </td>
                         </tr>
                     @endforeach
@@ -170,8 +170,8 @@
     {{-- Customers Due for Refill --}}
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-full bg-[#12A594]/10 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#12A594]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="w-7 h-7 rounded-full bg-[var(--brand-primary)]/10 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-4a4 4 0 100-8 4 4 0 000 8zm6 4a4 4 0 00-8 0" />
                 </svg>
             </span>

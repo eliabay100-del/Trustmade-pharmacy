@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="mb-6">
-    <a href="{{ route('supplier-owed.show', $supplier) }}" class="text-sm text-[#12A594] hover:underline">&larr; Back to {{ $supplier->name }}</a>
+    <a href="{{ route('supplier-owed.show', $supplier) }}" class="text-sm text-[var(--brand-primary)] hover:underline">&larr; Back to {{ $supplier->name }}</a>
     <h1 class="text-2xl font-bold text-[#1E2530] mt-2">Payments to {{ $supplier->name }}</h1>
     <p class="text-sm text-[#6B7A93] mt-1">Every payment recorded so far, newest first.</p>
 </div>

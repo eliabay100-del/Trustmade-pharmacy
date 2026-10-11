@@ -7,7 +7,7 @@
         <p class="text-sm text-[#6B7A93] mt-1">Sales history — one row per checkout.</p>
     </div>
     <a href="{{ route('dispense.create') }}"
-       class="inline-flex items-center gap-2 bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+       class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -44,7 +44,7 @@
                         @endif
                     </td>
                     <td class="px-5 py-3.5 text-sm text-right">
-                        <a href="{{ route('dispense.show', $order->id) }}" class="text-[#12A594] hover:underline">View</a>
+                        <a href="{{ route('dispense.show', $order->id) }}" class="text-[var(--brand-primary)] hover:underline">View</a>
                         <a href="{{ route('dispense.receipt', $order->id) }}" class="text-[#6B7A93] hover:underline ml-3">Receipt</a>
                     </td>
                 </tr>
@@ -55,7 +55,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <p class="text-sm text-[#6B7A93]">No sales recorded yet.</p>
-                        <a href="{{ route('dispense.create') }}" class="text-sm font-medium text-[#12A594] hover:underline mt-1 inline-block">Dispense your first drug</a>
+                        <a href="{{ route('dispense.create') }}" class="text-sm font-medium text-[var(--brand-primary)] hover:underline mt-1 inline-block">Dispense your first drug</a>
                     </td>
                 </tr>
             @endforelse

@@ -7,7 +7,7 @@
         <p class="text-sm text-[#6B7A93] mt-1">Incoming stock batches from suppliers.</p>
     </div>
     <a href="{{ route('purchases.create') }}"
-       class="inline-flex items-center gap-2 bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+       class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -76,7 +76,7 @@
                     </td>
                     <td class="px-5 py-3.5 text-sm text-right">
                         @if($batch->quantity_remaining > 0)
-                            <a href="{{ route('returns.supplier.create', ['batch_id' => $batch->id]) }}" class="text-[#12A594] hover:underline">Return</a>
+                            <a href="{{ route('returns.supplier.create', ['batch_id' => $batch->id]) }}" class="text-[var(--brand-primary)] hover:underline">Return</a>
                         @endif
                     </td>
                 </tr>
@@ -87,7 +87,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                         <p class="text-sm text-[#6B7A93]">No purchases recorded yet.</p>
-                        <a href="{{ route('purchases.create') }}" class="text-sm font-medium text-[#12A594] hover:underline mt-1 inline-block">Record your first purchase</a>
+                        <a href="{{ route('purchases.create') }}" class="text-sm font-medium text-[var(--brand-primary)] hover:underline mt-1 inline-block">Record your first purchase</a>
                     </td>
                 </tr>
             @endforelse

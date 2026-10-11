@@ -8,7 +8,7 @@
     </div>
     <div class="flex gap-2">
         <a href="{{ route('returns.customer.create') }}"
-           class="inline-flex items-center bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+           class="inline-flex items-center bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
             Customer return
         </a>
         <a href="{{ route('returns.supplier.create') }}"

@@ -7,7 +7,7 @@
         <p class="text-sm text-[#6B7A93] mt-1">Write-offs for damaged, lost, or expired stock — never a silent quantity edit.</p>
     </div>
     <a href="{{ route('adjustments.create') }}"
-       class="inline-flex items-center gap-2 bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
+       class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
         Write off stock
     </a>
 </div>

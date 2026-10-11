@@ -61,19 +61,22 @@ class AlertController extends Controller
 
         // PART C — monthly repeating bills that are due now (optional flag on
         // an expense: next_due_date reached). Same window as supplier reminders
-        // so the owner sees them together. Calculated live, no cron needed.
+        // so the owner sees them together. Calculated live, no cron needed —
+        // reminderDate() rolls a bill forward to its cycle for this month, so
+        // a reminder shows once per month rather than permanently.
         $recurringExpensesDue = collect();
         if ($user->role === 'owner_admin') {
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('expenses')) {
-                    $recurringQuery = \App\Models\Expense::with('category')
+                    $windowEnd = Carbon::today()->addDays($soonDays ?? 7);
+                    $recurringExpensesDue = \App\Models\Expense::with('category')
                         ->where('repeat_monthly', true)
                         ->whereNotNull('next_due_date')
-                        ->whereDate('next_due_date', '<=', Carbon::today()->addDays($soonDays ?? 7));
-                    if ($branchId) {
-                        $recurringQuery->where('branch_id', $branchId);
-                    }
-                    $recurringExpensesDue = $recurringQuery->orderBy('next_due_date')->get();
+                        ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
+                        ->get()
+                        ->filter(fn ($bill) => $bill->reminderDate()?->lte($windowEnd))
+                        ->sortBy(fn ($bill) => $bill->reminderDate()->timestamp)
+                        ->values();
                 }
             } catch (\Throwable $e) {
                 $recurringExpensesDue = collect(); // never break alerts over this

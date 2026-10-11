@@ -8,9 +8,9 @@
             <p class="text-sm text-[#6B7A93] mt-1">{{ $order->created_at->format('M d, Y g:i A') }}</p>
         </div>
         <div class="flex flex-col items-end gap-2">
-            <a href="{{ route('dispense.index') }}" class="text-sm text-[#12A594] hover:underline">← Back to Dispense</a>
+            <a href="{{ route('dispense.index') }}" class="text-sm text-[var(--brand-primary)] hover:underline">← Back to Dispense</a>
             <a href="{{ route('dispense.receipt', ['order' => $order->id, 'autoprint' => 1]) }}"
-               class="inline-flex items-center bg-[#12A594] hover:bg-[#0e8a7d] text-white font-medium text-sm py-2 px-4 rounded-lg transition-colors">
+               class="inline-flex items-center bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2 px-4 rounded-lg transition-colors">
                 Print Receipt
             </a>
             <a href="{{ route('returns.customer.create', ['order_id' => $order->id]) }}"
@@ -55,7 +55,7 @@
 
         <div class="flex justify-between items-center pt-3 border-t border-gray-100">
             <span class="font-bold text-[#1E2530]">Total</span>
-            <span class="font-bold text-lg text-[#12A594]">${{ number_format($order->total_amount, 2) }}</span>
+            <span class="font-bold text-lg text-[var(--brand-primary)]">${{ number_format($order->total_amount, 2) }}</span>
         </div>
 
         @if($order->payments->isNotEmpty())

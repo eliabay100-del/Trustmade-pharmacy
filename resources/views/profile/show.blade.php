@@ -6,7 +6,7 @@
 
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <div class="flex items-center gap-4 mb-6">
-            <span class="w-14 h-14 rounded-full bg-[#101B2D] flex items-center justify-center text-white text-xl font-semibold">
+            <span class="w-14 h-14 rounded-full bg-[var(--brand-accent)] flex items-center justify-center text-white text-xl font-semibold">
                 {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
             </span>
             <div>
