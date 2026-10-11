@@ -11,6 +11,7 @@
 # Local environment — real credentials never belong in git; copy .env.example
 .env*
 !.env.example
+!.env.*.example
 
 # Runtime artifacts (each storage sub-directory carries its own .gitignore)
 /storage/*.key

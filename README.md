@@ -7,6 +7,55 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Trust Made Pharma — running the system locally
+
+Laravel 13 / PHP 8.4 pharmacy management system (dispensing, purchases, supplier
+payments, expenses, stock transfers, till closing, reports). The business name,
+logo, colours and the VAT rate are **not** in `.env` — they are set in the app
+under Business Settings, and the screens read them from the `settings` table.
+
+Requirements: PHP 8.4 with `pdo_mysql`, `gd`, `zip`, `fileinfo` (Herd supplies
+these), MySQL/MariaDB reachable on `127.0.0.1:3306`, Node 24+ and Composer.
+
+First-time setup, from the project folder:
+
+```bash
+composer setup          # installs deps, copies .env.example, key:generate, migrate, storage:link, npm build
+```
+
+Then point the database keys in `.env` at your server (`DB_DATABASE`,
+`DB_USERNAME`, `DB_PASSWORD`) and run `php artisan migrate --force` again.
+
+Two ways to serve it:
+
+```bash
+# 1. Herd site — http://trustmade.test (nginx + PHP 8.4, port 80)
+#    The folder C:\Users\ThinkPad\Herd\trustmade is linked to this project, so
+#    starting Herd registers the site automatically. Serve the public/ folder.
+# 2. No Herd running:
+composer serve          # php artisan serve --host=127.0.0.1 --port=8010 → http://127.0.0.1:8010
+```
+
+Port 8000 is already used on this machine by the JobPilot backend, so this app
+listens on 8010. Change the port in `composer.json` if that is taken too — a
+second server can bind the same port on Windows and then the wrong app answers.
+
+To host it for the pharmacy rather than for development, copy
+`.env.production.example` to `.env`, fill in the database credentials, then:
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan storage:link
+php artisan optimize        # caches config, routes and views
+```
+
+`php artisan optimize:clear` afterwards — while those caches exist, edits to
+`.env`, routes and Blade files are ignored. `APP_TIMEZONE` is set to
+`Africa/Addis_Ababa` in both templates; without it, "due today" supplier and
+bill reminders are calculated on UTC.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
