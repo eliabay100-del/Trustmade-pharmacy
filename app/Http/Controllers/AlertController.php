@@ -33,14 +33,28 @@ class AlertController extends Controller
         $expiringSoon = $expiringQuery->get();
         $expired = $expiredQuery->get();
 
-        $drugStockQuery = Drug::with(['purchaseBatches' => function ($query) use ($branchId) {
-            if ($branchId) $query->where('branch_id', $branchId);
-        }])->orderBy('name');
-        $productStockQuery = Product::with(['purchaseBatches' => function ($query) use ($branchId) {
-            if ($branchId) $query->where('branch_id', $branchId);
-        }])->orderBy('name');
-        $lowStockDrugs = $drugStockQuery->get()->filter(fn ($drug) => (float) $drug->purchaseBatches->sum('quantity_remaining') <= (float) $drug->minimum_stock_level)->values();
-        $lowStockProducts = $productStockQuery->get()->filter(fn ($product) => (float) $product->purchaseBatches->sum('quantity_remaining') <= (float) $product->minimum_stock_level)->values();
+        $drugStockQuery = Drug::select('drugs.*')
+            ->selectSub(
+                \App\Models\PurchaseBatch::selectRaw('COALESCE(SUM(quantity_remaining), 0)')
+                    ->whereColumn('purchase_batches.drug_id', 'drugs.id')
+                    ->when($branchId, fn ($q) => $q->where('branch_id', $branchId)),
+                'total_stock'
+            )
+            ->groupBy('drugs.id')
+            ->havingRaw('total_stock <= drugs.minimum_stock_level')
+            ->orderBy('name');
+        $productStockQuery = Product::select('products.*')
+            ->selectSub(
+                \App\Models\PurchaseBatch::selectRaw('COALESCE(SUM(quantity_remaining), 0)')
+                    ->whereColumn('purchase_batches.product_id', 'products.id')
+                    ->when($branchId, fn ($q) => $q->where('branch_id', $branchId)),
+                'total_stock'
+            )
+            ->groupBy('products.id')
+            ->havingRaw('total_stock <= products.minimum_stock')
+            ->orderBy('name');
+        $lowStockDrugs = $drugStockQuery->get();
+        $lowStockProducts = $productStockQuery->get();
 
         // Customers aren't branch-owned data (no branch_id column), so
         // recurring-customer reminders are intentionally shown to all

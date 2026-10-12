@@ -32,8 +32,8 @@ use App\Http\Controllers\SettingController;
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 // Keep older cached login pages working while the canonical form uses /login.
-Route::post('/', [AuthController::class, 'login'])->name('login.legacy');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+Route::post('/', [AuthController::class, 'login'])->name('login.legacy')->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit')->middleware('throttle:5,1');
 
 // --- Protected Routes (Requires Login) ---
 Route::middleware(['auth'])->group(function () {
