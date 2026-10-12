@@ -51,6 +51,13 @@ php artisan storage:link
 php artisan optimize        # caches config, routes and views
 ```
 
+Add the scheduler cron so session cleanup and cache pruning run automatically:
+
+```bash
+# On the server, add this one line to crontab -e:
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
+```
+
 `php artisan optimize:clear` afterwards — while those caches exist, edits to
 `.env`, routes and Blade files are ignored. `APP_TIMEZONE` is set to
 `Africa/Addis_Ababa` in both templates; without it, "due today" supplier and
