@@ -16,7 +16,11 @@ class BrandingSeeder extends Seeder
     {
         // insertOrIgnore-style default: only seed when the key doesn't exist.
         if (Setting::value('business_name') === null) {
-            Setting::put('business_name', 'Trust Made Pharma');
+            Setting::put('business_name', 'TRUSTMED PHARMACY');
+        }
+
+        if (Setting::value('logo_path') === null) {
+            Setting::put('logo_path', 'branding/trustmed-logo.jpg');
         }
 
         foreach ([

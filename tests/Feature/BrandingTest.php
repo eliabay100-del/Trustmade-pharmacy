@@ -60,7 +60,7 @@ class BrandingTest extends TestCase
         $tmp = tempnam(sys_get_temp_dir(), 'logo').'.png';
         file_put_contents($tmp, $png);
         $this->actingAs($owner)->put(route('settings.branding.update'), [
-            'business_name' => 'Trust Made Pharma',
+            'business_name' => 'TRUSTMED PHARMACY',
             'brand_primary_color' => '#12A594',
             'brand_accent_color' => '#101B2D',
             'logo' => new UploadedFile($tmp, 'logo.png', 'image/png', null, true),
@@ -71,7 +71,7 @@ class BrandingTest extends TestCase
 
         // Non-image rejected.
         $this->actingAs($owner)->post(route('settings.branding.update'), [
-            'business_name' => 'Trust Made Pharma',
+            'business_name' => 'TRUSTMED PHARMACY',
             'brand_primary_color' => '#12A594',
             'brand_accent_color' => '#101B2D',
             'logo' => UploadedFile::fake()->create('virus.pdf', 100),
@@ -93,7 +93,7 @@ class BrandingTest extends TestCase
     {
         $this->owner();
         $this->seed(\Database\Seeders\BrandingSeeder::class);
-        $this->assertSame('Trust Made Pharma', Setting::value('business_name'));
+        $this->assertSame('TRUSTMED PHARMACY', Setting::value('business_name'));
 
         Setting::put('business_name', 'My Own Name');
         $this->seed(\Database\Seeders\BrandingSeeder::class); // re-run must not overwrite

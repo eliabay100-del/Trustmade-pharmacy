@@ -146,7 +146,7 @@ class ReceiptVatTest extends TestCase
         $owner = $this->owner();
 
         $this->actingAs($owner)->put(route('settings.branding.update'), [
-            'business_name' => 'Trust Made Pharma',
+            'business_name' => 'TRUSTMED PHARMACY',
             'brand_primary_color' => '#12A594',
             'brand_accent_color' => '#101B2D',
             'vat_rate_percent' => '15',
@@ -160,7 +160,7 @@ class ReceiptVatTest extends TestCase
     {
         $owner = $this->owner();
         $base = [
-            'business_name' => 'Trust Made Pharma',
+            'business_name' => 'TRUSTMED PHARMACY',
             'brand_primary_color' => '#12A594',
             'brand_accent_color' => '#101B2D',
         ];
