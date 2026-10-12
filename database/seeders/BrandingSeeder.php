@@ -20,7 +20,7 @@ class BrandingSeeder extends Seeder
         }
 
         if (Setting::value('logo_path') === null) {
-            Setting::put('logo_path', 'branding/trustmed-logo.jpg');
+            Setting::put('logo_path', 'branding/trustmed-logo.png');
         }
 
         foreach ([
