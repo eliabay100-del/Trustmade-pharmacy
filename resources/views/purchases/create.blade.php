@@ -86,7 +86,7 @@
                         <select name="items[0][quantity_unit]" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm"><option value="tablet">Base unit</option><option value="strip">Strip</option><option value="pack">Pack</option></select>
                         <input type="number" min="0" step="0.01" name="items[0][cost_per_unit]" placeholder="Cost / unit" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required>
                         <input type="number" min="0" step="0.01" name="items[0][selling_price_per_unit]" placeholder="Selling / unit" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required>
-                        <label class="text-xs font-medium text-[#6B7A93]">Expiry date (optional)<input type="date" name="items[0][expiry_date]" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"></label>
+                        <label class="text-xs font-medium text-[#6B7A93]">Expiry date<input type="date" name="items[0][expiry_date]" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"></label>
                     </div>
                 </div>
             </div>
