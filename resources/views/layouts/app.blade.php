@@ -281,8 +281,8 @@
     @endauth
 
     {{-- Main content --}}
-    <div class="{{ auth()->check() ? 'lg:pl-64' : '' }}">
-        <main class="px-4 py-6 sm:px-6 lg:px-8 max-w-[1440px] mx-auto min-h-screen">
+    <div class="{{ auth()->check() ? 'lg:pl-64' : '' }} flex min-h-screen flex-col">
+        <main class="px-4 py-6 sm:px-6 lg:px-8 max-w-[1440px] mx-auto w-full flex-1">
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg mb-4 text-sm">
                     {{ session('success') }}
@@ -301,6 +301,12 @@
 
             @yield('content')
         </main>
+
+        <footer class="px-4 py-5 text-center text-xs text-[#8a98a8]">
+            Powered by
+            <a href="{{ config('pmas.vendor_url') }}" target="_blank" rel="noopener"
+               class="font-semibold text-[var(--brand-primary)] hover:underline">{{ config('pmas.vendor_name') }}</a>
+        </footer>
     </div>
 </body>
 </html>

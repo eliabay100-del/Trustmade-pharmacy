@@ -25,15 +25,15 @@
     </style>
 </head>
 <body class="login-shell text-[#182230]">
-    <div class="relative isolate flex min-h-screen items-center justify-center px-5 py-8 sm:px-8">
+    <div class="relative isolate flex min-h-screen flex-col items-center justify-center px-5 py-8 sm:px-8">
         <div class="login-shape login-shape-a"></div><div class="login-shape login-shape-b"></div><div class="login-shape login-shape-c hidden sm:block"></div>
         <main class="relative grid w-full max-w-5xl overflow-hidden rounded-3xl login-glass lg:grid-cols-[1fr_1.05fr]">
             <section class="hidden bg-[#10253b] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
-                <div><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold">Rx</span>@endif<span class="text-lg font-bold tracking-tight">{{ $brandName }}</span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, sales, and branches from one local workspace.</p></div>
+                <div><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold">Rx</span>@endif<span class="flex flex-col leading-tight"><span class="text-lg font-bold tracking-tight">{{ $brandName }}</span><span class="text-[11px] font-medium uppercase tracking-[.18em] text-white/50">by {{ config('pmas.vendor_name') }}</span></span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, sales, and branches from one local workspace.</p></div>
                 <div class="flex items-center gap-3 text-xs text-white/50"><span class="h-2 w-2 rounded-full bg-[#72d4c5]"></span>Offline pharmacy operations</div>
             </section>
             <section class="login-fade bg-white/72 p-7 sm:p-10 lg:p-14">
-                <div class="mb-10 lg:hidden"><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#10253b] text-sm font-bold text-[#72d4c5]">Rx</span>@endif<span class="text-lg font-bold tracking-tight">{{ $brandName }}</span></div></div>
+                <div class="mb-10 lg:hidden"><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#10253b] text-sm font-bold text-[#72d4c5]">Rx</span>@endif<span class="flex flex-col leading-tight"><span class="text-lg font-bold tracking-tight">{{ $brandName }}</span><span class="text-[11px] font-medium uppercase tracking-[.18em] text-[#8a98a8]">by {{ config('pmas.vendor_name') }}</span></span></div></div>
                 <div class="mb-8"><p class="text-xs font-bold uppercase tracking-[.2em] text-[var(--brand-primary)]">Welcome back</p><h1 class="mt-2 text-3xl font-bold tracking-tight text-[#182230]">Sign in to {{ $brandName }}</h1><p class="mt-2 text-sm leading-6 text-[#6b7a93]">Use your staff account to continue managing the pharmacy.</p></div>
                 @if($errors->any())<div role="alert" class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
                 <form action="{{ route('login.submit') }}" method="POST" class="space-y-5">
@@ -45,6 +45,10 @@
                 <p class="mt-8 border-t border-[#edf1f3] pt-5 text-center text-xs leading-5 text-[#8a98a8]">{{ $brandName }} runs locally on this device. Your pharmacy data stays in your local system.</p>
             </section>
         </main>
+
+        <p class="relative mt-6 text-center text-xs text-[#8a98a8]">
+            Powered by <a href="{{ config('pmas.vendor_url') }}" target="_blank" rel="noopener" class="font-semibold text-[var(--brand-primary)] hover:underline">{{ config('pmas.vendor_name') }}</a>
+        </p>
     </div>
 </body>
 </html>

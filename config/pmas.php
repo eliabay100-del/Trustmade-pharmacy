@@ -14,6 +14,11 @@ return [
     'default_brand_primary_color' => env('BRANDING_PRIMARY_COLOR', '#12A594'),
     'default_brand_accent_color' => env('BRANDING_ACCENT_COLOR', '#101B2D'),
 
+    // Vendor credited in the app chrome ("by ..." on the login page and
+    // "Powered by ..." on every page). Kept in config so it is one edit.
+    'vendor_name' => env('VENDOR_NAME', 'AMBA Solutions'),
+    'vendor_url' => env('VENDOR_URL', 'https://amba.site.je'),
+
     /*
     | First-run administrator account, created by ProductionSeeder. There is
     | deliberately no hard-coded password: set ADMIN_PASSWORD before seeding
