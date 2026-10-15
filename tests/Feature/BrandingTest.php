@@ -78,6 +78,29 @@ class BrandingTest extends TestCase
         ] + ['_method' => 'PUT'])->assertSessionHasErrors('logo');
     }
 
+    public function test_logo_path_is_null_when_the_file_is_missing(): void
+    {
+        Storage::fake('public');
+
+        Setting::put('logo_path', 'branding/gone.png');
+        $this->assertNull(Setting::logoPath());
+
+        Storage::disk('public')->put('branding/real.png', 'x');
+        Setting::put('logo_path', 'branding/real.png');
+        $this->assertSame('branding/real.png', Setting::logoPath());
+    }
+
+    public function test_login_page_does_not_render_a_missing_logo(): void
+    {
+        Storage::fake('public');
+        Setting::put('logo_path', 'branding/gone.png');
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertDontSee('branding/gone.png')
+            ->assertSee('by AMBA Solutions');
+    }
+
     public function test_invalid_color_rejected(): void
     {
         $owner = $this->owner();

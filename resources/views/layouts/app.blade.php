@@ -3,7 +3,7 @@
     $brandName = \App\Models\Setting::value('business_name', config('pmas.default_business_name'));
     $brandPrimary = \App\Models\Setting::value('brand_primary_color', config('pmas.default_brand_primary_color'));
     $brandAccent = \App\Models\Setting::value('brand_accent_color', config('pmas.default_brand_accent_color'));
-    $brandLogo = \App\Models\Setting::value('logo_path');
+    $brandLogo = \App\Models\Setting::logoPath();
 @endphp
 <!DOCTYPE html>
 {{-- Part D: brand colors applied through CSS variables. --}}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Simple key/value settings store (Part B reminder window now, Part D
@@ -50,5 +51,17 @@ class Setting extends Model
         $rate = round((float) (string) static::value('vat_rate_percent', 0), 2);
 
         return ($rate > 0 && $rate < 100) ? $rate : 0.0;
+    }
+
+    /**
+     * The stored branding logo path, or null. Guards against a stored path
+     * whose file is gone (restored database, cleaned storage) so the layout
+     * falls back to the initials badge instead of a broken image.
+     */
+    public static function logoPath(): ?string
+    {
+        $path = static::value('logo_path');
+
+        return ($path && Storage::disk('public')->exists($path)) ? $path : null;
     }
 }
