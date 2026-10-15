@@ -28,6 +28,7 @@ class AccountSeeder extends Seeder
             ['code' => '4000', 'name' => 'Sales Revenue',        'type' => 'revenue',   'description' => 'Revenue from drug sales'],
             ['code' => '5000', 'name' => 'Cost of Goods Sold',   'type' => 'expense',   'description' => 'Cost of drugs sold'],
             ['code' => '5100', 'name' => 'Inventory Shrinkage',  'type' => 'expense',   'description' => 'Write-off of damaged, lost, or expired stock at cost'],
+            ['code' => '5200', 'name' => 'Cash Over/Short',      'type' => 'expense',   'description' => 'Difference between counted and expected cash at till close'],
         ];
 
         foreach ($accounts as $account) {

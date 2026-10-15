@@ -69,6 +69,9 @@
                 <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                     Record till close
                 </button>
+                <p class="text-xs text-[#6B7A93]">
+                    Any difference between counted and expected cash is posted to Cash Over/Short in the accounts.
+                </p>
             </form>
         </div>
     @endif

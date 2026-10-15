@@ -309,7 +309,7 @@ Note: `reference_type` values written by code are `purchase`, `sale`, `adjustmen
 
 ### 2.15 `till_closings`
 
-- **Purpose:** end-of-shift cash reconciliation per cashier/branch. **No journal entry is posted** (see §6).
+- **Purpose:** end-of-shift cash reconciliation per cashier/branch. The difference between counted and expected cash is posted to `5200 Cash Over/Short` (`till_closing`, see §6).
 - **PK:** `id`. **FKs:** `user_id → users.id` (CASCADE), `branch_id → branches.id` (CASCADE).
 - **Soft deletes:** no. **LogsActivity:** yes. **Branch-scoped:** yes (`branch_id`).
 
@@ -689,22 +689,23 @@ erDiagram
 
 ### 5.1 Accounts created by seeders/migrations
 
-`AccountSeeder` seeds 12 accounts; migration `2026_10_11_000007_add_expense_accounts` creates 7 expense accounts (also created by `ExpenseCategorySeeder`). The "digital payment" (`000005`), "inventory shrinkage" (`000008`) and "owed to suppliers" (`2026_10_11_000003`) migrations are idempotent and re-reference codes that the seeder already creates.
+`AccountSeeder` seeds 13 accounts; migration `2026_10_11_000007_add_expense_accounts` creates 7 expense accounts (also created by `ExpenseCategorySeeder`). Migration `2026_10_15_000001_ensure_core_posting_accounts` also guarantees the core codes (`1001`, `1002`, `1200`, `3000`, `4000`, `5000`) exist after `migrate` alone, and `2026_10_15_000002_add_cash_over_short_account` creates `5200`. The "digital payment" (`000005`), "inventory shrinkage" (`000008`) and "owed to suppliers" (`2026_10_11_000003`) migrations are idempotent and re-reference codes that the seeder already creates.
 
 | Code | Name | Type | Where defined |
 |---|---|---|---|
 | 1001 | Cash | asset | `AccountSeeder` |
-| 1002 | Accounts Receivable | asset | `AccountSeeder` (**never posted to; missing from the live DB**) |
+| 1002 | Accounts Receivable | asset | `AccountSeeder` + `2026_10_15_000001` (opening balances) |
 | 1010 | Telebirr | asset | `AccountSeeder` + `2026_08_31_000005` |
 | 1011 | CBE Birr | asset | `AccountSeeder` + `2026_08_31_000005` |
 | 1012 | Bank | asset | `AccountSeeder` + `2026_08_31_000005` |
 | 1013 | Card | asset | `AccountSeeder` + `2026_08_31_000005` |
 | 1200 | Inventory | asset | `AccountSeeder` |
 | 2000 | Accounts Payable | liability | `AccountSeeder` + `2026_10_11_000003` |
-| 3000 | Owner Equity | equity | `AccountSeeder` (**never posted to**) |
+| 3000 | Owner Equity | equity | `AccountSeeder` + `2026_10_15_000001` (opening balances derive capital here) |
 | 4000 | Sales Revenue | revenue | `AccountSeeder` |
 | 5000 | Cost of Goods Sold | expense | `AccountSeeder` |
 | 5100 | Inventory Shrinkage | expense | `AccountSeeder` + `2026_08_31_000008` |
+| 5200 | Cash Over/Short | expense | `AccountSeeder` + `2026_10_15_000002` (till-close variance) |
 | 6000 | Rent Expense | expense | `2026_10_11_000007` + `ExpenseCategorySeeder` |
 | 6010 | Electricity Expense | expense | `2026_10_11_000007` + `ExpenseCategorySeeder` |
 | 6020 | Water Expense | expense | `2026_10_11_000007` + `ExpenseCategorySeeder` |
@@ -713,7 +714,7 @@ erDiagram
 | 6050 | Internet & Phone Expense | expense | `2026_10_11_000007` + `ExpenseCategorySeeder` |
 | 6090 | Other Expense | expense | `2026_10_11_000007` + `ExpenseCategorySeeder` |
 
-**Live-data differences (not schema):** the live DB has 18 accounts — `1002` is absent, and `3000` is named *"Owner Capital"* (seeded as *"Owner Equity"*). Both are data drift, not migration differences.
+**Live-data differences (not schema):** the live DB originally had 18 accounts — `1002` absent, and `3000` named *"Owner Capital"* (seeded as *"Owner Equity"*). Running `2026_10_15_000001` (which inserts `1002`) and renaming `3000` to *"Owner Equity"* brought it in line with the seeders.
 
 ### 5.2 Payment method → account mapping
 
@@ -777,8 +778,8 @@ New categories created through the UI are mapped to `6090` (Other Expense).
 | 10 | **Customer return — COGS reversal** (only when cogs > 0) | 1200 Inventory | 5000 COGS | `customer_return` | `customer_returns.id` | same call → `recordCustomerReturn` (`AccountingService.php:90`) |
 | 11 | **Supplier return** | 2000 Accounts Payable | 1200 Inventory | `supplier_return` | `supplier_returns.id` | `ReturnController::storeSupplier` → `recordSupplierReturn` (`AccountingService.php:104`) |
 | 12 | **Manual journal entry** | user-selected accounts | user-selected accounts | `manual` | `null` | `JournalEntryController::store` (`JournalEntryController.php:66`) |
-| 13 | **Till closing** | — | — | — | — | **No posting.** `TillClosingController::store` only writes `till_closings`; it does not call `postEntry`. `ref_type` is never set for till closings. |
-| 14 | **Opening balances** | — | — | — | — | **Not found.** No code posts opening balances; account `3000 Owner Equity` exists but is never used. |
+| 13 | **Till closing** | 1001 Cash (overage) / 5200 Cash Over/Short (shortage) | 5200 (overage) / 1001 (shortage) | `till_closing` | `till_closings.id` | `TillClosingController::store` → `AccountingService::recordTillVariance` (`AccountingService.php`). No entry when the drawer matches. |
+| 14 | **Opening balances** | `1001`/`1010`–`1013`/`1002`/`1200` (assets) | `2000` Accounts Payable (liabilities), `3000` Owner Equity (derived) | `opening_balance` | `null` | `OpeningBalanceController::store`. Posts the difference needed to reach the entered figures; owner's capital balances the entry. |
 
 Notes on the above:
 
@@ -893,23 +894,25 @@ Live values observed: `vat_rate_percent = 15`, `business_name = TRUSTMED Pharmac
 
 These are explicitly **not** part of the current `main` schema/behaviour and are listed for completeness only.
 
-- **`pmas_fixes.patch` (untracked diff, not applied on `main`):** adds an email+IP rate limiter (`RateLimiter::tooManyAttempts`) to `AuthController::login` and an `AccountingServiceTest`. The `main` branch already has `throttle:5,1` on the login routes (commit `5cce91d`), so this patch is partially superseded.
+- **`pmas_fixes.patch`:** removed during the deployment fixes — its `AccountingServiceTest` / `InventoryServiceTest` were ported to `main` (corrected to the current service signatures), and its login rate limiter is superseded by the routes' `throttle:5,1` plus the per-credential limiter now in `AuthController`.
 - **"Part E" sidebar note:** `resources/views/layouts/app.blade.php` contains the comment `{{-- data-sidebar-nav: the element that actually scrolls (Part E) --}}`. There is no other trace of a "Part E" feature (routes, controllers, models); whether it is planned work or a stale label is **unclear**.
-- **Performance indexes migration `2026_10_12_000001`:** committed to `main` and `Ran` according to the commit log, but still **`Pending`** on the live database at the time of writing. It is merged code, not planned work, but its indexes are not physically present (see §12).
+- **Performance indexes migration `2026_10_12_000001`:** committed to `main` and now **`Ran`** on the live database (applied during the deployment fixes).
 - The remote branch `origin/pharmacy-purchase-payment-implementation-1a0eb` is **behind** `main` (no commits ahead of `main`); it is not future work.
 
 ---
 
-## 12. Inconsistencies, missing indexes/constraints, unused columns and risks (not fixed)
+## 12. Inconsistencies, missing indexes/constraints, unused columns and risks
+
+> **Status:** this section is the original audit. Since it was written, several items have been fixed and the entries below are marked accordingly. Fixed: the phantom model attributes (#4–5), the `TransferService` and `JournalEntryController` bugs (#20–21), the missing core-account guarantee (#23), the live `accounts` drift (#2), the formerly unused codes `1002`/`3000` (#16), and the till-closing/opening-balance posting gaps (§6 #13–14).
 
 ### 12.1 Migrations vs live database
 
-1. **`2026_10_12_000001_add_performance_indexes` is Pending.** The live DB therefore lacks:
+1. **`2026_10_12_000001_add_performance_indexes` (fixed).** Originally Pending; now **applied** to the live DB. It added:
    - `purchase_batches`: `expiry_date`, `purchase_date`, `(payment_method, payment_status)`, `due_date`
    - `issued_items`: `issue_date`
    - `stock_cards`: `(reference_type, reference_id)`
    - `journal_entries`: `(reference_type, reference_id)`
-2. **Data drift in `accounts`:** `1002 Accounts Receivable` is in `AccountSeeder` but **absent from the live DB**; `3000` is named *"Owner Capital"* live but seeded as *"Owner Equity"*. Re-running `AccountSeeder` would insert `1002`.
+2. **Data drift in `accounts` (fixed).** `1002 Accounts Receivable` was absent live and `3000` mis-named *"Owner Capital"*. Migration `2026_10_15_000001` inserts `1002`, and the live row was renamed to *"Owner Equity"*.
 3. **Branding/VAT drift:** live `business_name = "TRUSTMED Pharmacy"` vs seeder `"TRUSTMED PHARMACY"`; live `vat_rate_percent = 15` (no seeder default).
 
 ### 12.2 Migrations vs models
@@ -932,7 +935,7 @@ These are explicitly **not** part of the current `main` schema/behaviour and are
 
 ### 12.4 Unused / phantom columns and data
 
-16. **`accounts` codes never posted to:** `1002 Accounts Receivable` and `3000 Owner Equity` (and its live name `Owner Capital`) are seeded but referenced by no posting code.
+16. **`accounts` codes formerly unused (fixed):** `1002` and `3000` are now posted by opening balances (`OpeningBalanceController`), and `5200 Cash Over/Short` was added for till-close variance.
 17. **`supplier_payment_allocations.purchase_ref`** duplicates the value already on `purchase_batches.purchase_ref`; it is written but never read for balance logic.
 18. **`StockTransfer.total_amount`** is write-only in practice (set by `TransferService`); no query reads it.
 19. **`users.email_verified_at`** is never populated.
@@ -942,7 +945,7 @@ These are explicitly **not** part of the current `main` schema/behaviour and are
 20. **`TransferService` references undefined variables.** `transfer()` opens `DB::transaction(function () use ($drugId, $sourceId, $destId, $qty, $userId) { ... })` but the parameters are `$itemType`/`$itemId`, and `$drugId` does not exist. Inside the closure `$itemType` and `$itemId` are undefined (they are neither parameters nor in the `use` list), so the source-batch query effectively becomes `where('drug_id', null)`. The final line also writes `$lastTransfer` assigned inside the loop; **branch transfers are very likely broken**. Marked as a bug — verify manually.
 21. **`JournalEntryController::index` breaks for Owner/Admin.** `where('branch_id', null)` compiles to `WHERE branch_id IS NULL`, so a NULL-branch Owner/Admin sees no journal entries even though `/journal-entries` is in their tier.
 22. **`voucher_number` generation is collision-prone.** `'JV-' . time() . '-' . rand(1000,9999)` has a unique constraint but only ~9,000 values per second; two postings in the same second can collide and throw.
-23. **`AccountSeeder`/posting coupling.** Posting depends on hard-coded account codes existing (`firstOrFail`). If `AccountSeeder` is not run (or a code is deleted), sales/purchases/expenses throw at runtime.
+23. **`AccountSeeder`/posting coupling (fixed).** Posting depends on hard-coded account codes existing (`firstOrFail`). Migration `2026_10_15_000001_ensure_core_posting_accounts` now guarantees the core codes exist from `migrate` alone, so posting no longer depends on seeding.
 24. **`ExpenseTest::test_category_rename_and_deactivate` asserts on `$cat->is_active`**, but the column and controller field are `active`. The assertion passes only because the attribute is null. Test smell, not app code.
 25. **`AccountSeeder` comment claims these codes are "hardcoded inside PurchaseController"** — true for accounting, but `1002`/`3000` are not referenced anywhere, reinforcing item 16.
 26. **`orders` and `purchase_batches` have no status enum** at the DB level (`varchar` with defaults); invalid values can be written by future code.
@@ -952,16 +955,16 @@ These are explicitly **not** part of the current `main` schema/behaviour and are
 
 ## Files read to build this document
 
-- Migrations (all 39): `0001_01_01_000000_create_users_table.php`, `0001_01_01_000001_create_cache_table.php`, `0001_01_01_000002_create_jobs_table.php`, `2019_12_14_000001_create_personal_access_tokens_table.php`, `2024_01_01_000001_create_pmas_tables.php`, `2026_08_26_000001_add_quantity_remaining_to_purchase_batches_table.php`, `2026_08_27_000001..000005`, `2026_08_28_000001..000003`, `2026_08_30_000001_add_role_to_users_table.php`, `2026_08_31_000001..000008`, `2026_09_01_000001..000002`, `2026_09_02_000001..000005`, `2026_10_09_000001`, `2026_10_11_000001..000007`, `2026_10_12_000001_add_performance_indexes.php`
+- Migrations (all 41): `0001_01_01_000000_create_users_table.php`, `0001_01_01_000001_create_cache_table.php`, `0001_01_01_000002_create_jobs_table.php`, `2019_12_14_000001_create_personal_access_tokens_table.php`, `2024_01_01_000001_create_pmas_tables.php`, `2026_08_26_000001_add_quantity_remaining_to_purchase_batches_table.php`, `2026_08_27_000001..000005`, `2026_08_28_000001..000003`, `2026_08_30_000001_add_role_to_users_table.php`, `2026_08_31_000001..000008`, `2026_09_01_000001..000002`, `2026_09_02_000001..000005`, `2026_10_09_000001`, `2026_10_11_000001..000007`, `2026_10_12_000001_add_performance_indexes.php`, `2026_10_15_000001_ensure_core_posting_accounts.php`, `2026_10_15_000002_add_cash_over_short_account.php`
 - Models (all 27): `Account`, `ActivityLog`, `Branch`, `Customer`, `CustomerReturn`, `Drug`, `DrugCategory`, `Expense`, `ExpenseCategory`, `IssuedItem`, `JournalEntry`, `Ledger`, `Order`, `Payment`, `Product`, `ProductCategory`, `PurchaseBatch`, `Setting`, `StockAdjustment`, `StockCard`, `StockTransfer`, `Supplier`, `SupplierPayment`, `SupplierPaymentAllocation`, `SupplierReturn`, `TillClosing`, `User`
 - Traits: `app/Traits/LogsActivity.php`
 - Services: `AccountingService.php`, `InventoryService.php`, `SupplierOwedService.php`, `TransferService.php`, `EscPosReceipt.php`
 - Seeders: `AccountSeeder.php`, `BrandingSeeder.php`, `CatalogSeeder.php`, `DatabaseSeeder.php`, `ExpenseCategorySeeder.php`
 - Routes: `routes/web.php`, `routes/console.php`
 - Middleware / bootstrap: `app/Http/Middleware/EnsureUserHasRole.php`, `bootstrap/app.php`
-- Controllers (all 28): `AccountController`, `ActivityLogController`, `AlertController`, `AuthController`, `BranchController`, `CustomerController`, `DashboardController`, `DispenseController`, `DrugCategoryController`, `DrugController`, `ExpenseCategoryController`, `ExpenseController`, `JournalEntryController`, `ProductCategoryController`, `ProductController`, `ProfileController`, `PurchaseController`, `ReceiptController`, `ReportController`, `ReturnController`, `SettingController`, `StockAdjustmentController`, `StockTransferController`, `SupplierController`, `SupplierPaymentController`, `TillClosingController`, `UserController`
+- Controllers (all 29): `AccountController`, `ActivityLogController`, `AlertController`, `AuthController`, `BranchController`, `CustomerController`, `DashboardController`, `DispenseController`, `DrugCategoryController`, `DrugController`, `ExpenseCategoryController`, `ExpenseController`, `JournalEntryController`, `OpeningBalanceController`, `ProductCategoryController`, `ProductController`, `ProfileController`, `PurchaseController`, `ReceiptController`, `ReportController`, `ReturnController`, `SettingController`, `StockAdjustmentController`, `StockTransferController`, `SupplierController`, `SupplierPaymentController`, `TillClosingController`, `UserController`
 - Exports: `MonthlyAccountingExport.php`, `Sheets/{SummarySheetExport,SalesSheetExport,PurchasesSheetExport,ExpensesSheetExport}.php`
 - Providers/config/views: `app/Providers/AppServiceProvider.php`, `config/pmas.php`, `resources/views/partials/brand-vars.blade.php`, `resources/views/layouts/app.blade.php`
 - Tests reviewed for enforced rules: `tests/Feature/{SupplierOwedTest,ExpenseTest,ProductIntegrationTest,ReceiptVatTest}.php`
-- Repository artefacts: `.env`, `.env.example`, `README.md`, `pmas_fixes.patch`
+- Repository artefacts: `.env`, `.env.example`, `README.md`
 - Live DB: `php artisan migrate:status`, `php artisan db:show`, and an `information_schema` dump (columns, indexes, foreign keys + delete rules, row counts) for all 36 tables.

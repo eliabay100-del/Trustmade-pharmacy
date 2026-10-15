@@ -6,12 +6,17 @@ use App\Models\Branch;
 use App\Models\CustomerReturn;
 use App\Models\Payment;
 use App\Models\TillClosing;
+use App\Services\AccountingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TillClosingController extends Controller
 {
+    public function __construct(private AccountingService $accountingService)
+    {
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -61,7 +66,7 @@ class TillClosingController extends Controller
                 $expectedCash = $this->cashCollected($user->id, $branchId, $periodStart);
                 $counted = round((float) $request->counted_cash, 2);
 
-                TillClosing::create([
+                $closing = TillClosing::create([
                     'user_id' => $user->id,
                     'branch_id' => $branchId,
                     'period_start' => $periodStart,
@@ -71,6 +76,10 @@ class TillClosingController extends Controller
                     'variance' => round($counted - $expectedCash, 2),
                     'notes' => $request->notes,
                 ]);
+
+                // Put the cash difference in the books so the ledger cash
+                // balance matches the physical drawer. No-op when it balances.
+                $this->accountingService->recordTillVariance($closing->variance, $branchId, $closing->id);
             });
 
             return redirect()->route('till-closings.index')->with('success', 'Till closed.');

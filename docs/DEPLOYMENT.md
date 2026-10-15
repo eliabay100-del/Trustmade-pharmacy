@@ -175,6 +175,8 @@ terminate TLS at a reverse proxy and:
 - [ ] Fresh `APP_KEY` generated on the server (step 4).
 - [ ] `migrate --force` and `ProductionSeeder` completed without errors.
 - [ ] Logged in as the seeded administrator and **changed its password**.
+- [ ] Opening balances entered (Finance → **Opening Balances**) *before* any real
+      sales or purchases — cash, wallets/bank, stock at cost, receivables, payables.
 - [ ] Confirmed you can record a purchase, make a sale, and take an expense
       without errors (proves the chart of accounts is complete).
 - [ ] Business Settings: correct name, logo, VAT rate and receipt footer.
@@ -188,14 +190,19 @@ terminate TLS at a reverse proxy and:
 
 ---
 
-## 10. Known design gaps (decide before or shortly after go-live)
+## 10. Cash handling and opening balances (addressed)
 
-These are behavioural gaps in the current code, not deployment bugs. They are
-described in more detail in `docs/BACKEND_SCHEMA.md`:
+Both gaps found during the schema review are now implemented:
 
-- **Till closing does not post a journal entry.** Closing a till records the
-  cash count but posts nothing to the ledger, so cash-over/short is not in the
-  books. Decide whether closing should post an adjustment.
-- **No opening balances.** The chart of accounts starts at zero. There is no
-  workflow to enter opening stock/cash/capital, so early balance sheets will
-  not reflect the true position at go-live. Enter these deliberately if needed.
+- **Till closing posts its variance.** Closing a till still records the cash
+  count, and now also posts the difference between counted and expected cash to
+  `5200 Cash Over/Short`: an overage debits `1001 Cash` and credits `5200`; a
+  shortage debits `5200` and credits `1001`. A till that matches posts nothing,
+  and the ledger cash balance then agrees with the physical drawer.
+- **Opening balances are entered at go-live.** Owner/Admin have an **Opening
+  Balances** page (Finance menu) to set day-one cash, Telebirr / CBE Birr / bank /
+  card, receivables, stock at cost and supplier payables. Owner's capital is
+  derived so the entry always balances, and the page posts only the difference
+  from the current books — so re-saving the same figures, or correcting a
+  typo, changes nothing extra. Do this **once, before recording sales or
+  purchases**.

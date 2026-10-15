@@ -23,7 +23,7 @@ class FreshInstallTest extends TestCase
     {
         // RefreshDatabase migrates but never seeds, so this is what a
         // `php artisan migrate` only deployment looks like.
-        foreach (['1001', '1002', '1200', '3000', '4000', '5000'] as $code) {
+        foreach (['1001', '1002', '1200', '3000', '4000', '5000', '5200'] as $code) {
             $this->assertDatabaseHas('accounts', ['code' => $code]);
         }
     }

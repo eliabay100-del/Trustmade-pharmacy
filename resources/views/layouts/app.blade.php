@@ -136,7 +136,7 @@
                  group is only shown to the roles that can open them (clerks
                  cannot), keeping their sidebar in plain language. --}}
             @if(in_array(auth()->user()->role, ['owner_admin', 'branch_manager'], true))
-            <x-nav-section label="Finance" :routes="['accounts.*', 'journal-entries.*', 'reports.*']">
+            <x-nav-section label="Finance" :routes="['accounts.*', 'journal-entries.*', 'opening-balances.*', 'reports.*']">
                 <x-nav-link route="accounts.index" label="Chart of Accounts">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-2c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </x-nav-link>
@@ -145,6 +145,11 @@
                 <x-nav-link route="journal-entries.index" label="Accounting Records">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </x-nav-link>
+                @if(auth()->user()->role === 'owner_admin')
+                <x-nav-link route="opening-balances.edit" label="Opening Balances">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </x-nav-link>
+                @endif
                 <x-nav-link route="reports.inventory" label="Reports">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l7 7-7 7zM3 5v14" />
                 </x-nav-link>

@@ -16,6 +16,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\OpeningBalanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityLogController;
@@ -158,6 +159,14 @@ Route::middleware(['auth'])->group(function () {
         // ============================================================
         Route::get('/settings/branding', [SettingController::class, 'edit'])->name('settings.branding');
         Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update');
+
+        // ============================================================
+        // Opening balances. Owner/Admin only: the day-one figures
+        // (cash, wallets/bank, stock, receivables, payables) posted
+        // as a single balanced entry, with owner's capital derived.
+        // ============================================================
+        Route::get('/opening-balances', [OpeningBalanceController::class, 'edit'])->name('opening-balances.edit');
+        Route::post('/opening-balances', [OpeningBalanceController::class, 'store'])->name('opening-balances.store');
     });
 
     // ============================================================

@@ -7,8 +7,8 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 class AccountingService {
-    public function postEntry($desc, $branchId, $refType, $refId, $lines) {
-        return DB::transaction(function () use ($desc, $branchId, $refType, $refId, $lines) {
+    public function postEntry($desc, $branchId, $refType, $refId, $lines, $date = null) {
+        return DB::transaction(function () use ($desc, $branchId, $refType, $refId, $lines, $date) {
             $debitTotal = collect($lines)->sum('debit');
             $creditTotal = collect($lines)->sum('credit');
             if (round($debitTotal, 2) !== round($creditTotal, 2)) {
@@ -17,7 +17,7 @@ class AccountingService {
 
             $entry = JournalEntry::create([
                 'voucher_number' => 'JV-' . time() . '-' . rand(1000,9999),
-                'date' => now()->toDateString(),
+                'date' => $date ?: now()->toDateString(),
                 'description' => $desc,
                 'reference_type' => $refType,
                 'reference_id' => $refId,
@@ -105,5 +105,32 @@ class AccountingService {
             ['account_code' => '2000', 'debit' => $amount, 'credit' => 0, 'desc' => 'AP'],
             ['account_code' => '1200', 'debit' => 0, 'credit' => $amount, 'desc' => 'Inventory'],
         ]);
+    }
+
+    /**
+     * Till close: reconcile the physical drawer with what the ledger already
+     * holds. Sales/refunds posted to Cash (1001) as they happened, so only the
+     * difference needs posting. An overage (counted above expected) debits Cash
+     * and credits Cash Over/Short; a shortage does the reverse.
+     */
+    public function recordTillVariance($variance, $branchId, $refId)
+    {
+        $variance = round((float) $variance, 2);
+
+        if ($variance === 0.0) {
+            return;
+        }
+
+        $lines = $variance > 0
+            ? [
+                ['account_code' => '1001', 'debit' => $variance, 'credit' => 0, 'desc' => 'Cash over (till)'],
+                ['account_code' => '5200', 'debit' => 0, 'credit' => $variance, 'desc' => 'Cash over/short'],
+            ]
+            : [
+                ['account_code' => '5200', 'debit' => -$variance, 'credit' => 0, 'desc' => 'Cash over/short'],
+                ['account_code' => '1001', 'debit' => 0, 'credit' => -$variance, 'desc' => 'Cash short (till)'],
+            ];
+
+        $this->postEntry('Till closing variance', $branchId, 'till_closing', $refId, $lines);
     }
 }
