@@ -13,12 +13,11 @@ class JournalEntry extends Model
 
     protected $fillable = [
         'voucher_number', 'date', 'description', 'reference_type',
-        'reference_id', 'branch_id', 'total_debit', 'total_credit', 'posted'
+        'reference_id', 'branch_id', 'total_debit', 'total_credit'
     ];
 
     protected $casts = [
         'date' => 'date',
-        'posted' => 'boolean',
         'total_debit' => 'decimal:2',
         'total_credit' => 'decimal:2',
     ];

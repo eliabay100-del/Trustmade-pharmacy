@@ -30,7 +30,8 @@ class SalesSheetExport implements FromCollection, WithTitle, WithHeadings, WithM
     public function collection(): Enumerable
     {
         return IssuedItem::with(['purchaseBatch.drug', 'customer'])
-            ->where('branch_id', $this->branchId)
+            // Null branch = Owner/Admin consolidated view across all branches.
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('issue_date', $this->month)
             ->whereYear('issue_date', $this->year)
             ->orderBy('issue_date')

@@ -9,13 +9,12 @@ class Ledger extends Model
 {
     protected $fillable = [
         'journal_entry_id', 'account_id', 'branch_id',
-        'debit', 'credit', 'balance', 'description'
+        'debit', 'credit', 'description'
     ];
 
     protected $casts = [
         'debit' => 'decimal:2',
         'credit' => 'decimal:2',
-        'balance' => 'decimal:2',
     ];
 
     public function journalEntry(): BelongsTo { return $this->belongsTo(JournalEntry::class); }

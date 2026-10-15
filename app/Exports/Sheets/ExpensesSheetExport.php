@@ -30,7 +30,8 @@ class ExpensesSheetExport implements FromCollection, WithTitle, WithHeadings, Wi
     public function collection(): Enumerable
     {
         return Expense::with('category')
-            ->where('branch_id', $this->branchId)
+            // Null branch = Owner/Admin consolidated view across all branches.
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('expense_date', $this->month)
             ->whereYear('expense_date', $this->year)
             ->orderBy('expense_date')

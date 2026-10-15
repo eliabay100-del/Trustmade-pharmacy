@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command('session:gc')->daily();
 Schedule::command('cache:prune-stale-tags')->hourly();
+
+// Nightly database backup (storage/app/backups, keeps BACKUP_KEEP files).
+Schedule::command('pmas:backup')->dailyAt('02:30')->withoutOverlapping();

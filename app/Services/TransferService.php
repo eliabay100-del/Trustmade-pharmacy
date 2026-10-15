@@ -11,7 +11,7 @@ class TransferService {
             throw new \Exception("Source and destination must differ.");
         }
 
-        return DB::transaction(function () use ($drugId, $sourceId, $destId, $qty, $userId) {
+        return DB::transaction(function () use ($itemType, $itemId, $sourceId, $destId, $qty, $userId) {
             // CONCURRENCY FIX: same lockForUpdate() protection as
             // InventoryService — prevents a transfer and a dispense (or
             // two transfers) from racing on the same batch's stock.

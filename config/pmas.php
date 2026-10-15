@@ -13,4 +13,20 @@ return [
     // Business settings page, which feeds the --brand-* CSS variables.
     'default_brand_primary_color' => env('BRANDING_PRIMARY_COLOR', '#12A594'),
     'default_brand_accent_color' => env('BRANDING_ACCENT_COLOR', '#101B2D'),
+
+    /*
+    | First-run administrator account, created by ProductionSeeder. There is
+    | deliberately no hard-coded password: set ADMIN_PASSWORD before seeding
+    | (the seeder prints a random one if you don't) and change it after the
+    | first login. Read via config so it still works when config is cached.
+    */
+    'admin_name' => env('ADMIN_NAME', 'Admin User'),
+    'admin_email' => env('ADMIN_EMAIL', 'admin@pmas.com'),
+    'admin_password' => env('ADMIN_PASSWORD'),
+
+    // Nightly database backups (php artisan pmas:backup): how many to keep.
+    'backup_keep' => (int) env('BACKUP_KEEP', 14),
+
+    // Full path to the mysqldump binary when it is not on PATH.
+    'mysqldump_path' => env('MYSQLDUMP_PATH'),
 ];

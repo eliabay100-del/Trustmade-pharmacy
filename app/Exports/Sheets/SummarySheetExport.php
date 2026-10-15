@@ -26,13 +26,15 @@ class SummarySheetExport implements FromArray, WithTitle, WithHeadings, WithStyl
 
     public function array(): array
     {
+        // Null branch = Owner/Admin consolidated view across all branches.
         $sales = IssuedItem::with('purchaseBatch')
-            ->where('branch_id', $this->branchId)
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('issue_date', $this->month)
             ->whereYear('issue_date', $this->year)
             ->get();
 
-        $purchases = PurchaseBatch::where('branch_id', $this->branchId)
+        $purchases = PurchaseBatch::query()
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('purchase_date', $this->month)
             ->whereYear('purchase_date', $this->year)
             ->get();
@@ -50,7 +52,8 @@ class SummarySheetExport implements FromArray, WithTitle, WithHeadings, WithStyl
 
         // PART C — total expenses for the period (soft-deleted ones are
         // excluded because their posting was reversed).
-        $totalExpenses = (float) Expense::where('branch_id', $this->branchId)
+        $totalExpenses = (float) Expense::query()
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('expense_date', $this->month)
             ->whereYear('expense_date', $this->year)
             ->sum('amount');

@@ -70,13 +70,9 @@ class ReportController extends Controller
             'year' => 'required|integer|min:2000|max:2100',
         ]);
 
-        // NOTE: the export currently scopes to one branch_id (nullable
-        // for Owner/Admin). MonthlyAccountingExport's underlying sheet
-        // queries use where('branch_id', $branchId) directly — for an
-        // Owner/Admin exporting across all branches, this needs the same
-        // null-safe treatment as above. Flagging rather than silently
-        // changing the Export classes' query shape in this pass — worth
-        // a dedicated look if Owner/Admin needs a consolidated export.
+        // Null for Owner/Admin, meaning "all branches". Every sheet in
+        // MonthlyAccountingExport treats a null branch as a consolidated
+        // view rather than a literal "branch_id IS NULL" match.
         $branchId = auth()->user()->branch_id;
         $filename = 'pmas-accounting-' . $validated['year'] . '-' . str_pad($validated['month'], 2, '0', STR_PAD_LEFT) . '.xlsx';
 

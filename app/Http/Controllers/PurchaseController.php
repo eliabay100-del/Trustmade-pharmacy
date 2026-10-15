@@ -92,9 +92,10 @@ class PurchaseController extends Controller
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:drug,product',
             'items.*.item_id' => 'required|integer',
-            // Batch numbers are auto-generated for callers that don't send one
-            // (legacy single-line posts, tests), so repeated purchases never
-            // trip the unique(batch_number, supplier_id) constraint.
+            // Batch numbers are optional: callers that don't send one get an
+            // auto-generated value below. A batch number is a manufacturer lot
+            // number, so the same value legitimately recurs across receipts —
+            // it is intentionally not unique on this table.
             'items.*.batch_number' => ['nullable', 'string', 'max:255'],
             'items.*.quantity_received' => 'required|integer|min:1',
             'items.*.quantity_unit' => 'required|in:tablet,strip,pack',

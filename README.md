@@ -20,8 +20,14 @@ these), MySQL/MariaDB reachable on `127.0.0.1:3306`, Node 24+ and Composer.
 First-time setup, from the project folder:
 
 ```bash
-composer setup          # installs deps, copies .env.example, key:generate, migrate, storage:link, npm build
+composer setup          # deps, .env, key:generate, migrate, seed, storage:link, npm build
 ```
+
+That seeds the chart of accounts, the default expense categories, branding
+defaults and one administrator from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in
+`.env.example` (`admin@pmas.com` / `password`), plus a starter catalog of demo
+drugs and products. Change `ADMIN_PASSWORD` before running it if you want a
+different first password.
 
 Then point the database keys in `.env` at your server (`DB_DATABASE`,
 `DB_USERNAME`, `DB_PASSWORD`) and run `php artisan migrate --force` again.
@@ -40,23 +46,47 @@ Port 8000 is already used on this machine by the JobPilot backend, so this app
 listens on 8010. Change the port in `composer.json` if that is taken too — a
 second server can bind the same port on Windows and then the wrong app answers.
 
-To host it for the pharmacy rather than for development, copy
-`.env.production.example` to `.env`, fill in the database credentials, then:
+### Hosting it for the pharmacy
+
+Copy `.env.production.example` to `.env`, fill in the database credentials and
+set `APP_ENV=production`, `APP_DEBUG=false`, then:
 
 ```bash
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
+php artisan key:generate --force                       # generate a NEW key; never reuse the dev key
 php artisan migrate --force
+php artisan db:seed --class=Database\\Seeders\\ProductionSeeder --force
 php artisan storage:link
-php artisan optimize        # caches config, routes and views
+php artisan optimize                                   # caches config, routes and views
 ```
 
-Add the scheduler cron so session cleanup and cache pruning run automatically:
+`ProductionSeeder` creates only what a real deployment needs — the Main Branch,
+the chart of accounts, the default expense categories, branding defaults and
+one administrator — and deliberately does **not** insert the demo drugs and
+products from `CatalogSeeder`. If `ADMIN_PASSWORD` is left blank the seeder
+generates a strong password and prints it once; store it, log in, and change it
+under the user's profile straight away. See `docs/DEPLOYMENT.md` for the full
+go-live checklist.
+
+Add the scheduler cron so session cleanup, cache pruning and the nightly
+database backup run automatically:
 
 ```bash
 # On the server, add this one line to crontab -e:
 * * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+The nightly `pmas:backup` writes a gzipped SQL dump to
+`storage/app/private/backups` and keeps the newest `BACKUP_KEEP` files (default
+14). It needs `mysqldump`, which it finds automatically on Windows; otherwise
+put it on `PATH` or set `MYSQLDUMP_PATH`. Run it by hand any time with
+`php artisan pmas:backup`.
+
+Before exposing this host beyond the local network, serve it over HTTPS:
+terminate TLS at a reverse proxy and set `SESSION_SECURE_COOKIE=true`; if that
+proxy is not on this host, set `TRUSTED_PROXIES` to its address(es) so the app
+sees the real scheme and client IP.
 
 `php artisan optimize:clear` afterwards — while those caches exist, edits to
 `.env`, routes and Blade files are ignored. `APP_TIMEZONE` is set to

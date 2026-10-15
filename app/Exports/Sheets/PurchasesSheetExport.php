@@ -26,7 +26,8 @@ class PurchasesSheetExport implements FromCollection, WithTitle, WithHeadings, W
     public function collection(): Enumerable
     {
         return PurchaseBatch::with(['drug', 'supplier'])
-            ->where('branch_id', $this->branchId)
+            // Null branch = Owner/Admin consolidated view across all branches.
+            ->when($this->branchId, fn ($q) => $q->where('branch_id', $this->branchId))
             ->whereMonth('purchase_date', $this->month)
             ->whereYear('purchase_date', $this->year)
             ->orderBy('purchase_date')
