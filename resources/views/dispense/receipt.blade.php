@@ -105,12 +105,7 @@
                     <td class="muted">{{ $item->quantity_issued }} × ${{ number_format($item->selling_price_per_unit, 2) }}@if($vat) (incl. VAT) @endif</td>
                     <td class="right">${{ number_format($item->total_amount, 2) }}</td>
                 </tr>
-                @if($vat)
-                    <tr>
-                        <td class="fine">before VAT ${{ number_format($vat['items'][$item->id]['net'], 2) }}</td>
-                        <td class="fine right">VAT ${{ number_format($vat['items'][$item->id]['vat'], 2) }}</td>
-                    </tr>
-                @endif
+
             @endforeach
         </table>
         <hr>
@@ -141,9 +136,7 @@
                 </tr>
             @endforeach
         </table>
-        @if($vat)
-            <div class="fine center">Prices include VAT. VAT = ${{ number_format($vat['total'], 2) }} × {{ $vat['rate_label'] }} ÷ {{ $vat['divisor_label'] }} = ${{ number_format($vat['vat'], 2) }}</div>
-        @endif
+
         <hr>
         <div class="center muted">{{ $receiptFooter ?? 'Thank you' }}</div>
     </div>

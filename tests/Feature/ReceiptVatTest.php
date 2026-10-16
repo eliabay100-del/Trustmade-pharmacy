@@ -101,9 +101,7 @@ class ReceiptVatTest extends TestCase
         $text = trim(preg_replace('/\s+/', ' ', strip_tags($html, ' ')));
 
         $this->assertStringContainsString('2 × $45.00 (incl. VAT) $90.00', $text);
-        $this->assertStringContainsString('before VAT $78.26 VAT $11.74', $text);
         $this->assertStringContainsString('Before VAT $78.26 VAT 15% $11.74 Total (incl. VAT) $90.00', $text);
-        $this->assertStringContainsString('Prices include VAT. VAT = $90.00 × 15 ÷ 115 = $11.74', $text);
     }
 
     public function test_receipt_has_no_vat_until_the_owner_sets_a_rate(): void
