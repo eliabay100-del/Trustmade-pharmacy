@@ -38,7 +38,7 @@
                     </td>
                     @php
                         $recordNames = ['Drug' => 'Drug', 'Product' => 'Product', 'DrugCategory' => 'Drug category', 'ProductCategory' => 'Product category', 'PurchaseBatch' => 'Stock batch', 'IssuedItem' => 'Sale item', 'Order' => 'Sale', 'User' => 'Staff account', 'Branch' => 'Branch', 'Supplier' => 'Supplier', 'Customer' => 'Customer', 'StockAdjustment' => 'Stock adjustment', 'CustomerReturn' => 'Customer return', 'SupplierReturn' => 'Supplier return', 'Payment' => 'Payment'];
-                        $fieldNames = ['name' => 'Name', 'email' => 'Email', 'role' => 'Role', 'branch_id' => 'Branch', 'quantity_remaining' => 'Stock remaining', 'quantity_received' => 'Stock received', 'quantity_issued' => 'Quantity sold', 'selling_price_per_unit' => 'Selling price', 'cost_per_unit' => 'Cost price', 'active' => 'Status', 'sku' => 'SKU', 'category_id' => 'Category', 'total_amount' => 'Amount', 'password' => 'Password'];
+                        $fieldNames = ['name' => 'Name', 'username' => 'Username', 'email' => 'Email', 'role' => 'Role', 'branch_id' => 'Branch', 'quantity_remaining' => 'Stock remaining', 'quantity_received' => 'Stock received', 'quantity_issued' => 'Quantity sold', 'selling_price_per_unit' => 'Selling price', 'cost_per_unit' => 'Cost price', 'active' => 'Status', 'sku' => 'SKU', 'category_id' => 'Category', 'total_amount' => 'Amount', 'password' => 'Password'];
                         $details = collect($log->changes ?? [])->map(function ($value, $key) use ($fieldNames) {
                             $label = $fieldNames[$key] ?? ucfirst(str_replace('_', ' ', $key));
                             if ($key === 'active') $value = $value ? 'Active' : 'Inactive';

@@ -26,6 +26,7 @@ return [
     | first login. Read via config so it still works when config is cached.
     */
     'admin_name' => env('ADMIN_NAME', 'Admin User'),
+    'admin_username' => env('ADMIN_USERNAME', 'admin'),
     'admin_email' => env('ADMIN_EMAIL', 'admin@pmas.com'),
     'admin_password' => env('ADMIN_PASSWORD'),
 

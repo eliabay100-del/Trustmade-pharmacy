@@ -20,6 +20,7 @@
         <thead class="bg-gray-50/50">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Name</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Username</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Email</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Staff role</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Assigned branch</th>
@@ -31,6 +32,7 @@
             @forelse($users as $user)
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $user->name }}</td>
+                    <td class="px-5 py-3.5 text-sm text-[#1E2530]">{{ $user->username ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $user->email }}</td>
                     <td class="px-5 py-3.5 text-sm">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -44,7 +46,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-5 py-12 text-center text-sm text-[#6B7A93]">No users yet.</td>
+                    <td colspan="7" class="px-5 py-12 text-center text-sm text-[#6B7A93]">No users yet.</td>
                 </tr>
             @endforelse
         </tbody>

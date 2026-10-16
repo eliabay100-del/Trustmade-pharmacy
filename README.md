@@ -24,10 +24,11 @@ composer setup          # deps, .env, key:generate, migrate, seed, storage:link,
 ```
 
 That seeds the chart of accounts, the default expense categories, branding
-defaults and one administrator from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in
-`.env.example` (`admin@pmas.com` / `password`), plus a starter catalog of demo
-drugs and products. Change `ADMIN_PASSWORD` before running it if you want a
-different first password.
+defaults and one administrator from `ADMIN_USERNAME` / `ADMIN_EMAIL` /
+`ADMIN_PASSWORD` in `.env.example` (`admin` / `admin@pmas.com` / `password`),
+plus a starter catalog of demo drugs and products. Staff sign in with their
+username, not their email. Change `ADMIN_PASSWORD` before running it if you
+want a different first password.
 
 Then point the database keys in `.env` at your server (`DB_DATABASE`,
 `DB_USERNAME`, `DB_PASSWORD`) and run `php artisan migrate --force` again.

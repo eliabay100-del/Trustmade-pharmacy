@@ -15,9 +15,17 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Email (used to log in)</label>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Username (used to log in)</label>
+            <input type="text" name="username" value="{{ old('username') }}" autocomplete="off"
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
+            <p class="text-xs text-[#6B7A93] mt-1">Letters, numbers, dots, dashes and underscores. Not case-sensitive — stored in lower case.</p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Email (stored on the account)</label>
             <input type="email" name="email" value="{{ old('email') }}"
                    class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
+            <p class="text-xs text-[#6B7A93] mt-1">Kept for your records. Staff sign in with their username, not this email.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -25,6 +26,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'role',
@@ -42,6 +44,19 @@ class User extends Authenticatable
         'password' => 'hashed',
         'active' => 'boolean',
     ];
+
+    /**
+     * Usernames are the login identifier, so they are always stored trimmed
+     * and lower-cased. That makes lookups and the unique index behave the same
+     * on every database (MySQL's collation is case-insensitive, SQLite's is
+     * not). An empty value is stored as NULL.
+     */
+    public function setUsernameAttribute($value): void
+    {
+        $value = trim((string) $value);
+
+        $this->attributes['username'] = $value === '' ? null : Str::lower($value);
+    }
 
     public function branch(): BelongsTo
     {

@@ -22,30 +22,31 @@ class LoginThrottleTest extends TestCase
     {
         $this->withoutMiddleware(ThrottleRequests::class);
 
-        $payload = ['email' => 'attacker@example.com', 'password' => 'wrong-password'];
+        $payload = ['username' => 'attacker', 'password' => 'wrong-password'];
 
         for ($i = 0; $i < 5; $i++) {
-            $this->post(route('login.submit'), $payload)->assertSessionHasErrors('email');
+            $this->post(route('login.submit'), $payload)->assertSessionHasErrors('username');
         }
 
-        $this->post(route('login.submit'), $payload)->assertSessionHasErrors('email');
+        $this->post(route('login.submit'), $payload)->assertSessionHasErrors('username');
 
         $errors = app('session.store')->get('errors');
         $this->assertStringContainsString(
             'Too many login attempts',
-            $errors->getBag('default')->first('email')
+            $errors->getBag('default')->first('username')
         );
     }
 
     public function test_valid_credentials_still_log_in(): void
     {
         $user = User::factory()->create([
+            'username' => 'owner',
             'email' => 'owner@example.com',
             'password' => bcrypt('secret-password'),
             'active' => true,
         ]);
 
-        $this->post(route('login.submit'), ['email' => $user->email, 'password' => 'secret-password'])
+        $this->post(route('login.submit'), ['username' => $user->username, 'password' => 'secret-password'])
             ->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($user);

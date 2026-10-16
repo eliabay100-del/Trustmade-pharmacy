@@ -38,7 +38,7 @@ Must be set correctly:
 | `DB_*` | host, port, database, username, password |
 | `SESSION_SECURE_COOKIE` | `true` once served over HTTPS |
 | `TRUSTED_PROXIES` | proxy IPs, only if behind a reverse proxy |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | first administrator (see step 5) |
+| `ADMIN_USERNAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | first administrator; the username is what you sign in with (see step 5) |
 
 `APP_KEY` is **not** set here — it is generated in step 4.
 
@@ -91,7 +91,9 @@ php artisan db:seed --class=Database\Seeders\ProductionSeeder --force
   branding defaults and one administrator. It does **not** insert the demo
   drugs/products.
 - If `ADMIN_PASSWORD` is blank, the seeder generates a strong password and
-  prints it once. Copy it, log in, and change it immediately (see step 9).
+  prints it once. Copy it, then sign in with the administrator **username**
+  (`ADMIN_USERNAME`, default `admin`) and change the password immediately
+  (see step 9). Staff sign in with a username, not an email address.
 
 Do **not** run the default `php artisan db:seed` in production — it also loads
 `CatalogSeeder`, which puts ~15 demo drugs and ~20 demo products into the live

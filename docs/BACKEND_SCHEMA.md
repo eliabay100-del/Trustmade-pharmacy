@@ -50,15 +50,17 @@ Legend used in the tables below:
 ### 2.1 `users`
 
 - **Purpose:** staff accounts and role/branch assignment.
-- **PK:** `id`. **Unique:** `email`. **FK:** `branch_id → branches.id` (ON DELETE SET NULL).
-- **Indexes:** `PRIMARY`, `users_email_unique`, `users_branch_id_foreign`.
+- **PK:** `id`. **Unique:** `email`, `username`. **FK:** `branch_id → branches.id` (ON DELETE SET NULL).
+- **Indexes:** `PRIMARY`, `users_email_unique`, `users_username_unique`, `users_branch_id_foreign`.
 - **Soft deletes:** no. **LogsActivity:** yes. **Branch-scoped:** the user's own `branch_id`; NULL means all-branch (Owner/Admin).
+- **Login:** staff sign in with `username` + password (`AuthController::login`); `email` is still collected when an account is created but is no longer a login identifier. Usernames are stored lower-case.
 
 | Column | Type | Null | Default | Notes |
 |---|---|---|---|---|
 | id | bigint unsigned | NO | — | auto-increment |
 | name | varchar(255) | NO | — | |
-| email | varchar(255) | NO | — | unique |
+| username | varchar(255) | YES | NULL | unique; the login identifier, stored lower-case (model mutator); added by `2026_10_16_000001` and backfilled from the email local part |
+| email | varchar(255) | NO | — | unique; not used to sign in |
 | email_verified_at | timestamp | YES | NULL | never populated by app code |
 | password | varchar(255) | NO | — | hashed cast |
 | active | tinyint(1) | NO | 1 | added by base `create_users`; the later `add_active` migration is a **no-op** (column already exists) |
@@ -887,7 +889,7 @@ Live values observed: `vat_rate_percent = 15`, `business_name = TRUSTMED Pharmac
 - `pay_later` requires a supplier and a due date; non-cash non-check methods require a `payment_reference`; checks require number, date and bank.
 - Expense creation requires a resolvable `branch_id` (user's branch or an explicit one).
 - Soft delete of an expense always writes an `expense_reversal` journal entry first (update also reverses then re-posts).
-- Login refuses inactive users (`users.active`), and login attempts are rate-limited (`throttle:5,1`; the route is also referenced in an unmerged patch, see §11).
+- Login refuses inactive users (`users.active`), needs a valid `username` (the email is no longer accepted), and login attempts are rate-limited (`throttle:5,1`; the route is also referenced in an unmerged patch, see §11).
 
 ---
 
@@ -956,7 +958,7 @@ These are explicitly **not** part of the current `main` schema/behaviour and are
 
 ## Files read to build this document
 
-- Migrations (all 41): `0001_01_01_000000_create_users_table.php`, `0001_01_01_000001_create_cache_table.php`, `0001_01_01_000002_create_jobs_table.php`, `2019_12_14_000001_create_personal_access_tokens_table.php`, `2024_01_01_000001_create_pmas_tables.php`, `2026_08_26_000001_add_quantity_remaining_to_purchase_batches_table.php`, `2026_08_27_000001..000005`, `2026_08_28_000001..000003`, `2026_08_30_000001_add_role_to_users_table.php`, `2026_08_31_000001..000008`, `2026_09_01_000001..000002`, `2026_09_02_000001..000005`, `2026_10_09_000001`, `2026_10_11_000001..000007`, `2026_10_12_000001_add_performance_indexes.php`, `2026_10_15_000001_ensure_core_posting_accounts.php`, `2026_10_15_000002_add_cash_over_short_account.php`
+- Migrations (all 42): `0001_01_01_000000_create_users_table.php`, `0001_01_01_000001_create_cache_table.php`, `0001_01_01_000002_create_jobs_table.php`, `2019_12_14_000001_create_personal_access_tokens_table.php`, `2024_01_01_000001_create_pmas_tables.php`, `2026_08_26_000001_add_quantity_remaining_to_purchase_batches_table.php`, `2026_08_27_000001..000005`, `2026_08_28_000001..000003`, `2026_08_30_000001_add_role_to_users_table.php`, `2026_08_31_000001..000008`, `2026_09_01_000001..000002`, `2026_09_02_000001..000005`, `2026_10_09_000001`, `2026_10_11_000001..000007`, `2026_10_12_000001_add_performance_indexes.php`, `2026_10_15_000001_ensure_core_posting_accounts.php`, `2026_10_15_000002_add_cash_over_short_account.php`, `2026_10_16_000001_add_username_to_users_table.php`
 - Models (all 27): `Account`, `ActivityLog`, `Branch`, `Customer`, `CustomerReturn`, `Drug`, `DrugCategory`, `Expense`, `ExpenseCategory`, `IssuedItem`, `JournalEntry`, `Ledger`, `Order`, `Payment`, `Product`, `ProductCategory`, `PurchaseBatch`, `Setting`, `StockAdjustment`, `StockCard`, `StockTransfer`, `Supplier`, `SupplierPayment`, `SupplierPaymentAllocation`, `SupplierReturn`, `TillClosing`, `User`
 - Traits: `app/Traits/LogsActivity.php`
 - Services: `AccountingService.php`, `InventoryService.php`, `SupplierOwedService.php`, `TransferService.php`, `EscPosReceipt.php`

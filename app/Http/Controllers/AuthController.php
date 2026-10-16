@@ -17,26 +17,30 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'username' => 'required|string',
             'password' => 'required',
         ]);
 
+        // Usernames are stored trimmed and lower-case (see User model), so
+        // normalise the typed value the same way before matching.
+        $credentials['username'] = Str::lower(trim($credentials['username']));
+
         // Per-credential+IP throttle on top of the routes' flat throttle:5,1, so
         // an attack that rotates source IPs still cannot hammer one account.
-        $throttleKey = Str::transliterate(Str::lower($credentials['email']) . '|' . $request->ip());
+        $throttleKey = Str::transliterate($credentials['username'] . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
             return back()->withErrors([
-                'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
-            ])->onlyInput('email');
+                'username' => "Too many login attempts. Please try again in {$seconds} seconds.",
+            ])->onlyInput('username');
         }
 
         if (Auth::attempt($credentials)) {
             if (!Auth::user()->active) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'This staff account is inactive. Contact an administrator.'])->onlyInput('email');
+                return back()->withErrors(['username' => 'This staff account is inactive. Contact an administrator.'])->onlyInput('username');
             }
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
@@ -46,8 +50,8 @@ class AuthController extends Controller
         RateLimiter::hit($throttleKey, 60);
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+            'username' => 'The provided credentials do not match our records.',
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)

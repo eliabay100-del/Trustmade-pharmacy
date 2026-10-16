@@ -50,6 +50,19 @@ class ProductionSeeder extends Seeder
             return;
         }
 
+        // The login identifier. Falls back to the email's local part, then
+        // 'admin', so a fresh install always has something to sign in with.
+        $username = Str::lower(trim((string) (config('pmas.admin_username') ?: Str::before($email, '@'))));
+        if ($username === '') {
+            $username = 'admin';
+        }
+
+        $base = $username;
+        $suffix = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $base . (++$suffix);
+        }
+
         $password = config('pmas.admin_password');
         $generated = false;
 
@@ -61,6 +74,7 @@ class ProductionSeeder extends Seeder
 
         User::create([
             'name' => config('pmas.admin_name') ?: 'Admin User',
+            'username' => $username,
             'email' => $email,
             'password' => Hash::make($password),
             'branch_id' => $branchId,
@@ -69,10 +83,10 @@ class ProductionSeeder extends Seeder
         ]);
 
         if ($generated) {
-            $this->command?->warn("Created administrator {$email} with generated password: {$password}");
+            $this->command?->warn("Created administrator {$username} ({$email}) with generated password: {$password}");
             $this->command?->warn('Store it now and change it after the first login.');
         } else {
-            $this->command?->info("Created administrator {$email} using ADMIN_PASSWORD from the environment.");
+            $this->command?->info("Created administrator {$username} ({$email}) using ADMIN_PASSWORD from the environment.");
         }
     }
 }
