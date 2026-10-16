@@ -182,7 +182,9 @@ class DispenseController extends Controller
 
     public function searchDrug(Request $request)
     {
-        $query = $request->input('q');
+        $query = Str::of((string) $request->input('q'))
+            ->replace(['%', '_'], ['\%', '\_'])
+            ->value();
         $results = Drug::where('name', 'like', "%{$query}%")->limit(5)->get([
             'id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
         ]);

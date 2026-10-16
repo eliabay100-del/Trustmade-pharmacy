@@ -158,7 +158,7 @@ Route::middleware(['auth'])->group(function () {
         // these settings re-brands the whole system.
         // ============================================================
         Route::get('/settings/branding', [SettingController::class, 'edit'])->name('settings.branding');
-        Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update');
+        Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update')->middleware('throttle:15,1');
 
         // ============================================================
         // Opening balances. Owner/Admin only: the day-one figures
@@ -204,9 +204,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:owner_admin'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('throttle:15,1');
+
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update')->middleware('throttle:15,1');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
