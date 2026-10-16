@@ -11,10 +11,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="{{ $brandPrimary }}">
+    <link rel="manifest" href="/manifest.json">
     <title>{{ $brandName }} - Pharmacy System</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#F5F7FA] text-[#1E2530]">
+    <div id="offline-banner" class="hidden fixed top-0 inset-x-0 z-[9999] bg-red-600 text-white text-center text-sm py-2">You are offline. Sales and other actions cannot be saved until you reconnect.</div>
+    <script>(function(){var b=document.getElementById('offline-banner');if(!b)return;function u(){b.classList.toggle('hidden',navigator.onLine);}u();window.addEventListener('online',u);window.addEventListener('offline',u);})();</script>
+
+    <script>
+    (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var host = location.hostname;
+        if (location.protocol !== 'https:' && host !== 'localhost' && host !== '127.0.0.1') return;
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+    })();
+    </script>
 
     @auth
     {{-- Mobile top bar --}}

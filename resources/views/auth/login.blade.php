@@ -10,6 +10,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="{{ $brandPrimary }}">
+    <link rel="manifest" href="/manifest.json">
     <title>Sign in | {{ $brandName }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -25,6 +27,9 @@
     </style>
 </head>
 <body class="login-shell text-[#182230]">
+    <div id="offline-banner" class="hidden fixed top-0 inset-x-0 z-[9999] bg-red-600 text-white text-center text-sm py-2">You are offline. Sales and other actions cannot be saved until you reconnect.</div>
+    <script>(function(){var b=document.getElementById('offline-banner');if(!b)return;function u(){b.classList.toggle('hidden',navigator.onLine);}u();window.addEventListener('online',u);window.addEventListener('offline',u);})();</script>
+<script>(function(){if(!('serviceWorker' in navigator))return;if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});})();</script>
     <div class="relative isolate flex min-h-screen flex-col items-center justify-center px-5 py-8 sm:px-8">
         <div class="login-shape login-shape-a"></div><div class="login-shape login-shape-b"></div><div class="login-shape login-shape-c hidden sm:block"></div>
         <main class="relative grid w-full max-w-5xl overflow-hidden rounded-3xl login-glass lg:grid-cols-[1fr_1.05fr]">

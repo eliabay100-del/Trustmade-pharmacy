@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);
+        // Defense in depth: safe headers everywhere, strict headers + HTTPS
+        // redirect in production. Never breaks the app's own behaviour.
+        $middleware->web(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

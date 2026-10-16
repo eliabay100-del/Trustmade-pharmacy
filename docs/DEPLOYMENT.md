@@ -208,3 +208,89 @@ Both gaps found during the schema review are now implemented:
   from the current books — so re-saving the same figures, or correcting a
   typo, changes nothing extra. Do this **once, before recording sales or
   purchases**.
+---
+
+## 13. Hardening when you expose this app to the internet
+
+The app is a single-tenant pharmacy system. Before it leaves the LAN (hosting, public
+IP, remote access, reverse proxy):
+
+- **TLS is mandatory.** Terminate HTTPS at the reverse proxy and set
+  `SESSION_SECURE_COOKIE=true`, `TRUSTED_PROXIES` (the proxy's IP), and re-run
+  `php artisan optimize`. The template already has these knobs.
+- **Keep `APP_ENV=production` and `APP_DEBUG=false`.** The `SecurityHeaders`
+  middleware sends HSTS (`max-age=31536000; includeSubDomains`), `X-Frame-Options:
+  SAMEORIGIN`, `X-Content-Type-Options: nosniff`, a `Referrer-Policy`,
+  `Permissions-Policy` (camera/mic/geolocation disabled) and a relaxed
+  `Content-Security-Policy`. It also 301-redirects plain HTTP to HTTPS.
+- **Firewall the database.** MySQL should listen on `127.0.0.1` only (or a
+  private interface); never expose port 3306. Restrict the app to the proxy only.
+- **Lock admin access** - change the seeded password on first login, create one
+  account per person, and deactivate leavers. Login is per-credential rate
+  limited (`throttle:5,1`), but there is no 2FA, so restrict by IP or put the
+  app behind Cloudflare Access / Tailscale / a VPN if your pharmacy does not need
+  to be reached from arbitrary networks.
+- **`X-Forwarded-*` headers** must not be trusted from arbitrary clients - set
+  `TRUSTED_PROXIES` to the real proxy, not `*`, whenever you can.
+- Keep secrets out of git (`.env`, keystores, uploads), and `optimize` only after
+  `.env` and routes are final.
+
+## 14. Latency: making it fast
+
+Most perceived speed comes from the server and ops, not the app:
+
+- **HTTP/2 (or 3)** on the reverse proxy - enabled by default in modern nginx;
+  cannot be toggled from PHP. Multiplexes assets.
+- **Gzip/Brotli** at nginx for text assets (`text/*`, `application/json`).
+- **nginx location for static assets** `expires 1y` + `add_header Cache-Control
+  "public, immutable"` for the `/build/` folder (Vite emits hashed filenames, so
+  immutable caching is safe). Make sure `/sw.js` and `/manifest.json` are not
+  cached (`Cache-Control: no-cache`) so PWA updates ship promptly.
+- **OPcache** in the php.ini - `opcache.enable=1`,
+  `opcache.memory_consumption=128`, `opcache.validate_timestamps=0` (call
+  `opcache_reset()` from `php artisan` after deploys).
+- **MySQL**: `innodb_buffer_pool_size` ~ 50-70% of RAM on a dedicated DB box.
+  This database stays small (a few GB after years), so tuning beyond this is
+  rarely needed.
+- **Run `php artisan optimize`** so config, routes and views are cached
+  (`optimize:clear` after `.env` or route edits).
+- Keep the app on the same region as its users - no point racing intercontinental
+  links for a pharmacy.
+
+## 15. Internet dependency (offline behaviour)
+
+The app was built for local, offline operation; hosting it puts sales on a link.
+
+**What the app does now, online or off:**
+
+- A service worker (`/sw.js`) caches the static assets (CSS, JS, logo) so the
+  layout loads on a weak connection, and an `offline.html` page is shown for any
+  navigation that fails because the network is down.
+- A red banner appears at the top of every page whenever the browser is offline.
+- Form submissions just fail with the browser's normal behaviour; no
+  transaction is silently lost (no offline write queue ships with this version).
+
+**What it does not do:** it cannot record a sale while disconnected - a
+server-rendered POS needs the server to validate stock, prices, VAT, accounting
+and number sequences.
+
+**Mitigations, in order of decreasing value:**
+
+1. **Keep a local fallback on site.** If possible, keep a second copy running
+   `php artisan serve` on an always-on PC on the LAN. Staff switch to its URL
+   (`http://<ip>:8010`) if the hosted one drops. Caveat: it must sync before
+   anyone uses the hosted copy again, otherwise you double-sell stock - this
+   split-brain case needs a written procedure, not just software.
+2. **Network resilience:** wired LAN, a UPS on the router/switch, and a
+   4G/5G failover router with automatic fallback. This fixes ~95% of real
+   outages for cheap.
+3. **Hosting region close to you** (Africa/EU for an Ethiopian pharmacy) cuts
+   latency and reduces the chance of an international link being the bottleneck.
+4. **A documented "offline procedure"** (paper forms + take just cash, re-enter
+   later) is, honestly, the cheapest and most robust option for rare outages.
+
+If you need **true offline-first sales** (record in the browser while
+disconnected, sync when back), that is a much larger feature (IndexedDB +
+background sync + conflict resolution) and is best planned as a dedicated
+phase rather than bolted on. Worth naming precisely so you know the limit of
+the mitigation shipped here.

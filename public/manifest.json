@@ -1,0 +1,18 @@
+{
+  "name": "{{ business_name | default('TRUSTMED PHARMACY') }}",
+  "short_name": "Trustmed",
+  "description": "Everything your pharmacy needs, in one calm place.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#edf4f3",
+  "theme_color": "#12A594",
+  "icons": [
+    {
+      "src": "/storage/branding/trustmed-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
