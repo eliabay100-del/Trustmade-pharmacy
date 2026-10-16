@@ -28,6 +28,9 @@ class SettingController extends Controller
         'vat_rate_percent' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
         // Part B — how many days ahead supplier payment reminders appear.
         'supplier_alert_days' => 'nullable|integer|min:1|max:90',
+        // How many days ahead the "expiring soon" alert looks. Only the three
+        // offered windows are accepted.
+        'expiry_alert_days' => 'nullable|integer|in:30,60,90',
     ];
 
     public function edit()
@@ -43,6 +46,7 @@ class SettingController extends Controller
             'brand_accent_color' => Setting::value('brand_accent_color', config('pmas.default_brand_accent_color')),
             'logo_path' => Setting::value('logo_path'),
             'supplier_alert_days' => Setting::value('supplier_alert_days', '7'),
+            'expiry_alert_days' => Setting::value('expiry_alert_days', '90'),
         ];
 
         return view('settings.branding', compact('settings'));
@@ -75,6 +79,10 @@ class SettingController extends Controller
         }
         Setting::put('brand_primary_color', $data['brand_primary_color']);
         Setting::put('brand_accent_color', $data['brand_accent_color']);
+
+        // Expiry alert window: only 30/60/90 are allowed (validated above);
+        // empty falls back to the 90-day default.
+        Setting::put('expiry_alert_days', (string) ($data['expiry_alert_days'] ?? 90));
 
         // --- Logo upload (validated above; stored safely under an ASCII name) ---
         if ($request->hasFile('logo')) {

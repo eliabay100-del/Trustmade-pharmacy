@@ -136,14 +136,23 @@
     </div>
 
     {{-- Expiring Soon --}}
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+    <div id="expiring-soon" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span class="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </span>
-            <h2 class="font-bold text-[#1E2530]">Expiring Within 30 Days</h2>
+            <div class="mr-auto">
+                <h2 class="font-bold text-[#1E2530]">Expiring Within {{ $expiryDays }} Days</h2>
+                <p class="text-xs text-[#6B7A93] mt-0.5">Stock on the shelf that runs out within the window you choose.</p>
+            </div>
+            <div class="inline-flex items-center gap-0.5 rounded-lg border border-gray-200 p-0.5" role="group" aria-label="Expiry alert window">
+                @foreach(\App\Models\Setting::EXPIRY_ALERT_WINDOWS as $window)
+                    <a href="{{ route('alerts.index', ['expiry' => $window]) }}#expiring-soon"
+                       class="px-3 py-1.5 text-xs font-semibold rounded-md transition-colors {{ $expiryDays === $window ? 'bg-[var(--brand-primary)] text-white' : 'text-[#6B7A93] hover:bg-gray-50' }}">{{ $window }} days</a>
+                @endforeach
+            </div>
         </div>
         @if($expiringSoon->count() > 0)
             <table class="min-w-full divide-y divide-gray-50">
@@ -163,7 +172,7 @@
                 </tbody>
             </table>
         @else
-            <p class="px-5 py-6 text-sm text-[#6B7A93]">Nothing expiring in the next 30 days.</p>
+            <p class="px-5 py-6 text-sm text-[#6B7A93]">Nothing expiring in the next {{ $expiryDays }} days.</p>
         @endif
     </div>
 

@@ -844,6 +844,7 @@ The `settings` table is read through `Setting::value()` (cached 5 min) and `Sett
 | `brand_accent_color` | `#101B2D` (`BrandingSeeder`) | `SettingController::update` | `SettingController::edit`; injected as `--brand-accent` CSS var |
 | `logo_path` | `branding/trustmed-logo.png` (`BrandingSeeder`) | `SettingController::update` (upload/remove) | branding views; `public` disk |
 | `supplier_alert_days` | `7` (inserted by migration `2026_10_11_000005`, re-asserted by `BrandingSeeder`, fallback `'7'` in code) | `SettingController::update` | `SupplierPaymentController::soonDays`, `AlertController`, `DashboardController`, `AppServiceProvider` sidebar badge |
+| `expiry_alert_days` | `90` (fallback `90` in code, seeded by `BrandingSeeder`; only `30`/`60`/`90` accepted, anything else falls back to `90`) | `SettingController::update` | `Setting::expiryAlertDays()` → `AlertController` (expiring-soon window, overridable per-visit by `?expiry=30\|60\|90`), `DashboardController` ("Expiring soon" card) |
 
 Live values observed: `vat_rate_percent = 15`, `business_name = TRUSTMED Pharmacy`, `logo_path = branding/<hash>.png`; `business_phone`, `business_address`, `receipt_header` are NULL. These are owner edits, not seeds.
 

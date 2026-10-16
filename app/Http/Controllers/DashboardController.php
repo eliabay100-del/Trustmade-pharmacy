@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Models\Setting;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -14,9 +15,12 @@ class DashboardController extends Controller
         $user = Auth::user();
         $branchId = $user->branch_id;
 
-        $cacheKey = 'dashboard:' . ($branchId ?? 'all');
+        // Same window as the Alerts page, so the two never disagree.
+        $expiryDays = Setting::expiryAlertDays();
 
-        $data = Cache::remember($cacheKey, 60, function () use ($user, $branchId) {
+        $cacheKey = 'dashboard:' . ($branchId ?? 'all') . ':expiry:' . $expiryDays;
+
+        $data = Cache::remember($cacheKey, 60, function () use ($user, $branchId, $expiryDays) {
             $scope = fn ($query, $column = 'branch_id') => $branchId ? $query->where($column, $branchId) : $query;
 
             $totalDrugs = $scope(DB::table('purchase_batches'))
@@ -45,7 +49,7 @@ class DashboardController extends Controller
                 ->count('d.id');
 
             $expiringSoonQuery = DB::table('purchase_batches as pb')->join('drugs as d', 'pb.drug_id', '=', 'd.id')
-                ->whereNotNull('pb.drug_id')->whereBetween('pb.expiry_date', [Carbon::today(), Carbon::today()->addDays(30)])->where('pb.quantity_remaining', '>', 0);
+                ->whereNotNull('pb.drug_id')->whereBetween('pb.expiry_date', [Carbon::today(), Carbon::today()->addDays($expiryDays)])->where('pb.quantity_remaining', '>', 0);
             $expiringSoon = $scope($expiringSoonQuery, 'pb.branch_id')->limit(5)->get()
                 ->map(fn ($row) => (object) ['drug_name' => $row->name, 'expiry_date' => $row->expiry_date, 'quantity_remaining' => $row->quantity_remaining]);
             $expiringSoonCount = $expiringSoon->count();
@@ -99,6 +103,7 @@ class DashboardController extends Controller
 
         return view('dashboard.index', array_merge($data, [
             'supplierReminders' => $supplierReminders,
+            'expiryDays' => $expiryDays,
             'expiringSoon' => collect($data['expiringSoon']),
         ]));
     }

@@ -27,6 +27,7 @@ class BrandingSeeder extends Seeder
             'brand_primary_color' => '#12A594',
             'brand_accent_color' => '#101B2D',
             'supplier_alert_days' => '7',
+            'expiry_alert_days' => '90',
             'receipt_footer' => 'Thank you! Take your medicines as directed.',
         ] as $key => $default) {
             if (Setting::value($key) === null) {

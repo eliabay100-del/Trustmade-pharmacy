@@ -16,6 +16,13 @@ class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
+    /**
+     * The only windows the expiring-stock alert may use. Keeping this a fixed
+     * list means a fat-fingered value can never widen the alert (hiding
+     * short-dated stock) or narrow it to nothing.
+     */
+    public const EXPIRY_ALERT_WINDOWS = [30, 60, 90];
+
     public static function value(string $key, $default = null)
     {
         $all = static::allCached();
@@ -51,6 +58,23 @@ class Setting extends Model
         $rate = round((float) (string) static::value('vat_rate_percent', 0), 2);
 
         return ($rate > 0 && $rate < 100) ? $rate : 0.0;
+    }
+
+    /**
+     * How many days ahead the "expiring soon" alert looks. Only 30, 60 or 90
+     * are offered; anything else falls back to the 90-day default so a bad
+     * stored value can never widen or hide the alert. Pass $requested to
+     * resolve a one-off value from a query string instead.
+     */
+    public static function expiryAlertDays($requested = null): int
+    {
+        if ($requested !== null && in_array((int) $requested, self::EXPIRY_ALERT_WINDOWS, true)) {
+            return (int) $requested;
+        }
+
+        $stored = (int) static::value('expiry_alert_days', 90);
+
+        return in_array($stored, self::EXPIRY_ALERT_WINDOWS, true) ? $stored : 90;
     }
 
     /**

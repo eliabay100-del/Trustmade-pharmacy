@@ -6,11 +6,13 @@ use App\Models\PurchaseBatch;
 use App\Models\Customer;
 use App\Models\Drug;
 use App\Models\Product;
+use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AlertController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // BUG FIX: ->where('branch_id', $branchId) with a null $branchId
         // (Owner/Admin's intended "all branches" value) silently becomes
@@ -20,7 +22,14 @@ class AlertController extends Controller
         $user = auth()->user();
         $branchId = $user->branch_id;
 
-        $expiringQuery = PurchaseBatch::whereBetween('expiry_date', [Carbon::today(), Carbon::today()->addDays(30)])
+        // How far ahead the "expiring soon" list looks. The owner sets the
+        // pharmacy default on the Settings page (90 days unless changed); the
+        // 30/60/90 selector on the Alerts page overrides it for this visit
+        // only, without touching that default. Anything other than 30/60/90 is
+        // ignored rather than trusted.
+        $expiryDays = Setting::expiryAlertDays($request->query('expiry'));
+
+        $expiringQuery = PurchaseBatch::whereBetween('expiry_date', [Carbon::today(), Carbon::today()->addDays($expiryDays)])
             ->where('quantity_remaining', '>', 0);
         $expiredQuery = PurchaseBatch::where('expiry_date', '<', Carbon::today())
             ->where('quantity_remaining', '>', 0);
@@ -97,6 +106,6 @@ class AlertController extends Controller
             }
         }
 
-        return view('alerts.index', compact('expiringSoon', 'expired', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts', 'supplierReminders', 'recurringExpensesDue'));
+        return view('alerts.index', compact('expiringSoon', 'expired', 'expiryDays', 'dueForRefill', 'lowStockDrugs', 'lowStockProducts', 'supplierReminders', 'recurringExpensesDue'));
     }
 }

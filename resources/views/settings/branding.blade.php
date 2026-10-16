@@ -99,6 +99,16 @@
             <p class="text-xs text-[#6B7A93] mt-1">Supplier payments due within this many days show as reminders on Alerts and the dashboard.</p>
         </div>
 
+        <div>
+            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Expiry alert window</label>
+            <select name="expiry_alert_days" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
+                @foreach(\App\Models\Setting::EXPIRY_ALERT_WINDOWS as $window)
+                    <option value="{{ $window }}" @selected((int) old('expiry_alert_days', $settings['expiry_alert_days']) === $window)>{{ $window }} days</option>
+                @endforeach
+            </select>
+            <p class="text-xs text-[#6B7A93] mt-1">How far ahead the "expiring soon" alert looks. This is the default window; staff can still preview 30, 60 or 90 days on the Alerts page.</p>
+        </div>
+
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Settings</button>
             <a href="{{ route('dashboard') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
