@@ -5,7 +5,7 @@ production install, in order. Read it once end to end before starting.
 
 The app is a standard Laravel 13 / PHP 8.4 application with a MySQL database,
 file sessions, file cache, and no queue worker or background jobs to run. The
-scheduler only does housekeeping (session GC, cache pruning, nightly backups).
+scheduler only does housekeeping (cache pruning and nightly backups).
 
 ---
 
@@ -128,9 +128,13 @@ Add one cron line for the web user:
 
 This runs:
 
-- `session:gc` daily,
-- `cache:prune-stale-tags` hourly, and
+- `cache:prune-stale-tags` hourly (no-op unless a taggable store such as
+  Redis is used), and
 - `pmas:backup` nightly at 02:30.
+
+Session garbage collection is automatic: Laravel's session handler performs it
+on a lottery during normal requests, so there is no `session:gc` command to
+schedule.
 
 ### Backups
 
