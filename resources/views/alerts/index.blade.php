@@ -75,7 +75,7 @@
                     @foreach($recurringExpensesDue as $bill)
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $bill->category->name ?? '—' }}</td>
-                            <td class="px-5 py-3 text-sm text-right text-[#1E2530] font-semibold">ETB {{ number_format($bill->amount, 2) }}</td>
+                            <td class="px-5 py-3 text-sm text-right text-[#1E2530] font-semibold">ETB {{ number_format($bill->reminderAmount(), 2) }}@if($bill->paid_months > 1)<span class="block text-xs font-normal text-[#64748b]">per month</span>@endif</td>
                             <td class="px-5 py-3 text-sm text-right">
                                 @if($bill->isOverdue())
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Overdue</span>

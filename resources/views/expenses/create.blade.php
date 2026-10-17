@@ -39,14 +39,15 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-semibold text-[#1E2530] mb-1">Amount</label>
-            <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount', $bill ? (float) $bill->amount : null) }}" required
+            <label class="block text-sm font-semibold text-[#1E2530] mb-1" id="amount-label">Amount</label>
+            <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount', $bill ? (float) $bill->reminderAmount() : null) }}" required
                    class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             @error('amount')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+            <p id="amount-total" class="text-xs text-[#64748b] mt-1"></p>
         </div>
         <div id="paid-months-field" class="{{ old('repeat_monthly', $bill ? 1 : null) ? '' : 'hidden' }}">
             <label class="block text-sm font-semibold text-[#1E2530] mb-1">Paid for</label>
-            <select name="paid_months" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
+            <select name="paid_months" id="paid-months" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
                 @foreach($paidMonthOptions as $months)
                     <option value="{{ $months }}" @selected((int) old('paid_months', 1) === $months)>
                         {{ $months }} month{{ $months === 1 ? '' : 's' }}
@@ -125,19 +126,42 @@
         const monthsField = document.getElementById('paid-months-field');
         const hint = document.getElementById('repeating-hint');
         const category = document.querySelector('select[name="expense_category_id"]');
+        const amountLabel = document.getElementById('amount-label');
+        const amountInput = document.querySelector('input[name="amount"]');
+        const monthsSelect = document.getElementById('paid-months');
+        const total = document.getElementById('amount-total');
 
         // Categories that already have a repeating bill. Choosing one ticks
         // "every month" by itself, so paying rent from this screen still moves
         // the reminder on instead of starting a second one.
         const repeating = @json($repeatingCategoryIds);
 
+        // The amount box is the rate for ONE period. The books record the
+        // total, so the total is spelled out here rather than left to guess.
+        function syncTotal() {
+            const months = parseInt(monthsSelect ? monthsSelect.value : '1', 10) || 1;
+            const rate = parseFloat(amountInput ? amountInput.value : '') || 0;
+
+            if (repeat.checked && months > 1) {
+                amountLabel.textContent = 'Amount per month';
+                total.textContent = 'Total being paid: ETB ' + (rate * months).toFixed(2)
+                    + ' (' + months + ' months). This is what the books will record.';
+            } else {
+                amountLabel.textContent = 'Amount';
+                total.textContent = '';
+            }
+        }
+
         function sync() {
             monthsField.classList.toggle('hidden', !repeat.checked);
             const isRepeating = repeating.includes(parseInt(category.value, 10));
             hint.classList.toggle('hidden', !(isRepeating && repeat.checked));
+            syncTotal();
         }
 
         repeat.addEventListener('change', sync);
+        if (monthsSelect) monthsSelect.addEventListener('change', syncTotal);
+        if (amountInput) amountInput.addEventListener('input', syncTotal);
 
         if (category) {
             category.addEventListener('change', function () {

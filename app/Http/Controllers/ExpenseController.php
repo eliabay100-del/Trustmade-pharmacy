@@ -148,7 +148,9 @@ class ExpenseController extends Controller
 
         DB::transaction(function () use ($expense, $data) {
             $this->reverseExpense($expense);
-            $expense->update($this->withNextDue($data));
+            // Exclude this row when looking for the repeating bill to move on,
+            // otherwise editing a reminder would push its own date.
+            $expense->update($this->withNextDue($data, $expense->id));
             $expense->refresh();
             $this->postExpense($expense);
         });
@@ -217,16 +219,28 @@ class ExpenseController extends Controller
         return $data;
     }
 
-    protected function withNextDue(array $data): array
+    protected function withNextDue(array $data, ?int $exceptId = null): array
     {
-        $data['paid_months'] = (int) ($data['paid_months'] ?? 1);
+        $months = (int) ($data['paid_months'] ?? 1);
+        $data['paid_months'] = $months;
+
+        // The amount on the form is the rate for ONE period. Paying three
+        // months at 6,000 moves 18,000, because that is the money that left
+        // the account - so that is what the books record.
+        $monthly = (float) $data['amount'];
+        $total = $monthly * $months;
 
         // A one-off expense never touches a repeating bill.
         if (empty($data['repeat_monthly'])) {
+            $data['amount'] = $total;
+            $data['monthly_amount'] = null;
             $data['next_due_date'] = null;
 
             return $data;
         }
+
+        $data['amount'] = $total;
+        $data['monthly_amount'] = $monthly;
 
         // Is this category already a repeating bill? If so, this recording IS
         // a payment for that bill: push its next due date on by however many
@@ -237,12 +251,13 @@ class ExpenseController extends Controller
             ->where('repeat_monthly', true)
             ->whereNotNull('next_due_date')
             ->where('expense_category_id', $data['expense_category_id'])
+            ->when($exceptId, fn ($query, $id) => $query->where('id', '!=', $id))
             ->when($data['branch_id'] ?? null, fn ($query, $branchId) => $query->where('branch_id', $branchId))
             ->orderBy('id')
             ->first();
 
         if ($existing) {
-            $newDue = $this->pushedDueDate($existing, $data['paid_months']);
+            $newDue = $this->pushedDueDate($existing, $months);
 
             $existing->update([
                 'repeat_monthly' => false,
@@ -255,7 +270,7 @@ class ExpenseController extends Controller
         }
 
         $data['next_due_date'] = \Carbon\Carbon::parse($data['expense_date'])
-            ->addMonthsNoOverflow($data['paid_months']);
+            ->addMonthsNoOverflow($months);
 
         return $data;
     }

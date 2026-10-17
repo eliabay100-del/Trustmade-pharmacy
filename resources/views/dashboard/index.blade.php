@@ -60,7 +60,7 @@
                     <a href="{{ route('expenses.create', ['bill' => $bill->id]) }}" class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm min-h-[44px] {{ $bill->isOverdue() ? 'border-red-100 bg-red-50 text-red-800 hover:border-red-300' : 'border-sky-100 bg-sky-50 text-sky-900 hover:border-sky-300' }}">
                         <span class="flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full {{ $bill->isOverdue() ? 'bg-red-500' : 'bg-sky-500' }}"></span>
-                            {{ $bill->category->name ?? 'Bill' }} — ETB {{ number_format((float) $bill->amount, 2) }}
+                            {{ $bill->category->name ?? 'Bill' }} — ETB {{ number_format($bill->reminderAmount(), 2) }}<span class="block text-xs opacity-80">{{ $bill->paid_months > 1 ? 'per month' : '' }}</span>
                         </span>
                         <span class="text-xs font-medium whitespace-nowrap">
                             @if($bill->isOverdue())

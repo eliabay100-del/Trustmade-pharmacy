@@ -19,7 +19,7 @@ class Expense extends Model
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
-        'expense_date', 'expense_category_id', 'branch_id', 'amount',
+        'expense_date', 'expense_category_id', 'branch_id', 'amount', 'monthly_amount',
         'payment_method', 'payment_reference',
         'check_number', 'check_date', 'check_bank',
         'note', 'repeat_monthly', 'next_due_date', 'paid_months',
@@ -30,6 +30,7 @@ class Expense extends Model
         'check_date' => 'date',
         'next_due_date' => 'date',
         'amount' => 'decimal:2',
+        'monthly_amount' => 'decimal:2',
         'repeat_monthly' => 'boolean',
         'paid_months' => 'integer',
     ];
@@ -75,6 +76,16 @@ class Expense extends Model
         }
 
         return $due;
+    }
+
+    /**
+     * What the reminder quotes. `amount` is the money that was paid (paying
+     * three months of rent records 18,000), so a repeating bill shows its
+     * monthly rate instead - the figure the next payment will be.
+     */
+    public function reminderAmount(): float
+    {
+        return (float) ($this->monthly_amount ?? $this->amount);
     }
 
     /**

@@ -104,6 +104,43 @@ class RecurringBillTest extends TestCase
         );
     }
 
+    public function test_paying_three_months_records_the_total_and_keeps_the_monthly_rate(): void
+    {
+        // Rent is 6,000 a month and three months are paid at once.
+        $this->record(['expense_date' => now()->subMonthNoOverflow()->toDateString()]);
+
+        $this->record([
+            'expense_date' => now()->toDateString(),
+            'amount' => 6000,
+            'paid_months' => 3,
+        ])->assertSessionHasNoErrors();
+
+        $payment = Expense::orderByDesc('id')->firstOrFail();
+
+        // The books record what actually left the account: 3 x 6,000.
+        $this->assertEquals(18000.0, (float) $payment->amount);
+        $this->assertEquals(3, $payment->paid_months);
+
+        // ...but the reminder still quotes the monthly rate.
+        $this->assertEquals(6000.0, (float) $payment->monthly_amount);
+        $this->assertEquals(6000.0, $payment->reminderAmount());
+
+        // And the journal entry carries the same total.
+        $entry = \App\Models\JournalEntry::where('reference_type', 'expense')
+            ->where('reference_id', $payment->id)->firstOrFail();
+        $this->assertEquals(18000.0, (float) $entry->total_debit);
+    }
+
+    public function test_a_single_month_payment_is_not_multiplied(): void
+    {
+        $this->record(['expense_date' => now()->subMonthNoOverflow()->toDateString()]);
+        $this->record(['expense_date' => now()->toDateString(), 'amount' => 6000, 'paid_months' => 1])
+            ->assertSessionHasNoErrors();
+
+        $payment = Expense::orderByDesc('id')->firstOrFail();
+        $this->assertEquals(6000.0, (float) $payment->amount);
+    }
+
     public function test_a_one_off_expense_never_touches_a_repeating_bill(): void
     {
         $this->record(['expense_date' => now()->subMonthNoOverflow()->toDateString()]);
