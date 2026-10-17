@@ -161,7 +161,7 @@ class DispenseController extends Controller
                 return $order;
             }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
 
-            return redirect()->route('dispense.show', $order->id)->with('success', 'Sale completed!');
+            return redirect()->route('dispense.show', $order->id)->with('success', 'Sale completed.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }

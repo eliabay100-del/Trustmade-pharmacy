@@ -201,7 +201,7 @@ Legend used in the tables below:
 | quantity_remaining | int | NO | — | see §12: the `add_quantity_remaining` migration is a no-op, so this stays NOT NULL |
 | cost_per_unit | decimal(10,2) | NO | — | base-unit cost |
 | selling_price_per_unit | decimal(10,2) | NO | — | base-unit price |
-| expiry_date | date | YES | NULL | |
+| expiry_date | date | YES | NULL | **Mandatory on purchase entry** (`items.*.expiry_date` is `required|date|after:today`). The column stays nullable only so rows entered before this rule, and stock transfers from them, still work. Stock that never expires uses a far-future date (e.g. 2099-12-31). |
 | purchase_date | date | NO | — | |
 | payment_status | varchar(20) | NO | 'paid' | `paid` \| `unpaid` \| `partial` (no DB enum) |
 | amount_paid | decimal(12,2) | NO | 0.00 | |

@@ -100,6 +100,6 @@ class SettingController extends Controller
             }
         }
 
-        return back()->with('success', 'Settings saved! The whole system now uses your business name, logo and colors.');
+        return back()->with('success', 'Settings saved. The whole system now uses your business name, logo and colors.');
     }
 }

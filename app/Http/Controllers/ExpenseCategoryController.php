@@ -31,7 +31,7 @@ class ExpenseCategoryController extends Controller
         // later maps them elsewhere in the chart of accounts.
         ExpenseCategory::create($data + ['account_code' => '6090', 'active' => true]);
 
-        return back()->with('success', 'Category added!');
+        return back()->with('success', 'Category added.');
     }
 
     public function update(Request $request, ExpenseCategory $category)
@@ -46,6 +46,6 @@ class ExpenseCategoryController extends Controller
             'active' => $request->boolean('active'),
         ]);
 
-        return back()->with('success', 'Category updated!');
+        return back()->with('success', 'Category updated.');
     }
 }

@@ -75,7 +75,7 @@ class StockTransferController extends Controller
                 $qtyBase,
                 auth()->id()
             );
-            return redirect()->route('transfers.index')->with('success', 'Transfer completed!');
+            return redirect()->route('transfers.index')->with('success', 'Transfer completed.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }

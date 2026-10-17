@@ -90,7 +90,7 @@ class ExpenseController extends Controller
             $this->postExpense($expense);
         });
 
-        return redirect()->route('expenses.index')->with('success', 'Expense recorded!');
+        return redirect()->route('expenses.index')->with('success', 'Expense recorded.');
     }
 
     public function edit(Expense $expense)
@@ -122,7 +122,7 @@ class ExpenseController extends Controller
             $this->postExpense($expense);
         });
 
-        return redirect()->route('expenses.index')->with('success', 'Expense updated!');
+        return redirect()->route('expenses.index')->with('success', 'Expense updated.');
     }
 
     /**

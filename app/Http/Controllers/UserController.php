@@ -46,7 +46,7 @@ class UserController extends Controller
 
         User::create($validated + ['active' => true]);
 
-        return redirect()->route('users.index')->with('success', 'User account created.');
+        return redirect()->route('users.index')->with('success', 'Staff account created.');
     }
 
     public function edit(User $user)

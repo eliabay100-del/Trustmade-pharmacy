@@ -101,13 +101,21 @@ class PurchaseController extends Controller
             'items.*.quantity_unit' => 'required|in:tablet,strip,pack',
             'items.*.cost_per_unit' => 'required|numeric|min:0',
             'items.*.selling_price_per_unit' => 'required|numeric|min:0',
-            'items.*.expiry_date' => 'nullable|date|after:today',
+            // Expiry is mandatory on every line. FEFO dispensing, the
+            // expiring-soon alerts and the "batch has no expiry on file"
+            // edge case all depend on a date being present. Retail lines
+            // that genuinely never expire still need one — use a far-future
+            // date such as 2099-12-31 so it never surfaces in the alerts.
+            'items.*.expiry_date' => 'required|date|after:today',
         ], [
             'payment_reference.required' => 'Please enter the transaction number for this payment.',
             'check_number.required' => 'Please enter the check number.',
             'check_date.required' => 'Please enter the check date.',
             'check_bank.required' => 'Please enter the bank the check is drawn on.',
             'due_date.required' => 'For "Pay later" please set a due date.',
+            'items.*.expiry_date.required' => 'Every item line needs an expiry date.',
+        ], [
+            'items.*.expiry_date' => 'expiry date',
         ]);
 
         // One ref shared by every line created in this submission, so the
@@ -177,7 +185,7 @@ class PurchaseController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('purchases.index')->with('success', 'Purchase recorded!');
+            return redirect()->route('purchases.index')->with('success', 'Purchase recorded.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => $e->getMessage()]);
