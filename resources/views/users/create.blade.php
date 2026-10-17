@@ -51,16 +51,9 @@
             </select>
         </div>
 
-        <div id="branch-field">
-            <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Assigned branch <span id="branch-required" class="text-red-500">*</span></label>
-            <select name="branch_id" id="branch-select" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-                <option value="">-- Select Branch --</option>
-                @foreach($branches as $branch)
-                    <option value="{{ $branch->id }}" @selected(old('branch_id') == $branch->id)>{{ $branch->name }}</option>
-                @endforeach
-            </select>
-            <p id="branch-help" class="text-xs text-[#64748b] mt-1">Branch managers and pharmacists can access this branch only. Owner/Admin accounts can access all branches.</p>
-        </div>
+        {{-- Single-branch install: staff are not asked to pick a branch. The
+             controller assigns the pharmacy's one branch automatically
+             (Owner/Admin keeps a null branch_id, meaning "no restriction"). --}}
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">

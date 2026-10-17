@@ -69,20 +69,25 @@ class JournalEntryTest extends TestCase
     }
 
     /**
-     * Regression: journal_entries.branch_id is NOT NULL, so an Owner/Admin
-     * with no branch must be asked for one instead of posting a null.
+     * Single-branch install: journal_entries.branch_id is NOT NULL and the
+     * form no longer asks which branch, so an Owner/Admin with no branch is
+     * stamped with the pharmacy's one branch instead of being blocked.
      */
-    public function test_owner_with_no_branch_must_choose_a_branch_to_post(): void
+    public function test_owner_with_no_branch_posts_to_the_single_branch_automatically(): void
     {
-        Branch::create(['name' => 'Branch A']);
+        $branch = Branch::create(['name' => 'Main Branch']);
         $owner = User::factory()->create(['role' => 'owner_admin', 'branch_id' => null]);
 
         $this->actingAs($owner)->post(route('journal-entries.store'), [
             'description' => 'Manual entry',
             'lines' => $this->balancedLines(),
-        ])->assertSessionHasErrors('branch_id');
+        ])->assertRedirect(route('journal-entries.index'))
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('journal_entries', 0);
+        $this->assertDatabaseHas('journal_entries', [
+            'branch_id' => $branch->id,
+            'description' => 'Manual entry',
+        ]);
     }
 
     public function test_owner_with_no_branch_posts_to_the_branch_they_choose(): void

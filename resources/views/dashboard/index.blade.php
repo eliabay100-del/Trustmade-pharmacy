@@ -17,7 +17,7 @@
             </div>
             <div class="shrink-0 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-left backdrop-blur-sm sm:text-right">
                 <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
-                <p class="mt-1 text-sm font-semibold">{{ auth()->user()->branch->name ?? 'All branches' }}</p>
+                <p class="mt-1 text-sm font-semibold">{{ \App\Models\Setting::value('business_name', config('pmas.default_business_name')) }}</p>
             </div>
         </div>
     </section>

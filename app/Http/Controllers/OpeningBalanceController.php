@@ -53,9 +53,8 @@ class OpeningBalanceController extends Controller
         ]);
 
         $branch = $branchId ? Branch::find($branchId) : null;
-        $branches = Branch::orderBy('name')->get();
 
-        return view('opening-balances.edit', compact('rows', 'branch', 'branchId', 'branches'));
+        return view('opening-balances.edit', compact('rows', 'branch', 'branchId'));
     }
 
     public function store(Request $request)
@@ -65,7 +64,7 @@ class OpeningBalanceController extends Controller
         $validated = $request->validate([
             'as_of' => 'nullable|date',
             'notes' => 'nullable|string|max:255',
-            'branch_id' => $user->branch_id ? 'nullable' : 'required|exists:branches,id',
+            'branch_id' => 'nullable|exists:branches,id',
             'balances' => 'required|array',
             'balances.*' => 'nullable|numeric|min:0',
         ]);
@@ -73,7 +72,7 @@ class OpeningBalanceController extends Controller
         $branchId = $this->resolveBranchId($request, $user);
         if (!$branchId) {
             return back()
-                ->withErrors(['branch_id' => 'Pick the branch these opening balances belong to.'])
+                ->withErrors(['branch_id' => 'No branch is set up yet — run the installer first.'])
                 ->withInput();
         }
 
@@ -146,7 +145,7 @@ class OpeningBalanceController extends Controller
 
         $requested = $request->input('branch_id');
 
-        return $requested ? (int) $requested : null;
+        return $requested ? (int) $requested : Branch::current()?->id;
     }
 
     /** Signed ledger balance (debit − credit) for an account, at a branch. */

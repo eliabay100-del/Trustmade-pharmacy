@@ -17,7 +17,7 @@
     @if($brandLogo)<link rel="apple-touch-icon" href="{{ Storage::url($brandLogo) }}">@endif
     <link rel="manifest" href="/manifest.webmanifest">
     <title>{{ $brandName }} - Pharmacy System</title>
-    <meta name="description" content="{{ $brandName }} pharmacy operations: medicines, retail products, stock, sales and branches.">
+    <meta name="description" content="{{ $brandName }} pharmacy operations: medicines, retail products, stock, sales and suppliers.">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#F5F7FA] text-[#1E2530]">
@@ -80,15 +80,12 @@
             </x-nav-section>
 
             {{-- Operations --}}
-            <x-nav-section label="Operations" :routes="['dispense.*', 'purchases.*', 'transfers.*', 'till-closings.*', 'adjustments.*', 'returns.*']">
+            <x-nav-section label="Operations" :routes="['dispense.*', 'purchases.*', 'till-closings.*', 'adjustments.*', 'returns.*']">
                 <x-nav-link route="dispense.index" label="Dispense">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </x-nav-link>
                 <x-nav-link route="purchases.index" label="Purchases">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </x-nav-link>
-                <x-nav-link route="transfers.index" label="Transfers">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
                 </x-nav-link>
                 <x-nav-link route="till-closings.index" label="Till Close">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -102,7 +99,7 @@
             </x-nav-section>
 
             {{-- Catalog --}}
-            <x-nav-section label="Catalog" :badge="$owedBadgeCount ?? 0" :routes="['drugs.*', 'products.*', 'product-categories.*', 'categories.*', 'suppliers.*', 'supplier-owed.*', 'supplier-payments.*', 'expenses.*', 'expense-categories.*', 'customers.*', 'branches.*']">
+            <x-nav-section label="Catalog" :badge="$owedBadgeCount ?? 0" :routes="['drugs.*', 'products.*', 'product-categories.*', 'categories.*', 'suppliers.*', 'supplier-owed.*', 'supplier-payments.*', 'expenses.*', 'expense-categories.*', 'customers.*']">
                 <x-nav-link route="drugs.index" label="Drugs">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 4H9L8 4zm0 4v10a2 2 0 002 2h4a2 2 0 002-2V8H8z" />
                 </x-nav-link>
@@ -145,9 +142,6 @@
                 @endif
                 <x-nav-link route="customers.index" label="Customers">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-4a4 4 0 100-8 4 4 0 000 8zm6 4a4 4 0 00-8 0" />
-                </x-nav-link>
-                <x-nav-link route="branches.index" label="Branches">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 17h1m4 0h1" />
                 </x-nav-link>
             </x-nav-section>
 

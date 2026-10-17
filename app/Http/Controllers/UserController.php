@@ -18,8 +18,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $branches = Branch::orderBy('name')->get();
-        return view('users.create', ['branches' => $branches, 'roles' => User::ROLES]);
+        return view('users.create', ['roles' => User::ROLES]);
     }
 
     public function store(Request $request)
@@ -38,11 +37,11 @@ class UserController extends Controller
         ], self::usernameMessages());
 
         // Owner/Admin isn't tied to a single branch — null means all-branch
-        // access. For any other role, a branch is required so the app's
-        // existing auth()->user()->branch_id filtering works correctly.
-        if ($validated['role'] !== User::ROLE_OWNER_ADMIN && empty($validated['branch_id'])) {
-            return back()->withErrors(['branch_id' => 'Branch is required for this role.'])->withInput();
-        }
+        // access. Every other role is assigned the pharmacy's one branch, so
+        // the existing auth()->user()->branch_id filtering keeps working.
+        $validated['branch_id'] = $validated['role'] === User::ROLE_OWNER_ADMIN
+            ? null
+            : Branch::resolveId($validated['branch_id'] ?? null);
 
         User::create($validated + ['active' => true]);
 
@@ -53,7 +52,6 @@ class UserController extends Controller
     {
         return view('users.edit', [
             'user' => $user,
-            'branches' => Branch::orderBy('name')->get(),
             'roles' => User::ROLES,
         ]);
     }
@@ -71,9 +69,11 @@ class UserController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
             'active' => 'nullable|boolean',
         ], self::usernameMessages());
-        if ($validated['role'] !== User::ROLE_OWNER_ADMIN && empty($validated['branch_id'])) {
-            return back()->withErrors(['branch_id' => 'Branch is required for this role.'])->withInput();
-        }
+        // Single-branch install: staff always sit at the pharmacy's one branch;
+        // Owner/Admin keeps a null branch_id, meaning "no restriction".
+        $validated['branch_id'] = $validated['role'] === User::ROLE_OWNER_ADMIN
+            ? null
+            : Branch::resolveId($validated['branch_id'] ?? null);
         if (empty($validated['password'])) unset($validated['password']);
         $validated['active'] = $request->boolean('active');
         $user->update($validated);

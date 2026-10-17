@@ -12,7 +12,6 @@ use App\Http\Controllers\DrugController;
 use App\Http\Controllers\DrugCategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPaymentController;
-use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\JournalEntryController;
@@ -173,18 +172,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ============================================================
-    // TIER 2 — Branch Manager and Owner/Admin only. Inter-branch
-    // stock movement and branch/financial visibility.
+    // TIER 2 — Branch Manager and Owner/Admin only. Financial
+    // visibility and manual bookkeeping tools.
     // ============================================================
     Route::middleware(['role:owner_admin,branch_manager'])->group(function () {
-
-        Route::get('/transfers', [StockTransferController::class, 'index'])->name('transfers.index');
-        Route::get('/transfers/create', [StockTransferController::class, 'create'])->name('transfers.create');
-        Route::post('/transfers', [StockTransferController::class, 'store'])->name('transfers.store');
-
-        Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
-        Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
-        Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
 
         Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/accounts/create', [AccountController::class, 'create'])->name('accounts.create');

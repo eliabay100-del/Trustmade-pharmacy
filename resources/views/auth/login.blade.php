@@ -16,7 +16,7 @@
     @if($brandLogo)<link rel="apple-touch-icon" href="{{ Storage::url($brandLogo) }}">@endif
     <link rel="manifest" href="/manifest.webmanifest">
     <title>Sign in | {{ $brandName }}</title>
-    <meta name="description" content="Sign in to {{ $brandName }} — pharmacy operations for medicines, retail products, stock, sales and branches.">
+    <meta name="description" content="Sign in to {{ $brandName }} — pharmacy operations for medicines, retail products, stock and sales.">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .login-shell { background: #edf4f3; min-height: 100vh; overflow: hidden; }
@@ -38,7 +38,7 @@
         <div class="login-shape login-shape-a"></div><div class="login-shape login-shape-b"></div><div class="login-shape login-shape-c hidden sm:block"></div>
         <main class="relative grid w-full max-w-5xl overflow-hidden rounded-3xl login-glass lg:grid-cols-[1fr_1.05fr]">
             <section class="hidden bg-[#10253b] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
-                <div><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold">{{ mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>@endif<span class="flex flex-col leading-tight"><span class="text-lg font-bold tracking-tight">{{ $brandName }}</span><span class="text-[11px] font-medium uppercase tracking-[.18em] text-white/50">by {{ config('pmas.vendor_name') }}</span></span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, sales, and branches from one local workspace.</p></div>
+                <div><div class="flex items-center gap-3">@if($brandLogo)<img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-10 w-10 object-contain rounded-xl bg-white p-1">@else<span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-bold">{{ mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>@endif<span class="flex flex-col leading-tight"><span class="text-lg font-bold tracking-tight">{{ $brandName }}</span><span class="text-[11px] font-medium uppercase tracking-[.18em] text-white/50">by {{ config('pmas.vendor_name') }}</span></span></div><p class="mt-20 max-w-sm text-4xl font-bold leading-tight tracking-tight">Everything your pharmacy needs, in one calm place.</p><p class="mt-5 max-w-sm text-sm leading-6 text-white/60">Manage medicines, retail products, inventory, and sales from one local workspace.</p></div>
                 <div class="flex items-center gap-3 text-xs text-white/50"><span class="h-2 w-2 rounded-full bg-[#72d4c5]"></span>Offline pharmacy operations</div>
             </section>
             <section class="login-fade bg-white/72 p-7 sm:p-10 lg:p-14">

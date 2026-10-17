@@ -15,15 +15,8 @@
             </div>
         </div>
 
-        <dl class="space-y-3 text-sm">
-            <div class="flex justify-between border-b border-gray-50 pb-2">
-                <dt class="text-[#64748b]">Branch</dt>
-                <dd class="text-[#1E2530] font-medium">{{ $branch->name ?? 'All Branches' }}</dd>
-            </div>
-        </dl>
-
         <p class="text-xs text-[#64748b] mt-6">
-            User management (adding staff, assigning branches) isn't built yet — let me know if you want that next.
+            Need access changed, or another staff account added? Ask your Owner/Admin.
         </p>
     </div>
 </div>

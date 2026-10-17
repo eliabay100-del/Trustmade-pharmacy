@@ -7,21 +7,8 @@
         <p class="text-sm text-[#64748b] mt-1">Count the cash drawer against cash collected since your last close.</p>
     </div>
 
-    @if(!$branchId && $branches->isNotEmpty())
-        <form method="GET" action="{{ route('till-closings.index') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-6">
-            <label class="block text-sm font-medium text-[#1E2530] mb-2">Branch</label>
-            <div class="flex gap-3">
-                <select name="branch_id" class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" required>
-                    <option value="">-- Select Branch --</option>
-                    @foreach($branches as $branch)
-                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2 px-4 rounded-lg">Continue</button>
-            </div>
-            <p class="text-xs text-[#64748b] mt-2">Owner/Admin accounts are not tied to one till — pick the branch whose drawer you are counting.</p>
-        </form>
-    @else
+    {{-- Single-branch install: no branch picker, the close is stamped with
+         the pharmacy's one branch by the controller. --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
             <p class="text-xs font-semibold text-[#64748b] uppercase tracking-wide mb-3">This shift</p>
             <p class="text-sm text-[#64748b] mb-4">
@@ -50,9 +37,6 @@
 
             <form method="POST" action="{{ route('till-closings.store') }}" class="space-y-4">
                 @csrf
-                @if(!$branches->isEmpty())
-                    <input type="hidden" name="branch_id" value="{{ $branchId }}">
-                @endif
 
                 <div>
                     <label class="block text-sm font-medium text-[#1E2530] mb-1">Counted cash</label>
@@ -74,7 +58,6 @@
                 </p>
             </form>
         </div>
-    @endif
 
     <h2 class="text-sm font-semibold text-[#64748b] uppercase tracking-wide mb-3">History</h2>
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

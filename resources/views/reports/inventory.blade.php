@@ -3,7 +3,7 @@
 @section('content')
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-[#1E2530]">Inventory Report</h1>
-    <p class="text-sm text-[#64748b] mt-1">Current drug and product stock on hand across your branch.</p>
+    <p class="text-sm text-[#64748b] mt-1">Current drug and product stock on hand.</p>
 </div>
 
 <div class="flex gap-2 mb-4 text-sm">
@@ -17,7 +17,6 @@
         <thead class="bg-gray-50/50">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Drug</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Branch</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Qty Remaining</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Cost/Unit</th>
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Value</th>
@@ -32,7 +31,6 @@
                 @endphp
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? $batch->product->name ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $batch->branch->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#64748b]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
                     <td class="px-5 py-3.5 text-sm text-right font-semibold text-[#1E2530]">ETB {{ number_format($batch->quantity_remaining * $batch->cost_per_unit, 2) }}</td>

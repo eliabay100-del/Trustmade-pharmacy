@@ -5,9 +5,10 @@
     $brandAccent = \App\Models\Setting::value('brand_accent_color', config('pmas.default_brand_accent_color'));
     $receiptHeader = \App\Models\Setting::value('receipt_header');
     $receiptFooter = \App\Models\Setting::value('receipt_footer');
-    // Business-wide contact from settings; the branch's own details are the fallback.
-    $receiptAddress = \App\Models\Setting::value('business_address') ?: ($order->branch?->address);
-    $receiptPhone = \App\Models\Setting::value('business_phone') ?: ($order->branch?->phone);
+    // Business-wide contact from settings (single-branch install, so there is
+    // no per-branch address to fall back to).
+    $receiptAddress = \App\Models\Setting::value('business_address');
+    $receiptPhone = \App\Models\Setting::value('business_phone');
     // Prices charged include VAT; the breakdown is printed, not charged again.
     $vat = $order->vatBreakdown();
 @endphp
@@ -77,7 +78,6 @@
     <div class="receipt">
         <div class="center">
             <div class="name">{{ $receiptBusinessName }}</div>
-            <div>{{ $order->branch->name ?? 'Pharmacy' }}</div>
             @if($receiptHeader)
                 <div class="muted">{{ $receiptHeader }}</div>
             @endif

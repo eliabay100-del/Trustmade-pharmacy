@@ -27,8 +27,8 @@
                 <p class="font-medium text-[#1E2530]">{{ $order->customer->name ?? 'Walk-in' }}</p>
             </div>
             <div class="text-right">
-                <p class="text-[#64748b]">Branch</p>
-                <p class="font-medium text-[#1E2530]">{{ $order->branch->name ?? '—' }}</p>
+                <p class="text-[#64748b]">Sold by</p>
+                <p class="font-medium text-[#1E2530]">{{ $order->user->name ?? '—' }}</p>
             </div>
         </div>
 

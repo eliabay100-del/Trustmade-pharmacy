@@ -10,21 +10,8 @@
         </p>
     </div>
 
-    @if(!$branchId && $branches->isNotEmpty())
-        <form method="GET" action="{{ route('opening-balances.edit') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-6">
-            <label class="block text-sm font-medium text-[#1E2530] mb-2">Branch</label>
-            <div class="flex gap-3">
-                <select name="branch_id" class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" required>
-                    <option value="">-- Select Branch --</option>
-                    @foreach($branches as $branch)
-                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2 px-4 rounded-lg">Continue</button>
-            </div>
-            <p class="text-xs text-[#64748b] mt-2">Opening balances belong to a branch's books — choose which one you are setting.</p>
-        </form>
-    @else
+    {{-- Single-branch install: no branch picker, the balances are stamped
+         with the pharmacy's one branch by the controller. --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <div class="flex items-start gap-3 mb-5 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
                 <p class="text-xs text-amber-800 leading-5">
@@ -35,9 +22,6 @@
 
             <form method="POST" action="{{ route('opening-balances.store') }}" class="space-y-4">
                 @csrf
-                @if($branchId)
-                    <input type="hidden" name="branch_id" value="{{ $branchId }}">
-                @endif
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -96,7 +80,6 @@
                 </div>
             </form>
         </div>
-    @endif
 </div>
 
 <script>

@@ -41,9 +41,6 @@
                 <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Amount</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">How Paid</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Note</th>
-                @if(auth()->user()->branch_id === null)
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Branch</th>
-                @endif
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
@@ -55,9 +52,6 @@
                     <td class="px-5 py-3.5 text-right font-semibold text-[#1E2530] whitespace-nowrap">{{ number_format($expense->amount, 2) }}</td>
                     <td class="px-5 py-3.5 text-[#64748b]">{{ $expense->payment_label() }}@if($expense->payment_reference) <span class="text-xs">({{ $expense->payment_reference }})</span>@endif</td>
                     <td class="px-5 py-3.5 text-[#64748b] max-w-[220px] truncate" title="{{ $expense->note }}">{{ $expense->note ?? '—' }}@if($expense->repeat_monthly)<span class="ml-1 inline-flex items-center rounded-full bg-sky-50 text-sky-700 text-xs px-2 py-0.5 font-medium">Monthly</span>@endif</td>
-                    @if(auth()->user()->branch_id === null)
-                    <td class="px-5 py-3.5 text-[#64748b]">{{ $expense->branch->name ?? '—' }}</td>
-                    @endif
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
                         <a href="{{ route('expenses.edit', $expense->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST" class="inline"

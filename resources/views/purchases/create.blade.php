@@ -10,7 +10,6 @@
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label class="block text-sm font-medium mb-1.5">Supplier</label><select name="supplier_id" id="purchase-supplier" data-credit-days="{{ collect($suppliers)->mapWithKeys(fn ($s) => [$s->id => (int) ($s->default_credit_days ?: 0)]) }}" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required><option value="">-- Select supplier --</option>@foreach($suppliers as $supplier)<option value="{{ $supplier->id }}">{{ $supplier->name }}</option>@endforeach</select></div>
-                <div><label class="block text-sm font-medium mb-1.5">Branch</label><select name="branch_id" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required><option value="">-- Select branch --</option>@foreach($branches as $branch)<option value="{{ $branch->id }}">{{ $branch->name }}</option>@endforeach</select></div>
             </div>
             <div><label class="block text-sm font-medium mb-1.5">Purchase date</label><input type="date" name="purchase_date" value="{{ old('purchase_date', now()->toDateString()) }}" class="w-full sm:w-1/2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required></div>
         </div>

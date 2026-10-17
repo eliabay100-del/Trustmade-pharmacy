@@ -32,17 +32,6 @@
                    class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
             @error('amount')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
-        @if(auth()->user()->branch_id === null)
-        <div>
-            <label class="block text-sm font-semibold text-[#1E2530] mb-1">Branch</label>
-            <select name="branch_id" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
-                @foreach(\App\Models\Branch::orderBy('name')->get() as $branch)
-                    <option value="{{ $branch->id }}" @selected(old('branch_id') == $branch->id)>{{ $branch->name }}</option>
-                @endforeach
-            </select>
-            @error('branch_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-        </div>
-        @endif
     </div>
 
     {{-- Plain language: "How did you pay?" --}}

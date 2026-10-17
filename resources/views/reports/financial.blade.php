@@ -3,7 +3,7 @@
 @section('content')
 <div class="mb-6">
     <h1 class="text-2xl font-bold text-[#1E2530]">Financial Report</h1>
-    <p class="text-sm text-[#64748b] mt-1">Journal entries recorded for your branch.</p>
+    <p class="text-sm text-[#64748b] mt-1">Journal entries recorded in the books.</p>
 </div>
 
 <div class="flex gap-2 mb-4 text-sm">

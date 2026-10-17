@@ -21,8 +21,7 @@
                         {{ ($batch->drug ?? $batch->product)->name ?? 'Item' }}
                         — {{ $batch->batch_number }}
                         ({{ $batch->quantity_remaining }} {{ ($batch->drug ?? $batch->product)?->baseUnitLabel() ?? 'unit' }} left
-                        @if($batch->expiry_date) · exp {{ $batch->expiry_date->format('M d, Y') }}@endif
-                        @if($batch->branch) · {{ $batch->branch->name }}@endif)
+                        @if($batch->expiry_date) · exp {{ $batch->expiry_date->format('M d, Y') }}@endif)
                     </option>
                 @endforeach
             </select>

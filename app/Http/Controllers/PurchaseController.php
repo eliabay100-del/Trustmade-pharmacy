@@ -43,8 +43,7 @@ class PurchaseController extends Controller
         $drugs = Drug::all();
         $products = Product::where('active', true)->orderBy('name')->get();
         $suppliers = Supplier::all();
-        $branches = Branch::all();
-        return view('purchases.create', compact('drugs', 'products', 'suppliers', 'branches'));
+        return view('purchases.create', compact('drugs', 'products', 'suppliers'));
     }
 
     public function store(Request $request)
@@ -76,7 +75,7 @@ class PurchaseController extends Controller
 
         $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'nullable|exists:branches,id',
             'purchase_date' => 'required|date',
             // Part A — "How are you paying?" (existing methods + Pay later).
             'payment_method' => ['required', Rule::in(array_merge(array_keys(Payment::METHODS), [Payment::PAY_LATER]))],
@@ -118,6 +117,10 @@ class PurchaseController extends Controller
             'items.*.expiry_date' => 'expiry date',
         ]);
 
+        // Single-branch install: the form no longer asks which branch, so the
+        // receipt is stamped with the pharmacy's one branch.
+        $branchId = Branch::resolveId($request->input('branch_id'), $request->user()->branch_id);
+
         // One ref shared by every line created in this submission, so the
         // purchase behaves as one invoice in "Owed to suppliers" (Part B).
         // Honour a client-supplied ref when present (tests / integrations);
@@ -139,7 +142,7 @@ class PurchaseController extends Controller
                     'drug_id' => $isDrug ? $item->id : null,
                     'product_id' => $isDrug ? null : $item->id,
                     'supplier_id' => $request->supplier_id,
-                    'branch_id' => $request->branch_id,
+                    'branch_id' => $branchId,
                 'batch_number' => $line['batch_number'] ?: ('B-' . now()->format('ymdHis') . '-' . mt_rand(1000, 9999)),
                     'quantity_received' => $qtyBase,
                     'quantity_remaining' => $qtyBase,
@@ -164,7 +167,7 @@ class PurchaseController extends Controller
                     'supplier_invoice_no' => $request->supplier_invoice_no,
                 ]);
                 StockCard::create([
-                    'purchase_batch_id' => $batch->id, 'branch_id' => $request->branch_id,
+                    'purchase_batch_id' => $batch->id, 'branch_id' => $branchId,
                     'transaction_type' => 'in', 'quantity' => $qtyBase, 'unit_cost' => $batch->cost_per_unit,
                     'total_amount' => $totalCost, 'reference_type' => 'purchase', 'reference_id' => $batch->id,
                     'transaction_date' => now(),

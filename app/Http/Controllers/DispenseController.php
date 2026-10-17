@@ -176,7 +176,7 @@ class DispenseController extends Controller
             abort(403, 'You do not have access to this order.');
         }
 
-        $order->load(['customer', 'branch', 'items.purchaseBatch.drug', 'payments']);
+        $order->load(['customer', 'user', 'items.purchaseBatch.drug', 'payments']);
         return view('dispense.show', compact('order'));
     }
 

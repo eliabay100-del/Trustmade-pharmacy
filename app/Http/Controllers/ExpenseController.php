@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Branch;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Payment;
@@ -168,10 +169,10 @@ class ExpenseController extends Controller
             'amount.min' => 'Please enter an amount greater than zero.',
         ]);
 
-        // Clerks can't reach this at all (role middleware); branch managers
-        // and owners post to their own branch unless they pick one explicitly.
-        $data['branch_id'] = $data['branch_id'] ?? auth()->user()->branch_id;
-        abort_if(!$data['branch_id'], 400, 'Please choose a branch for this expense.');
+        // Single-branch install: staff post to their own branch; an
+        // Owner/Admin with no branch gets the pharmacy's one branch.
+        $data['branch_id'] = Branch::resolveId($data['branch_id'] ?? null, auth()->user()->branch_id);
+        abort_if(!$data['branch_id'], 400, 'No branch is set up yet — run the installer first.');
 
         $data['payment_reference'] = $isCheck
             ? ($data['payment_reference'] ?? ($data['check_number'] ?? null))

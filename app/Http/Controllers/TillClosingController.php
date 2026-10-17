@@ -32,11 +32,11 @@ class TillClosingController extends Controller
         }
         $closings = $historyQuery->paginate(10)->withQueryString();
 
-        $branches = $user->branch_id ? collect() : Branch::orderBy('name')->get();
+        // Single-branch install: no picker, the close belongs to the pharmacy.
+        $branchId = $user->branch_id ?: Branch::current()?->id;
 
         return view('till-closings.index', compact(
             'branchId',
-            'branches',
             'periodStart',
             'expectedCash',
             'otherPayments',
@@ -50,12 +50,12 @@ class TillClosingController extends Controller
         $request->validate([
             'counted_cash' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:500',
-            'branch_id' => $user->branch_id ? 'nullable' : 'required|exists:branches,id',
+            'branch_id' => 'nullable|exists:branches,id',
         ]);
 
         $branchId = $this->resolveBranchId($request, $user);
         if (!$branchId) {
-            return back()->withErrors(['branch_id' => 'Pick a branch for this till close.'])->withInput();
+            return back()->withErrors(['branch_id' => 'No branch is set up yet — run the installer first.'])->withInput();
         }
 
         try {
@@ -95,7 +95,7 @@ class TillClosingController extends Controller
         }
 
         $requested = $request->input('branch_id');
-        return $requested ? (int) $requested : null;
+        return $requested ? (int) $requested : Branch::current()?->id;
     }
 
     private function periodStart(int $userId, ?int $branchId): Carbon

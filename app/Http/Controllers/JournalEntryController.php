@@ -42,11 +42,7 @@ class JournalEntryController extends Controller
                 ->with('error', 'Add at least one account before posting a journal entry.');
         }
 
-        // Owner/Admin (branch_id null) must be able to choose the branch
-        // this entry belongs to; everyone else posts to their own branch.
-        $branches = Branch::orderBy('name')->get();
-
-        return view('journal-entries.create', compact('accounts', 'branches'));
+        return view('journal-entries.create', compact('accounts'));
     }
 
     public function store(Request $request)
@@ -60,13 +56,13 @@ class JournalEntryController extends Controller
             'lines.*.credit' => 'nullable|numeric|min:0',
         ]);
 
-        // journal_entries.branch_id is NOT NULL, so an Owner/Admin with no
-        // fixed branch must pick one rather than silently posting a null.
-        $branchId = $validated['branch_id'] ?? auth()->user()->branch_id;
+        // journal_entries.branch_id is NOT NULL, so a single-branch install
+        // stamps the entry with the pharmacy's one branch.
+        $branchId = Branch::resolveId($validated['branch_id'] ?? null, auth()->user()->branch_id);
 
         if (!$branchId) {
             return back()
-                ->withErrors(['branch_id' => 'Please choose a branch for this entry.'])
+                ->withErrors(['branch_id' => 'No branch is set up yet — run the installer first.'])
                 ->withInput();
         }
 

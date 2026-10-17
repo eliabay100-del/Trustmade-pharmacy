@@ -4,7 +4,7 @@
 <div class="flex justify-between items-center mb-6">
     <div>
         <h1 class="text-2xl font-bold text-[#1E2530]">Users</h1>
-        <p class="text-sm text-[#64748b] mt-1">Staff accounts, roles, and assigned branches.</p>
+        <p class="text-sm text-[#64748b] mt-1">Staff accounts and their roles.</p>
     </div>
     <a href="{{ route('users.create') }}"
        class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
@@ -23,7 +23,6 @@
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Username</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Email</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Staff role</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Assigned branch</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
                 <th class="px-5 py-3"></th>
             </tr>
@@ -40,7 +39,6 @@
                             {{ $user->roleLabel() }}
                         </span>
                     </td>
-                    <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $user->branch->name ?? 'All Branches' }}</td>
                     <td class="px-5 py-3.5 text-sm"><span class="rounded-full px-2 py-1 text-xs font-medium {{ $user->active ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600' }}">{{ $user->active ? 'Active' : 'Inactive' }}</span></td>
                     <td class="px-5 py-3.5 text-right text-sm"><a href="{{ route('users.edit', $user) }}" class="text-[var(--brand-primary)] hover:underline">Edit</a></td>
                 </tr>
