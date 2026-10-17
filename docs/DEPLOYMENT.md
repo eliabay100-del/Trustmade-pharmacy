@@ -248,8 +248,8 @@ Most perceived speed comes from the server and ops, not the app:
 - **Gzip/Brotli** at nginx for text assets (`text/*`, `application/json`).
 - **nginx location for static assets** `expires 1y` + `add_header Cache-Control
   "public, immutable"` for the `/build/` folder (Vite emits hashed filenames, so
-  immutable caching is safe). Make sure `/sw.js` and `/manifest.json` are not
-  cached (`Cache-Control: no-cache`) so PWA updates ship promptly.
+  immutable caching is safe). Make sure `/sw.js` and `/manifest.webmanifest` are
+  not cached (`Cache-Control: no-cache`) so PWA updates ship promptly.
 - **OPcache** in the php.ini - `opcache.enable=1`,
   `opcache.memory_consumption=128`, `opcache.validate_timestamps=0` (call
   `opcache_reset()` from `php artisan` after deploys).

@@ -29,9 +29,12 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ManifestController;
 
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+// Generated so the installed PWA picks up the pharmacy's own branding.
+Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 // Keep older cached login pages working while the canonical form uses /login.
 Route::post('/', [AuthController::class, 'login'])->name('login.legacy')->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit')->middleware('throttle:5,1');
