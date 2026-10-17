@@ -20,11 +20,11 @@
 
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Pharmacy summary">
         <a href="{{ route('drugs.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-primary)] hover:shadow-md">
-            <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Drugs</span><span class="rounded-lg bg-[#e7f7f4] px-2 py-1 text-[var(--brand-primary)]">RX</span></div>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Drugs</span>
             <p class="mt-5 text-3xl font-bold text-[#182230] group-hover:text-[var(--brand-primary)]">{{ $totalDrugs }}</p><p class="mt-1 text-xs text-[#6b7a93]">View drug catalogue</p>
         </a>
         <a href="{{ route('products.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-primary)] hover:shadow-md">
-            <div class="flex items-center justify-between"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Products</span><span class="rounded-lg bg-[#fff2dc] px-2 py-1 text-[#b36b00]">RET</span></div>
+            <span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Products</span>
             <p class="mt-5 text-3xl font-bold text-[#182230] group-hover:text-[var(--brand-primary)]">{{ $totalProducts }}</p><p class="mt-1 text-xs text-[#6b7a93]">View retail catalogue</p>
         </a>
         <div class="rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm"><span class="text-xs font-semibold uppercase tracking-wide text-[#6b7a93]">Today's sales</span><p class="mt-5 text-2xl font-bold text-[#182230]">ETB {{ number_format($todaySales, 2) }}</p><p class="mt-1 text-xs text-[#6b7a93]">Collected today</p></div>
