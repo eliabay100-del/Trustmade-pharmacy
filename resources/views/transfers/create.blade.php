@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Transfer Stock</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Move drug stock from one branch to another.</p>
+    <p class="text-sm text-[#64748b] mb-6">Move drug stock from one branch to another.</p>
 
     <form method="POST" action="{{ route('transfers.store') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         @csrf
@@ -64,13 +64,13 @@
                 </select>
             </div>
         </div>
-        <p id="transfer-unit-hint" class="text-xs text-[#6B7A93] -mt-2">Quantity is converted to base units before the existing FEFO transfer runs.</p>
+        <p id="transfer-unit-hint" class="text-xs text-[#64748b] -mt-2">Quantity is converted to base units before the existing FEFO transfer runs.</p>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                 Transfer Stock
             </button>
-            <a href="{{ route('transfers.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
+            <a href="{{ route('transfers.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>
 </div>

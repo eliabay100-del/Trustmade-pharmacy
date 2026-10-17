@@ -4,7 +4,7 @@
 <div class="flex justify-between items-center mb-6">
     <div>
         <h1 class="text-2xl font-bold text-[#1E2530]">Purchases</h1>
-        <p class="text-sm text-[#6B7A93] mt-1">Incoming stock batches from suppliers.</p>
+        <p class="text-sm text-[#64748b] mt-1">Incoming stock batches from suppliers.</p>
     </div>
     <a href="{{ route('purchases.create') }}"
        class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-4 rounded-lg transition-colors">
@@ -19,15 +19,15 @@
     <table class="min-w-full divide-y divide-gray-100">
         <thead class="bg-gray-50/50">
             <tr>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Batch #</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Drug</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Supplier</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Branch</th>
-                <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Qty Remaining</th>
-                <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Cost/Unit</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Paying</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Status</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Expiry</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Batch #</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Drug</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Supplier</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Branch</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Qty Remaining</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Cost/Unit</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Paying</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Expiry</th>
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
@@ -38,14 +38,14 @@
                     $isNearExpiry = $batch->expiry_date && !$isExpired && now()->diffInDays($batch->expiry_date, false) <= 30;
                 @endphp
                 <tr class="hover:bg-gray-50/50">
-                    <td class="px-5 py-3.5 text-sm font-mono text-[#6B7A93]">{{ $batch->batch_number }}</td>
+                    <td class="px-5 py-3.5 text-sm font-mono text-[#64748b]">{{ $batch->batch_number }}</td>
                     <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? $batch->product->name ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $batch->supplier->name ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $batch->branch->name ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $batch->supplier->name ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $batch->branch->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }} {{ $batch->drug?->baseUnitLabel() ?? 'unit' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right text-[#64748b]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
                     {{-- Part A: how this purchase is being paid (plain language). --}}
-                    <td class="px-5 py-3.5 text-sm text-[#6B7A93]">
+                    <td class="px-5 py-3.5 text-sm text-[#64748b]">
                         {{ $batch->payment_label() }}
                         @if($batch->payment_reference)
                             <span class="block text-xs font-mono text-[#9aa6ba]">{{ $batch->payment_reference }}</span>
@@ -59,7 +59,7 @@
                         @else
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">Not paid yet</span>
                             @if($batch->due_date)
-                                <span class="block text-xs mt-0.5 {{ \Carbon\Carbon::parse($batch->due_date)->isBefore(today()) ? 'text-red-600 font-medium' : 'text-[#6B7A93]' }}">Due {{ \Carbon\Carbon::parse($batch->due_date)->format('M d, Y') }}</span>
+                                <span class="block text-xs mt-0.5 {{ \Carbon\Carbon::parse($batch->due_date)->isBefore(today()) ? 'text-red-600 font-medium' : 'text-[#64748b]' }}">Due {{ \Carbon\Carbon::parse($batch->due_date)->format('M d, Y') }}</span>
                             @endif
                         @endif
                     </td>
@@ -69,9 +69,9 @@
                         @elseif($isNearExpiry)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">{{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}</span>
                         @elseif($batch->expiry_date)
-                            <span class="text-[#6B7A93]">{{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}</span>
+                            <span class="text-[#64748b]">{{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}</span>
                         @else
-                            <span class="text-[#6B7A93]">Not tracked</span>
+                            <span class="text-[#64748b]">Not tracked</span>
                         @endif
                     </td>
                     <td class="px-5 py-3.5 text-sm text-right">
@@ -86,7 +86,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        <p class="text-sm text-[#6B7A93]">No purchases recorded yet.</p>
+                        <p class="text-sm text-[#64748b]">No purchases recorded yet.</p>
                         <a href="{{ route('purchases.create') }}" class="text-sm font-medium text-[var(--brand-primary)] hover:underline mt-1 inline-block">Record your first purchase</a>
                     </td>
                 </tr>

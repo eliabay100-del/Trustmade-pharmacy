@@ -18,7 +18,7 @@
 <div class="max-w-3xl mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">New Sale</h1>
 
-    <p class="text-sm text-[#6B7A93] mb-6">
+    <p class="text-sm text-[#64748b] mb-6">
         Add drugs or products to the cart, then check out as a single sale.
     </p>
 
@@ -37,25 +37,25 @@
 
             <div class="relative mb-4">
                 <input id="catalog-search" type="search" autocomplete="off" placeholder="Search drugs or products by name, strength, or SKU" class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[var(--brand-primary)] focus:ring-4 focus:ring-[var(--brand-primary)]/10">
-                <span id="catalog-search-status" class="pointer-events-none absolute right-3 top-3 text-xs text-[#9aa6b6]"></span>
+                <span id="catalog-search-status" class="pointer-events-none absolute right-3 top-3 text-xs text-[#64748b]"></span>
                 <div id="catalog-results" class="absolute left-0 right-0 top-full z-20 mt-1 hidden max-h-64 overflow-y-auto rounded-xl border border-[#dfe7ed] bg-white p-1 shadow-lg"></div>
             </div>
 
             <!-- Cart column headings -->
             <div class="hidden sm:grid grid-cols-12 gap-3 mb-2 px-1">
-                <div class="col-span-5 text-xs font-medium text-[#6B7A93]">
+                <div class="col-span-5 text-xs font-medium text-[#64748b]">
                     Item
                 </div>
 
-                <div class="col-span-2 text-xs font-medium text-[#6B7A93]">
+                <div class="col-span-2 text-xs font-medium text-[#64748b]">
                     Unit
                 </div>
 
-                <div class="col-span-2 text-xs font-medium text-[#6B7A93]">
+                <div class="col-span-2 text-xs font-medium text-[#64748b]">
                     Qty
                 </div>
 
-                <div class="col-span-2 text-xs font-medium text-[#6B7A93]">
+                <div class="col-span-2 text-xs font-medium text-[#64748b]">
                     Price
                 </div>
 
@@ -133,7 +133,7 @@
 
             </div>
 
-            <p class="text-xs text-[#6B7A93] mt-3">
+            <p class="text-xs text-[#64748b] mt-3">
                 Qty and price are for the unit you pick (pack/strip/base).
                 Stock is deducted in base units.
             </p>
@@ -219,7 +219,7 @@
             >
 
                 <div>
-                    <label class="block text-xs font-medium text-[#6B7A93] mb-1">
+                    <label class="block text-xs font-medium text-[#64748b] mb-1">
                         Name
                     </label>
 
@@ -232,7 +232,7 @@
 
 
                 <div>
-                    <label class="block text-xs font-medium text-[#6B7A93] mb-1">
+                    <label class="block text-xs font-medium text-[#64748b] mb-1">
                         Phone
                     </label>
 
@@ -266,7 +266,7 @@
 
                     <div>
 
-                        <label class="block text-xs font-medium text-[#6B7A93] mb-1">
+                        <label class="block text-xs font-medium text-[#64748b] mb-1">
                             Remind every (days)
                         </label>
 
@@ -282,7 +282,7 @@
 
                     <div>
 
-                        <label class="block text-xs font-medium text-[#6B7A93] mb-1">
+                        <label class="block text-xs font-medium text-[#64748b] mb-1">
                             Note (optional)
                         </label>
 
@@ -348,7 +348,7 @@
                     Payment
                 </label>
 
-                <p class="text-sm text-[#6B7A93]">
+                <p class="text-sm text-[#64748b]">
 
                     Cart total:
 
@@ -364,7 +364,7 @@
             </div>
 
 
-            <p class="text-xs text-[#6B7A93] mb-3">
+            <p class="text-xs text-[#64748b] mb-3">
                 One method for a normal sale, or add another row to split
                 (must sum to the cart total).
             </p>
@@ -381,7 +381,7 @@
 
                     <div class="sm:col-span-7">
 
-                        <label class="block text-xs text-[#6B7A93] mb-1">
+                        <label class="block text-xs text-[#64748b] mb-1">
                             Payment method
                         </label>
 
@@ -409,7 +409,7 @@
 
                     <div class="sm:col-span-4">
 
-                        <label class="block text-xs text-[#6B7A93] mb-1">
+                        <label class="block text-xs text-[#64748b] mb-1">
                             Amount
                         </label>
 
@@ -459,7 +459,7 @@
 
             <a
                 href="{{ route('dispense.index') }}"
-                class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4"
+                class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4"
             >
                 Cancel
             </a>
@@ -1047,7 +1047,7 @@
 
                 <div class="sm:col-span-7">
 
-                    <label class="block text-xs text-[#6B7A93] mb-1">
+                    <label class="block text-xs text-[#64748b] mb-1">
                         Payment method
                     </label>
 
@@ -1065,7 +1065,7 @@
 
                 <div class="sm:col-span-4">
 
-                    <label class="block text-xs text-[#6B7A93] mb-1">
+                    <label class="block text-xs text-[#64748b] mb-1">
                         Amount
                     </label>
 

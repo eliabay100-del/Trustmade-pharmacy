@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Export Accounting Report</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Download a monthly Excel workbook — sales, purchases, and a profit summary, ready to hand to the owner or an accountant.</p>
+    <p class="text-sm text-[#64748b] mb-6">Download a monthly Excel workbook — sales, purchases, and a profit summary, ready to hand to the owner or an accountant.</p>
 
     <form method="GET" action="{{ route('reports.export.download') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
 
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <p class="text-xs text-[#6B7A93]">The download includes three tabs: a Summary (revenue, cost of goods sold, gross profit), a full Sales list, and a full Purchases list for the period.</p>
+        <p class="text-xs text-[#64748b]">The download includes three tabs: a Summary (revenue, cost of goods sold, gross profit), a full Sales list, and a full Purchases list for the period.</p>
 
         <button type="submit"
                 class="inline-flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">

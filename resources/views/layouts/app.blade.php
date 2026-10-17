@@ -17,6 +17,7 @@
     @if($brandLogo)<link rel="apple-touch-icon" href="{{ Storage::url($brandLogo) }}">@endif
     <link rel="manifest" href="/manifest.webmanifest">
     <title>{{ $brandName }} - Pharmacy System</title>
+    <meta name="description" content="{{ $brandName }} pharmacy operations: medicines, retail products, stock, sales and branches.">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#F5F7FA] text-[#1E2530]">
@@ -57,7 +58,7 @@
                 @if($brandLogo)
                     <img src="{{ Storage::url($brandLogo) }}" alt="{{ $brandName }} logo" class="h-8 w-8 object-contain rounded-lg bg-white p-0.5">
                 @else
-                    <span class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style="background-color: var(--brand-primary);">Rx</span>
+                    <span class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style="background-color: var(--brand-primary);">{{ mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>
                 @endif
                 <span class="text-white font-bold text-lg tracking-tight">{{ $brandName }}</span>
             </a>
@@ -125,7 +126,7 @@
                    {{ $owedActive
                         ? 'bg-[var(--brand-primary)]/15 text-white border-l-2 border-[var(--brand-primary)]'
                         : 'text-[#B9C2D0] hover:bg-white/5 hover:text-white border-l-2 border-transparent' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $owedActive ? 'text-[var(--brand-primary)]' : 'text-[#6B7A93]' }}"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $owedActive ? 'text-[var(--brand-primary)]' : 'text-[#64748b]' }}"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-2c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -320,7 +321,7 @@
             @yield('content')
         </main>
 
-        <footer class="px-4 py-5 text-center text-xs text-[#8a98a8]">
+        <footer class="px-4 py-5 text-center text-xs text-[#5b6a7d]">
             Powered by
             <a href="{{ config('pmas.vendor_url') }}" target="_blank" rel="noopener"
                class="font-semibold text-[var(--brand-primary)] hover:underline">{{ config('pmas.vendor_name') }}</a>

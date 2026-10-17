@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Add User</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Create a staff login and choose the branch where they work.</p>
+    <p class="text-sm text-[#64748b] mb-6">Create a staff login and choose the branch where they work.</p>
 
     <form method="POST" action="{{ route('users.store') }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         @csrf
@@ -18,14 +18,14 @@
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Username (used to log in)</label>
             <input type="text" name="username" value="{{ old('username') }}" autocomplete="off"
                    class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
-            <p class="text-xs text-[#6B7A93] mt-1">Letters, numbers, dots, dashes and underscores. Not case-sensitive — stored in lower case.</p>
+            <p class="text-xs text-[#64748b] mt-1">Letters, numbers, dots, dashes and underscores. Not case-sensitive — stored in lower case.</p>
         </div>
 
         <div>
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Email (stored on the account)</label>
             <input type="email" name="email" value="{{ old('email') }}"
                    class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30" required>
-            <p class="text-xs text-[#6B7A93] mt-1">Kept for your records. Staff sign in with their username, not this email.</p>
+            <p class="text-xs text-[#64748b] mt-1">Kept for your records. Staff sign in with their username, not this email.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -59,14 +59,14 @@
                     <option value="{{ $branch->id }}" @selected(old('branch_id') == $branch->id)>{{ $branch->name }}</option>
                 @endforeach
             </select>
-            <p id="branch-help" class="text-xs text-[#6B7A93] mt-1">Branch managers and pharmacists can access this branch only. Owner/Admin accounts can access all branches.</p>
+            <p id="branch-help" class="text-xs text-[#64748b] mt-1">Branch managers and pharmacists can access this branch only. Owner/Admin accounts can access all branches.</p>
         </div>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
                 Create User
             </button>
-            <a href="{{ route('users.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
+            <a href="{{ route('users.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>
 </div>

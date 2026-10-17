@@ -4,7 +4,7 @@
 <div class="mb-6">
     <a href="{{ route('supplier-owed.show', $supplier) }}" class="text-sm text-[var(--brand-primary)] hover:underline">&larr; Back to {{ $supplier->name }}</a>
     <h1 class="text-2xl font-bold text-[#1E2530] mt-2">Pay supplier: {{ $supplier->name }}</h1>
-    <p class="text-sm text-[#6B7A93] mt-1">Total owed right now: <strong>ETB {{ number_format($totalOwed, 2) }}</strong>. Tick the purchases you are paying for, or just enter an amount — it is applied to the oldest purchases first.</p>
+    <p class="text-sm text-[#64748b] mt-1">Total owed right now: <strong>ETB {{ number_format($totalOwed, 2) }}</strong>. Tick the purchases you are paying for, or just enter an amount — it is applied to the oldest purchases first.</p>
 </div>
 
 @if ($errors->any())
@@ -41,9 +41,9 @@
                     <span class="flex-1">
                         <span class="block text-sm font-medium text-[#1E2530]">
                             Invoice {{ $inv['supplier_invoice_no'] ?: $inv['purchase_ref'] }}
-                            @if($inv['supplier_invoice_no'])<span class="text-xs font-normal text-[#6B7A93]">({{ $inv['purchase_ref'] }})</span>@endif
+                            @if($inv['supplier_invoice_no'])<span class="text-xs font-normal text-[#64748b]">({{ $inv['purchase_ref'] }})</span>@endif
                         </span>
-                        <span class="block text-xs text-[#6B7A93] mt-0.5">
+                        <span class="block text-xs text-[#64748b] mt-0.5">
                             Purchased {{ \Carbon\Carbon::parse($inv['date'])->format('d M Y') }}
                             &middot; Due {{ $inv['due_date'] ? \Carbon\Carbon::parse($inv['due_date'])->format('d M Y') : '—' }}
                             &middot; Paid so far ETB {{ number_format($inv['paid'], 2) }}
@@ -52,7 +52,7 @@
                     <span class="text-sm font-semibold text-[#1E2530] whitespace-nowrap">ETB {{ number_format($inv['balance'], 2) }}</span>
                 </label>
             @empty
-                <p class="px-5 py-6 text-sm text-[#6B7A93]">This supplier is not owed anything right now.</p>
+                <p class="px-5 py-6 text-sm text-[#64748b]">This supplier is not owed anything right now.</p>
             @endforelse
         </div>
     </div>
@@ -65,7 +65,7 @@
                 <label class="block text-sm font-medium text-[#1E2530] mb-1">Amount you are paying (ETB) <span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" min="0.01" max="{{ $totalOwed }}" name="amount" x-model="amount" required
                        class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
-                <p class="text-xs mt-1" :class="Number(amount) > totalOwed ? 'text-red-600' : 'text-[#6B7A93]'"
+                <p class="text-xs mt-1" :class="Number(amount) > totalOwed ? 'text-red-600' : 'text-[#64748b]'"
                    x-text="Number(amount) > totalOwed ? 'You can\'t pay more than what is owed (ETB ' + totalOwed.toFixed(2) + ').' : 'Maximum you can pay: ETB ' + totalOwed.toFixed(2)"></p>
             </div>
             <div>
@@ -78,7 +78,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     @foreach(App\Models\Payment::METHODS as $code => $label)
                         <label class="relative flex items-center justify-center rounded-lg border px-3 py-3 text-sm cursor-pointer min-h-[44px] transition-colors"
-                               :class="method === '{{ $code }}' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/10 text-[var(--brand-primary-dark)] font-semibold' : 'border-gray-200 text-[#6B7A93] hover:border-gray-300'">
+                               :class="method === '{{ $code }}' ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/10 text-[var(--brand-primary-dark)] font-semibold' : 'border-gray-200 text-[#64748b] hover:border-gray-300'">
                             <input type="radio" name="payment_method" value="{{ $code }}" x-model="method" class="sr-only">
                             {{ $label }}
                         </label>
@@ -102,7 +102,7 @@
                         <label class="block text-sm font-medium text-[#1E2530] mb-1">Check date <span class="text-red-500">*</span></label>
                         <input type="date" name="check_date" value="{{ old('check_date') }}" required
                                class="w-full rounded-lg border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
-                        <p class="text-xs text-[#6B7A93] mt-1">If the check is post-dated, enter its date here — it will be shown with the payment.</p>
+                        <p class="text-xs text-[#64748b] mt-1">If the check is post-dated, enter its date here — it will be shown with the payment.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-[#1E2530] mb-1">Bank <span class="text-red-500">*</span></label>
@@ -119,7 +119,7 @@
     </div>
 
     <div class="flex items-center justify-end gap-3">
-        <a href="{{ route('supplier-owed.show', $supplier) }}" class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-[#6B7A93] hover:bg-gray-50 min-h-[44px]">Cancel</a>
+        <a href="{{ route('supplier-owed.show', $supplier) }}" class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-[#64748b] hover:bg-gray-50 min-h-[44px]">Cancel</a>
         <button type="submit" class="inline-flex items-center rounded-lg bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-primary-dark)] min-h-[44px]">Record payment</button>
     </div>
 </form>

@@ -81,11 +81,11 @@
         <span class="text-sm text-[#1E2530]">This happens every month (I'll get a reminder when the next one is due)</span>
     </label>
 
-    <p class="text-xs text-[#6B7A93]">Saving will cancel out the old entry and record the new one — nothing disappears from the books.</p>
+    <p class="text-xs text-[#64748b]">Saving will cancel out the old entry and record the new one — nothing disappears from the books.</p>
 
     <div class="flex gap-3 pt-2">
         <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-bold py-2 px-6 rounded-lg min-h-[44px]">Save Changes</button>
-        <a href="{{ route('expenses.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] py-2 px-4 min-h-[44px] inline-flex items-center">Cancel</a>
+        <a href="{{ route('expenses.index') }}" class="text-[#64748b] hover:text-[#1E2530] py-2 px-4 min-h-[44px] inline-flex items-center">Cancel</a>
     </div>
 </form>
 @endsection

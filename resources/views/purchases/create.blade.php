@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-5xl mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">Record Purchase</h1>
-    <p class="text-sm text-[#6B7A93] mb-6">Add one or more Drugs or Products from the same supplier.</p>
+    <p class="text-sm text-[#64748b] mb-6">Add one or more Drugs or Products from the same supplier.</p>
 
     <form method="POST" action="{{ route('purchases.store') }}" class="space-y-5">
         @csrf
@@ -57,7 +57,7 @@
                 <div>
                     <label class="block text-sm font-medium mb-1.5">Due date</label>
                     <input type="date" name="due_date" x-model="dueDate" x-bind:required="method === 'pay_later'" @change="dueChoice = 'custom'" class="w-full sm:w-1/2 border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[44px]">
-                    <p class="text-xs text-[#6B7A93] mt-1">Default is <span x-text="defaultDays"></span> days after the purchase date.</p>
+                    <p class="text-xs text-[#64748b] mt-1">Default is <span x-text="defaultDays"></span> days after the purchase date.</p>
                 </div>
             </div>
         </div>
@@ -86,14 +86,14 @@
                         <select name="items[0][quantity_unit]" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm"><option value="tablet">Base unit</option><option value="strip">Strip</option><option value="pack">Pack</option></select>
                         <input type="number" min="0" step="0.01" name="items[0][cost_per_unit]" placeholder="Cost / unit" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required>
                         <input type="number" min="0" step="0.01" name="items[0][selling_price_per_unit]" placeholder="Selling / unit" class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required>
-                        <label class="text-xs font-medium text-[#6B7A93]">Expiry date<input type="date" name="items[0][expiry_date]" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm"></label>
+                        <label class="text-xs font-medium text-[#64748b]">Expiry date <span class="text-red-500">*</span><input type="date" name="items[0][expiry_date]" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm" required></label>
                     </div>
                 </div>
             </div>
-            <p class="text-xs text-[#6B7A93] mt-3">Drug quantities support base units, strips, and packs. Product quantities are individual units. Product expiry is optional.</p>
+            <p class="text-xs text-[#64748b] mt-3">Drug quantities support base units, strips, and packs. Product quantities are individual units. An expiry date is required on every line — for items that never expire, use a far-future date such as 31/12/2099 so it never appears in the alerts.</p>
         </div>
 
-        <div class="flex gap-3"><button class="bg-[var(--brand-primary)] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Purchase</button><a href="{{ route('purchases.index') }}" class="text-[#6B7A93] py-2.5 px-4">Cancel</a></div>
+        <div class="flex gap-3"><button class="bg-[var(--brand-primary)] text-white font-medium text-sm py-2.5 px-5 rounded-lg">Save Purchase</button><a href="{{ route('purchases.index') }}" class="text-[#64748b] py-2.5 px-4">Cancel</a></div>
     </form>
 </div>
 

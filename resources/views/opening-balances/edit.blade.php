@@ -4,7 +4,7 @@
 <div class="max-w-3xl mx-auto">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-[#1E2530]">Opening Balances</h1>
-        <p class="text-sm text-[#6B7A93] mt-1">
+        <p class="text-sm text-[#64748b] mt-1">
             Set the figures the pharmacy starts with. Enter what you <em>should</em> have on day one —
             the system posts the difference, so re-saving the same figures changes nothing.
         </p>
@@ -22,7 +22,7 @@
                 </select>
                 <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2 px-4 rounded-lg">Continue</button>
             </div>
-            <p class="text-xs text-[#6B7A93] mt-2">Opening balances belong to a branch's books — choose which one you are setting.</p>
+            <p class="text-xs text-[#64748b] mt-2">Opening balances belong to a branch's books — choose which one you are setting.</p>
         </form>
     @else
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="border-t border-gray-100 pt-4">
-                    <div class="grid grid-cols-12 gap-2 text-xs font-semibold text-[#6B7A93] uppercase tracking-wide mb-2 px-1">
+                    <div class="grid grid-cols-12 gap-2 text-xs font-semibold text-[#64748b] uppercase tracking-wide mb-2 px-1">
                         <span class="col-span-7">Account</span>
                         <span class="col-span-3 text-right">In the books now</span>
                         <span class="col-span-2 text-right">Opening</span>
@@ -64,9 +64,9 @@
                         @foreach($rows as $row)
                             <div class="grid grid-cols-12 gap-2 items-center">
                                 <label for="bal-{{ $row['code'] }}" class="col-span-7 text-sm text-[#1E2530]">
-                                    <span class="text-[#6B7A93] text-xs">{{ $row['code'] }}</span> {{ $row['label'] }}
+                                    <span class="text-[#64748b] text-xs">{{ $row['code'] }}</span> {{ $row['label'] }}
                                 </label>
-                                <span class="col-span-3 text-right text-sm text-[#6B7A93]">
+                                <span class="col-span-3 text-right text-sm text-[#64748b]">
                                     ${{ number_format($row['current'], 2) }}
                                 </span>
                                 <input id="bal-{{ $row['code'] }}"
@@ -82,7 +82,7 @@
                 </div>
 
                 <div class="flex items-center justify-between border-t border-gray-100 pt-4">
-                    <div class="text-sm text-[#6B7A93]">
+                    <div class="text-sm text-[#64748b]">
                         Owner's capital (derived)
                         <span id="equity-preview" class="ml-2 font-semibold text-[#1E2530]">$0.00</span>
                     </div>

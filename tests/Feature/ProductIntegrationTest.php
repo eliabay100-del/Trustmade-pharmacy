@@ -50,7 +50,7 @@ class ProductIntegrationTest extends TestCase
             'purchase_date' => now()->toDateString(),
             'items' => [
                 ['item_type' => 'drug', 'item_id' => $drug->id, 'batch_number' => 'D-1', 'quantity_received' => 50, 'quantity_unit' => 'tablet', 'cost_per_unit' => 10, 'selling_price_per_unit' => 15, 'expiry_date' => now()->addYear()->toDateString()],
-                ['item_type' => 'product', 'item_id' => $product->id, 'batch_number' => 'P-1', 'quantity_received' => 20, 'quantity_unit' => 'tablet', 'cost_per_unit' => 40, 'selling_price_per_unit' => 60],
+                ['item_type' => 'product', 'item_id' => $product->id, 'batch_number' => 'P-1', 'quantity_received' => 20, 'quantity_unit' => 'tablet', 'cost_per_unit' => 40, 'selling_price_per_unit' => 60, 'expiry_date' => now()->addYears(5)->toDateString()],
             ],
         ]);
 

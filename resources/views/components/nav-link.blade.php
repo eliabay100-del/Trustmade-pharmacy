@@ -6,7 +6,7 @@
    {{ $isActive
         ? 'bg-[var(--brand-primary)]/15 text-white border-l-2 border-[var(--brand-primary)]'
         : 'text-[#B9C2D0] hover:bg-white/5 hover:text-white border-l-2 border-transparent' }}">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $isActive ? 'text-[var(--brand-primary)]' : 'text-[#6B7A93]' }}"
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 {{ $isActive ? 'text-[var(--brand-primary)]' : 'text-[#64748b]' }}"
          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         {{ $slot }}
     </svg>

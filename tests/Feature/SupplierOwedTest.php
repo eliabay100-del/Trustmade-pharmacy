@@ -62,6 +62,7 @@ class SupplierOwedTest extends TestCase
                 'item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-1',
                 'quantity_received' => 10, 'quantity_unit' => 'tablet',
                 'cost_per_unit' => 20, 'selling_price_per_unit' => 30,
+                'expiry_date' => now()->addYear()->toDateString(),
             ]],
         ], $overrides));
     }
@@ -93,8 +94,8 @@ class SupplierOwedTest extends TestCase
             'due_date' => now()->addDays(30)->toDateString(),
             'supplier_invoice_no' => 'INV-77',
             'items' => [
-                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-1', 'quantity_received' => 10, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30],
-                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-2', 'quantity_received' => 5, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30],
+                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-1', 'quantity_received' => 10, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30, 'expiry_date' => now()->addYear()->toDateString()],
+                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-2', 'quantity_received' => 5, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30, 'expiry_date' => now()->addYear()->toDateString()],
             ],
         ])->assertRedirect(route('purchases.index'));
 
@@ -121,8 +122,8 @@ class SupplierOwedTest extends TestCase
             'payment_method' => Payment::PAY_LATER,
             'due_date' => now()->addDays(30)->toDateString(),
             'items' => [
-                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-1', 'quantity_received' => 10, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30],
-                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-2', 'quantity_received' => 5, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30],
+                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-1', 'quantity_received' => 10, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30, 'expiry_date' => now()->addYear()->toDateString()],
+                ['item_type' => 'drug', 'item_id' => $this->drug->id, 'batch_number' => 'B-2', 'quantity_received' => 5, 'quantity_unit' => 'tablet', 'cost_per_unit' => 20, 'selling_price_per_unit' => 30, 'expiry_date' => now()->addYear()->toDateString()],
             ],
         ]);
         $ref = PurchaseBatch::first()->purchase_ref;

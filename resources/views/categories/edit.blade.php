@@ -22,7 +22,7 @@
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Changes</button>
-            <a href="{{ route('categories.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
+            <a href="{{ route('categories.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>
 </div>

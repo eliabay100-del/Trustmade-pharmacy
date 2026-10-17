@@ -42,7 +42,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Default "Pay later" period (days)</label>
             <input type="number" min="1" max="365" name="default_credit_days" value="{{ old('default_credit_days') }}"
                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <p class="text-xs text-[#6B7A93] mt-1">Optional. When you choose "Pay later" for this supplier, the due date defaults to this many days after the purchase.</p>
+            <p class="text-xs text-[#64748b] mt-1">Optional. When you choose "Pay later" for this supplier, the due date defaults to this many days after the purchase.</p>
         </div>
 
         <div class="flex gap-3 pt-2">

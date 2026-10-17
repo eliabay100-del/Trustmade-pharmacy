@@ -10,10 +10,10 @@
     <table class="min-w-full divide-y divide-gray-100">
         <thead class="bg-gray-50/50">
             <tr>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Name</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Contact Person</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Phone</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Email</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Name</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Contact Person</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Phone</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Email</th>
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
@@ -21,9 +21,9 @@
             @forelse($suppliers as $supplier)
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-5 py-3.5 font-medium text-[#1E2530]">{{ $supplier->name }}</td>
-                    <td class="px-5 py-3.5 text-[#6B7A93]">{{ $supplier->contact_person ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-[#6B7A93]">{{ $supplier->phone ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-[#6B7A93]">{{ $supplier->email ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-[#64748b]">{{ $supplier->contact_person ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-[#64748b]">{{ $supplier->phone ?? '—' }}</td>
+                    <td class="px-5 py-3.5 text-[#64748b]">{{ $supplier->email ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-right whitespace-nowrap">
                         <a href="{{ route('suppliers.edit', $supplier->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" class="inline"
@@ -34,7 +34,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="px-5 py-8 text-center text-[#6B7A93]">No suppliers yet. <a href="{{ route('suppliers.create') }}" class="text-[var(--brand-primary)] underline">Add your first one</a>.</td></tr>
+                <tr><td colspan="5" class="px-5 py-8 text-center text-[#64748b]">No suppliers yet. <a href="{{ route('suppliers.create') }}" class="text-[var(--brand-primary)] underline">Add your first one</a>.</td></tr>
             @endforelse
         </tbody>
     </table>

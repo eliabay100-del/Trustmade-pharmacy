@@ -28,7 +28,7 @@
         }
         .code { margin: 0; font-size: 3rem; font-weight: 800; letter-spacing: -.02em; color: #12A594; }
         h1 { font-size: 1.35rem; margin: 12px 0 8px; }
-        p { margin: 0 0 24px; color: #6b7a93; line-height: 1.6; font-size: .95rem; }
+        p { margin: 0 0 24px; color: #64748b; line-height: 1.6; font-size: .95rem; }
         .button {
             display: inline-block; background: #10253b; color: #fff; text-decoration: none;
             font-weight: 600; padding: 12px 20px; border-radius: 10px; font-size: .9rem;

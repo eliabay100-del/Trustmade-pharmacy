@@ -41,12 +41,12 @@
         </label>
         <div id="recurring-fields" class="space-y-2 pl-6 {{ $customer->is_recurring ? '' : 'hidden' }}">
             <div>
-                <label class="block text-xs font-medium text-[#6B7A93] mb-1">Remind every (days)</label>
+                <label class="block text-xs font-medium text-[#64748b] mb-1">Remind every (days)</label>
                 <input type="number" name="reminder_interval_days" value="{{ old('reminder_interval_days', $customer->reminder_interval_days ?? 30) }}"
                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
             </div>
             <div>
-                <label class="block text-xs font-medium text-[#6B7A93] mb-1">Note</label>
+                <label class="block text-xs font-medium text-[#64748b] mb-1">Note</label>
                 <input type="text" name="condition_note" value="{{ old('condition_note', $customer->condition_note) }}"
                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
             </div>
@@ -54,7 +54,7 @@
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Changes</button>
-            <a href="{{ route('customers.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
+            <a href="{{ route('customers.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>
 </div>

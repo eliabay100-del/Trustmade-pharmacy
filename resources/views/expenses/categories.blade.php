@@ -3,7 +3,7 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-[#1E2530]">Expense Categories</h1>
-    <a href="{{ route('expenses.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm min-h-[44px] inline-flex items-center">← Back to Expenses</a>
+    <a href="{{ route('expenses.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm min-h-[44px] inline-flex items-center">← Back to Expenses</a>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -13,9 +13,9 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Name</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Expenses using it</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Status</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Name</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Expenses using it</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
                         <th class="px-5 py-3"></th>
                     </tr>
                 </thead>
@@ -27,7 +27,7 @@
                             <td class="px-5 py-3">
                                 <input type="text" name="name" value="{{ $cat->name }}" class="w-full max-w-[220px] rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px] text-sm font-medium">
                             </td>
-                            <td class="px-5 py-3 text-[#6B7A93]">{{ $cat->expenses_count }}</td>
+                            <td class="px-5 py-3 text-[#64748b]">{{ $cat->expenses_count }}</td>
                             <td class="px-5 py-3">
                                 <label class="inline-flex items-center gap-2 cursor-pointer min-h-[44px]">
                                     <input type="checkbox" name="active" value="1" class="rounded accent-[var(--brand-primary)] w-5 h-5" @checked($cat->active)>
@@ -44,7 +44,7 @@
             </table>
             </div>
         </div>
-        <p class="text-xs text-[#6B7A93] mt-3">Turning a category off hides it from the Add Expense form but keeps old expenses intact.</p>
+        <p class="text-xs text-[#64748b] mt-3">Turning a category off hides it from the Add Expense form but keeps old expenses intact.</p>
     </div>
 
     <div>

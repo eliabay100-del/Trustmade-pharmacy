@@ -53,8 +53,8 @@
         }
         .center { text-align: center; }
         .name { font-size: 16px; font-weight: 700; }
-        .muted { color: #6B7A93; font-size: 11px; }
-        .fine { color: #6B7A93; font-size: 10px; }
+        .muted { color: #64748b; font-size: 11px; }
+        .fine { color: #64748b; font-size: 10px; }
         hr { border: 0; border-top: 1px dashed #d1d5db; margin: 8px 0; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         td { padding: 2px 0; vertical-align: top; }

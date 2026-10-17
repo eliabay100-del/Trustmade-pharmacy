@@ -11,18 +11,18 @@
             </span>
             <div>
                 <p class="font-bold text-[#1E2530] text-lg">{{ $user->name }}</p>
-                <p class="text-sm text-[#6B7A93]">{{ $user->username ?? $user->email ?? '' }}</p>
+                <p class="text-sm text-[#64748b]">{{ $user->username ?? $user->email ?? '' }}</p>
             </div>
         </div>
 
         <dl class="space-y-3 text-sm">
             <div class="flex justify-between border-b border-gray-50 pb-2">
-                <dt class="text-[#6B7A93]">Branch</dt>
+                <dt class="text-[#64748b]">Branch</dt>
                 <dd class="text-[#1E2530] font-medium">{{ $branch->name ?? 'All Branches' }}</dd>
             </div>
         </dl>
 
-        <p class="text-xs text-[#6B7A93] mt-6">
+        <p class="text-xs text-[#64748b] mt-6">
             User management (adding staff, assigning branches) isn't built yet — let me know if you want that next.
         </p>
     </div>

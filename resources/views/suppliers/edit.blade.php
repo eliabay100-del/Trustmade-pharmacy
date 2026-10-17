@@ -43,12 +43,12 @@
             <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Default "Pay later" period (days)</label>
             <input type="number" min="1" max="365" name="default_credit_days" value="{{ old('default_credit_days', $supplier->default_credit_days) }}"
                    class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-            <p class="text-xs text-[#6B7A93] mt-1">Optional. When you choose "Pay later" for this supplier, the due date defaults to this many days after the purchase.</p>
+            <p class="text-xs text-[#64748b] mt-1">Optional. When you choose "Pay later" for this supplier, the due date defaults to this many days after the purchase.</p>
         </div>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">Save Changes</button>
-            <a href="{{ route('suppliers.index') }}" class="text-[#6B7A93] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
+            <a href="{{ route('suppliers.index') }}" class="text-[#64748b] hover:text-[#1E2530] text-sm py-2.5 px-4">Cancel</a>
         </div>
     </form>
 </div>

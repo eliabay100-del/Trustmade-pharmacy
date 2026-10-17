@@ -4,7 +4,7 @@
 <div class="flex justify-between items-center mb-6">
     <div>
         <h1 class="text-2xl font-bold text-[#1E2530]">Returns</h1>
-        <p class="text-sm text-[#6B7A93] mt-1">Offsetting entries — original sales and purchases are not edited.</p>
+        <p class="text-sm text-[#64748b] mt-1">Offsetting entries — original sales and purchases are not edited.</p>
     </div>
     <div class="flex gap-2">
         <a href="{{ route('returns.customer.create') }}"
@@ -26,26 +26,26 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Date</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Order / Drug</th>
-                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Qty</th>
-                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Refund</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Date</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Order / Drug</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Qty</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Refund</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($customerReturns as $return)
                     <tr class="hover:bg-gray-50/50">
-                        <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
+                        <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
                         <td class="px-5 py-3.5 text-sm">
                             <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? $return->purchaseBatch->product->name ?? '—' }}</span>
-                            <span class="block text-xs text-[#6B7A93]">Order #{{ $return->order_id }} · {{ $return->refundMethodLabel() }}</span>
+                            <span class="block text-xs text-[#64748b]">Order #{{ $return->order_id }} · {{ $return->refundMethodLabel() }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $return->quantity }}</td>
-                            <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($return->refund_amount, 2) }}</td>
+                            <td class="px-5 py-3.5 text-sm text-right text-[#64748b]">ETB {{ number_format($return->refund_amount, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-sm text-[#6B7A93]">No customer returns yet.</td>
+                        <td colspan="4" class="px-5 py-10 text-center text-sm text-[#64748b]">No customer returns yet.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -59,26 +59,26 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50/50">
                 <tr>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Date</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Batch / Drug</th>
-                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">Qty</th>
-                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#6B7A93] uppercase tracking-wide">At cost</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Date</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">Batch / Drug</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">Qty</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-[#64748b] uppercase tracking-wide">At cost</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($supplierReturns as $return)
                     <tr class="hover:bg-gray-50/50">
-                        <td class="px-5 py-3.5 text-sm text-[#6B7A93]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
+                        <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $return->created_at->format('M d, Y g:i A') }}</td>
                         <td class="px-5 py-3.5 text-sm">
                             <span class="font-medium text-[#1E2530]">{{ $return->purchaseBatch->drug->name ?? $return->purchaseBatch->product->name ?? '—' }}</span>
-                            <span class="block text-xs text-[#6B7A93]">{{ $return->purchaseBatch->batch_number ?? '—' }} · {{ $return->supplier->name ?? '—' }}</span>
+                            <span class="block text-xs text-[#64748b]">{{ $return->purchaseBatch->batch_number ?? '—' }} · {{ $return->supplier->name ?? '—' }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $return->quantity }}</td>
-                            <td class="px-5 py-3.5 text-sm text-right text-[#6B7A93]">ETB {{ number_format($return->total_amount, 2) }}</td>
+                            <td class="px-5 py-3.5 text-sm text-right text-[#64748b]">ETB {{ number_format($return->total_amount, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-sm text-[#6B7A93]">No supplier returns yet.</td>
+                        <td colspan="4" class="px-5 py-10 text-center text-sm text-[#64748b]">No supplier returns yet.</td>
                     </tr>
                 @endforelse
             </tbody>
