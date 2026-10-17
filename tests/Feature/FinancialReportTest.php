@@ -264,6 +264,14 @@ class FinancialReportTest extends TestCase
             $content,
             'The voucher list should start collapsed.'
         );
+
+        // The glossary belongs underneath the figures it explains, not above
+        // them: the page should open on profit, not on vocabulary.
+        $this->assertGreaterThan(
+            strpos($content, 'Debit and credit list'),
+            strpos($content, 'What these terms mean'),
+            'The terms table should come after the statements and the voucher list.'
+        );
     }
 
     public function test_the_voucher_list_only_counts_the_filtered_period(): void
@@ -297,6 +305,10 @@ class FinancialReportTest extends TestCase
             ->assertOk()
             ->assertSee('1 voucher')
             ->assertSee('This month')
-            ->assertDontSee('Old sale');
+            ->assertDontSee('Old sale')
+            // The statements follow the same filter: this month's net profit is
+            // 100 - 40 = 60, not last month's figures folded in.
+            ->assertSee('60.00')
+            ->assertDontSee('900.00');
     }
 }

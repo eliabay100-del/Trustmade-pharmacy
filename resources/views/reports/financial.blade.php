@@ -14,40 +14,9 @@
 
 @include('partials.period-filter', [
     'action' => route('reports.financial'),
-    'hint' => 'Picking a month without a year uses ' . now()->year . '. Leaving both on "All" reports everything since the books were opened.',
+    'hint' => 'This filter applies to both statements and to the debit and credit list. Picking a month without a year uses '
+        . now()->year . '. Leaving both on "All" reports everything since the books were opened.',
 ])
-
-{{-- What the lines below actually mean in PMAS terms. --}}
-<details open class="group bg-white rounded-xl border border-gray-100 shadow-sm mb-4 overflow-hidden">
-    <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer min-h-[44px] hover:bg-gray-50/50">
-        <span>
-            <span class="block text-sm font-semibold text-[#1E2530]">What these terms mean</span>
-            <span class="block text-xs text-[#64748b] mt-0.5">Every line on this page, in plain words</span>
-        </span>
-        <svg class="w-5 h-5 text-[#64748b] shrink-0 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-    </summary>
-
-    <div class="overflow-x-auto border-t border-gray-100">
-        <table class="min-w-full divide-y divide-gray-100">
-            <thead class="bg-gray-50/50">
-                <tr>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide w-56">Term</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">What it means in TRUSTMED</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                @foreach($terms as $term)
-                    <tr class="hover:bg-gray-50/50">
-                        <td class="px-5 py-3 text-sm font-medium text-[#1E2530] align-top">{{ $term['line'] }}</td>
-                        <td class="px-5 py-3 text-sm text-[#64748b] leading-relaxed">{{ $term['meaning'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</details>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
     {{-- Profit and loss: covers the period. --}}
@@ -198,6 +167,39 @@
 
     <div class="px-5 py-4 border-t border-gray-100">
         {{ $entries->links() }}
+    </div>
+</details>
+
+{{-- Kept at the bottom: it is a glossary for the figures above, not part of
+     the report. Open on arrival because there is nothing below it to hide. --}}
+<details open class="group bg-white rounded-xl border border-gray-100 shadow-sm mt-4 overflow-hidden">
+    <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer min-h-[44px] hover:bg-gray-50/50">
+        <span>
+            <span class="block text-sm font-semibold text-[#1E2530]">What these terms mean</span>
+            <span class="block text-xs text-[#64748b] mt-0.5">Every line above, in plain words</span>
+        </span>
+        <svg class="w-5 h-5 text-[#64748b] shrink-0 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+    </summary>
+
+    <div class="overflow-x-auto border-t border-gray-100">
+        <table class="min-w-full divide-y divide-gray-100">
+            <thead class="bg-gray-50/50">
+                <tr>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide w-56">Term</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-[#64748b] uppercase tracking-wide">What it means in TRUSTMED</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @foreach($terms as $term)
+                    <tr class="hover:bg-gray-50/50">
+                        <td class="px-5 py-3 text-sm font-medium text-[#1E2530] align-top">{{ $term['line'] }}</td>
+                        <td class="px-5 py-3 text-sm text-[#64748b] leading-relaxed">{{ $term['meaning'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </details>
 @endsection
