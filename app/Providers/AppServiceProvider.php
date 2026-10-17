@@ -33,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.app', function ($view) {
             $badge = 0;
+            $billsBadge = 0;
             $user = Auth::user();
             if ($user && $user->role === 'owner_admin') {
                 try {
@@ -43,11 +44,24 @@ class AppServiceProvider extends ServiceProvider
                                 ->reminderData($user->branch_id, max(1, (int) Setting::value('supplier_alert_days', '7')))['badge_count'];
                         });
                     }
+
+                    // Monthly bills due — the count on the Alerts link, so a
+                    // reminder is noticed without opening the page.
+                    if (Schema::hasTable('expenses')) {
+                        $billsBadge = Cache::remember('bills_due_badge:' . ($user->branch_id ?? 'all'), 60, function () use ($user) {
+                            return \App\Models\Expense::dueBills(
+                                $user->branch_id,
+                                max(1, (int) Setting::value('supplier_alert_days', '7'))
+                            )->count();
+                        });
+                    }
                 } catch (\Throwable $e) {
                     $badge = 0;
+                    $billsBadge = 0;
                 }
             }
             $view->with('owedBadgeCount', $badge);
+            $view->with('billsDueCount', $billsBadge);
         });
     }
 }

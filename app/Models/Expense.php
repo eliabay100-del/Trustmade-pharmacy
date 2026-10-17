@@ -22,7 +22,7 @@ class Expense extends Model
         'expense_date', 'expense_category_id', 'branch_id', 'amount',
         'payment_method', 'payment_reference',
         'check_number', 'check_date', 'check_bank',
-        'note', 'repeat_monthly', 'next_due_date',
+        'note', 'repeat_monthly', 'next_due_date', 'paid_months',
     ];
 
     protected $casts = [
@@ -31,7 +31,11 @@ class Expense extends Model
         'next_due_date' => 'date',
         'amount' => 'decimal:2',
         'repeat_monthly' => 'boolean',
+        'paid_months' => 'integer',
     ];
+
+    /** The "paid for" options offered on the expense form. */
+    public const PAID_MONTH_OPTIONS = [1, 3, 6, 12];
 
     public function category(): BelongsTo
     {
@@ -71,5 +75,48 @@ class Expense extends Model
         }
 
         return $due;
+    }
+
+    /**
+     * A bill whose next due date has already passed. The reminder still rolls
+     * forward to the current cycle, so this is the flag that says "you are
+     * behind on this one" rather than "it is coming up".
+     */
+    public function isOverdue(): bool
+    {
+        return (bool) ($this->next_due_date
+            && $this->repeat_monthly
+            && $this->next_due_date->lt(\Carbon\Carbon::today()));
+    }
+
+    /**
+     * The repeating bills that need attention within the window, soonest
+     * first. Shared by the Alerts page, the dashboard and the sidebar badge so
+     * the three can never disagree.
+     */
+    public static function dueBills($branchId = null, int $withinDays = 7): \Illuminate\Support\Collection
+    {
+        $today = \Carbon\Carbon::today();
+        $windowEnd = $today->copy()->addDays(max(0, $withinDays));
+
+        return static::query()
+            ->with('category')
+            ->where('repeat_monthly', true)
+            ->whereNotNull('next_due_date')
+            ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
+            ->get()
+            ->filter(function ($bill) use ($windowEnd) {
+                // An overdue bill always shows. The monthly cycle rolls its
+                // date forward to the current month, so without this a bill
+                // that was missed would quietly roll into next month and
+                // disappear from the list instead of showing as late.
+                if ($bill->isOverdue()) {
+                    return true;
+                }
+
+                return $bill->reminderDate()?->lte($windowEnd);
+            })
+            ->sortBy(fn ($bill) => $bill->reminderDate()->timestamp)
+            ->values();
     }
 }

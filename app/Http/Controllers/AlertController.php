@@ -90,17 +90,7 @@ class AlertController extends Controller
         $recurringExpensesDue = collect();
         if ($user->role === 'owner_admin') {
             try {
-                if (\Illuminate\Support\Facades\Schema::hasTable('expenses')) {
-                    $windowEnd = Carbon::today()->addDays($soonDays ?? 7);
-                    $recurringExpensesDue = \App\Models\Expense::with('category')
-                        ->where('repeat_monthly', true)
-                        ->whereNotNull('next_due_date')
-                        ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
-                        ->get()
-                        ->filter(fn ($bill) => $bill->reminderDate()?->lte($windowEnd))
-                        ->sortBy(fn ($bill) => $bill->reminderDate()->timestamp)
-                        ->values();
-                }
+                $recurringExpensesDue = \App\Models\Expense::dueBills($branchId, $soonDays ?? 7);
             } catch (\Throwable $e) {
                 $recurringExpensesDue = collect(); // never break alerts over this
             }

@@ -96,13 +96,23 @@ class DashboardController extends Controller
         });
 
         $supplierReminders = null;
+        $billsDue = collect();
         if ($user->role === 'owner_admin') {
             $supplierReminders = app(\App\Services\SupplierOwedService::class)
                 ->reminderData($branchId, max(1, (int) \App\Models\Setting::value('supplier_alert_days', '7')));
+
+            // Monthly bills due (or overdue). Same helper as the Alerts page
+            // and the sidebar badge, so the three can never disagree.
+            try {
+                $billsDue = \App\Models\Expense::dueBills($branchId, max(1, (int) \App\Models\Setting::value('supplier_alert_days', '7')));
+            } catch (\Throwable $e) {
+                $billsDue = collect();
+            }
         }
 
         return view('dashboard.index', array_merge($data, [
             'supplierReminders' => $supplierReminders,
+            'billsDue' => $billsDue,
             'expiryDays' => $expiryDays,
             'expiringSoon' => collect($data['expiringSoon']),
         ]));

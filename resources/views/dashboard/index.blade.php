@@ -50,6 +50,31 @@
 
     <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Attention needed</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Recent alerts</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">View all</a></div>@if($expiringSoonCount || $lowStockCount)<div class="mt-5 grid gap-3 sm:grid-cols-2">@if($expiringSoonCount)<div class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ $expiringSoonCount }} drug{{ $expiringSoonCount === 1 ? ' expires' : 's expire' }} within {{ $expiryDays }} days</div>@endif @if($lowStockCount)<div class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ $lowStockCount }} item{{ $lowStockCount === 1 ? ' needs' : 's need' }} restocking</div>@endif</div>@else<div class="mt-5 rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm text-[#08796f]">Everything is in good shape. No active alerts.</div>@endif</section>
 
+    {{-- Monthly bills due (owner/admin only). Same helper as the Alerts page
+         and the sidebar badge, so the three always agree. --}}
+    @if(!empty($billsDue) && $billsDue->count())
+        <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Monthly bills</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Bills to pay</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">See all</a></div>
+            <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                @foreach($billsDue as $bill)
+                    <a href="{{ route('expenses.create', ['bill' => $bill->id]) }}" class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm min-h-[44px] {{ $bill->isOverdue() ? 'border-red-100 bg-red-50 text-red-800 hover:border-red-300' : 'border-sky-100 bg-sky-50 text-sky-900 hover:border-sky-300' }}">
+                        <span class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full {{ $bill->isOverdue() ? 'bg-red-500' : 'bg-sky-500' }}"></span>
+                            {{ $bill->category->name ?? 'Bill' }} — ETB {{ number_format((float) $bill->amount, 2) }}
+                        </span>
+                        <span class="text-xs font-medium whitespace-nowrap">
+                            @if($bill->isOverdue())
+                                Overdue
+                            @else
+                                Due {{ $bill->reminderDate()?->format('d M') }}
+                            @endif
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     {{-- PART B — Owed to suppliers reminders (owner/admin only). Live numbers, no cron. --}}
     @if(!empty($supplierReminders) && (count($supplierReminders['overdue']) || count($supplierReminders['due_soon'])))
         <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">

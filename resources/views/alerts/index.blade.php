@@ -76,8 +76,15 @@
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $bill->category->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-sm text-right text-[#1E2530] font-semibold">ETB {{ number_format($bill->amount, 2) }}</td>
-                            <td class="px-5 py-3 text-sm text-right text-sky-700">Due {{ $bill->reminderDate()?->format('d M Y') }}</td>
-                            <td class="px-5 py-3 text-right"><a href="{{ route('expenses.create') }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Record payment</a></td>
+                            <td class="px-5 py-3 text-sm text-right">
+                                @if($bill->isOverdue())
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Overdue</span>
+                                    <span class="block text-xs text-red-700 mt-0.5">due {{ $bill->reminderDate()?->format('d M Y') }}</span>
+                                @else
+                                    <span class="text-sky-700">Due {{ $bill->reminderDate()?->format('d M Y') }}</span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3 text-right"><a href="{{ route('expenses.create', ['bill' => $bill->id]) }}" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Record payment</a></td>
                         </tr>
                     @endforeach
                 </tbody></table>

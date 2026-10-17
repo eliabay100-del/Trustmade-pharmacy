@@ -11,4 +11,9 @@
         {{ $slot }}
     </svg>
     <span class="text-sm {{ $isActive ? 'font-medium' : '' }}">{{ $label }}</span>
+    @if(($badge ?? 0) > 0)
+        {{-- A count on the link itself, so a reminder is visible without
+             having to open the page. --}}
+        <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold">{{ $badge }}</span>
+    @endif
 </a>

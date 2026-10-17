@@ -76,6 +76,20 @@
         <textarea name="note" rows="2" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]">{{ old('note', $expense->note) }}</textarea>
     </div>
 
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-semibold text-[#1E2530] mb-1">Paid for</label>
+            <select name="paid_months" class="w-full rounded-lg border-gray-200 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] min-h-[44px]">
+                @foreach($paidMonthOptions as $months)
+                    <option value="{{ $months }}" @selected((int) old('paid_months', $expense->paid_months ?: 1) === $months)>
+                        {{ $months }} month{{ $months === 1 ? '' : 's' }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="text-xs text-[#64748b] mt-1">Paying several months at once moves the reminder on by the same amount.</p>
+        </div>
+    </div>
+
     <label class="flex items-center gap-3 cursor-pointer min-h-[44px]">
         <input type="checkbox" name="repeat_monthly" value="1" class="rounded accent-[var(--brand-primary)] w-5 h-5" @checked(old('repeat_monthly', $expense->repeat_monthly))>
         <span class="text-sm text-[#1E2530]">This happens every month (I'll get a reminder when the next one is due)</span>
