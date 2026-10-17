@@ -29,9 +29,9 @@ class AlertController extends Controller
         // ignored rather than trusted.
         $expiryDays = Setting::expiryAlertDays($request->query('expiry'));
 
-        $expiringQuery = PurchaseBatch::whereBetween('expiry_date', [Carbon::today(), Carbon::today()->addDays($expiryDays)])
+        $expiringQuery = PurchaseBatch::with('drug')->whereBetween('expiry_date', [Carbon::today(), Carbon::today()->addDays($expiryDays)])
             ->where('quantity_remaining', '>', 0);
-        $expiredQuery = PurchaseBatch::where('expiry_date', '<', Carbon::today())
+        $expiredQuery = PurchaseBatch::with('drug')->where('expiry_date', '<', Carbon::today())
             ->where('quantity_remaining', '>', 0);
 
         if ($user->branch_id) {

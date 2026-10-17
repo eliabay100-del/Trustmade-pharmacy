@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Development guardrail: a lazily-loaded relation (the classic N+1)
+        // throws instead of quietly hammering the database. Disabled in
+        // production so a surprise during a request can never take the app
+        // down for real users.
+        Model::preventLazyLoading(! app()->isProduction());
+
         View::composer('layouts.app', function ($view) {
             $badge = 0;
             $user = Auth::user();

@@ -108,7 +108,7 @@ class ReturnController extends Controller
                 );
 
                 return $return;
-            });
+            }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
 
             return redirect()->route('returns.index')->with('success', 'Customer return recorded. Stock restored to the original batch.');
         } catch (\Exception $e) {
@@ -171,7 +171,7 @@ class ReturnController extends Controller
                 );
 
                 return $return;
-            });
+            }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
 
             return redirect()->route('returns.index')->with('success', 'Supplier return recorded. Stock and AP were reversed.');
         } catch (\Exception $e) {

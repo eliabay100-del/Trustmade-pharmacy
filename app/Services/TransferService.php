@@ -90,6 +90,6 @@ class TransferService {
             }
 
             return $lastTransfer;
-        });
+        }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
     }
 }

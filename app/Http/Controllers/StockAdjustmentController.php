@@ -90,7 +90,7 @@ class StockAdjustmentController extends Controller
                 );
 
                 return $adjustment;
-            });
+            }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
 
             return redirect()->route('adjustments.index')->with('success', 'Stock written off.');
         } catch (\Exception $e) {

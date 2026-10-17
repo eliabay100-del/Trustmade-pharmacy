@@ -159,7 +159,7 @@ class DispenseController extends Controller
                 $this->accountingService->recordSale($orderTotal, $orderCogs, $branchId, $order->id, $paymentRows);
 
                 return $order;
-            });
+            }, 3); // retry up to 3x on a transient deadlock / lock-wait timeout
 
             return redirect()->route('dispense.show', $order->id)->with('success', 'Sale completed!');
         } catch (\Exception $e) {
