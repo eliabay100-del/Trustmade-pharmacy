@@ -32,8 +32,8 @@ Legend used in the tables below:
 | Domain | Tables | Notes |
 |---|---|---|
 | Users & roles | `users`, `personal_access_tokens`, `sessions`, `password_reset_tokens`, `activity_logs` | Roles live on `users.role` (enum). Activity is logged automatically by the `LogsActivity` trait. |
-| Branches | `branches` | Single root entity; almost every transactional table carries `branch_id`. `users.branch_id` NULL = Owner/Admin with all-branch access. |
-| Products & stock (drugs) | `drug_categories`, `drugs`, `purchase_batches`, `stock_cards`, `issued_items`, `stock_transfers`, `stock_adjustments` | Drugs are the prescription catalog; stock is held as `purchase_batches.quantity_remaining`. |
+| Branches | `branches` | **This is a single-branch install.** Branch management (the CRUD screen, every branch picker, and stock transfers) was removed. The `branches` table and every `branch_id` column were deliberately kept so existing records, reports and the row-scoping checks keep working. New records are stamped automatically by `Branch::resolveId()` / `Branch::current()` instead of asking. `users.branch_id` NULL still = Owner/Admin with unrestricted access. |
+| Products & stock (drugs) | `drug_categories`, `drugs`, `purchase_batches`, `stock_cards`, `issued_items`, `stock_adjustments` | Drugs are the prescription catalog; stock is held as `purchase_batches.quantity_remaining`. |
 | Products & stock (retail) | `product_categories`, `products` | Added later (2026-09-02) into the same `purchase_batches` / `issued_items` tables via a nullable `product_id`. |
 | Sales & payments | `orders`, `issued_items`, `payments`, `customer_returns`, `till_closings` | A sale is one `orders` row with one or many `payments` rows that must sum to the order total. |
 | Purchases & suppliers | `suppliers`, `purchase_batches`, `supplier_returns`, `supplier_payments`, `supplier_payment_allocations` | "Pay later" purchases create a payable; balances are always **derived from `purchase_batches.amount_paid`**, never stored separately. |
@@ -590,7 +590,7 @@ Note: `reference_type` values written by code are `purchase`, `sale`, `adjustmen
 | `PurchaseBatch` | belongsTo `drug`, `product`, `supplier`, `branch`; hasMany `stockCards`, `issuedItems` | accessors `total_cost`, `balance_owed`, `available_quantity`; `payment_label()`, `status_label()`, `isExpired()`, `isNearExpiry()` |
 | `StockCard` | belongsTo `purchaseBatch`, `branch` | — |
 | `IssuedItem` | belongsTo `order`, `purchaseBatch`, `product`, `customer`, `branch`; hasMany `customerReturns` | `quantityReturned()`, `quantityReturnable()` |
-| `StockTransfer` | belongsTo `fromBranch`, `toBranch`, `purchaseBatch` | — |
+| ~~`StockTransfer`~~ | *(removed — stock transfers were deleted)* | - |
 | `StockAdjustment` | belongsTo `purchaseBatch`, `branch`, `user` | `REASONS` constant; `reasonLabel()` |
 | `Order` | belongsTo `branch`, `customer`, `user`; hasMany `items` (IssuedItem), `payments`, `customerReturns` | `amountPaid()`, `vatBreakdown()` |
 | `Payment` | belongsTo `order` | `methodLabel()`; constants `METHODS`, `ACCOUNT_CODES`, `PAY_LATER`, `OWED_TO_SUPPLIERS_ACCOUNT`; `accountCodeFor()` |
@@ -605,7 +605,7 @@ Note: `reference_type` values written by code are `purchase`, `sale`, `adjustmen
 | `Ledger` | belongsTo `journalEntry`, `account`, `branch` | — |
 | `ActivityLog` | belongsTo `user` | — |
 | `Setting` | — | static `value()`, `allCached()`, `put()`, `vatRatePercent()` |
-| `TransferService` | — | domain service, not a model |
+| ~~`TransferService`~~ | *(removed — stock transfers were deleted)* | - |
 | `InventoryService` | — | domain service |
 | `SupplierOwedService` | — | `supplierSummary()`, `supplierInvoices()`, `reminderData()`, `statusForDate()`, `applyScope()` |
 | `AccountingService` | — | `postEntry()`, `recordSale()`, `recordWriteOff()`, `recordCustomerReturn()`, `recordSupplierReturn()` |
@@ -819,7 +819,7 @@ Role middleware alias: `role` → `App\Http\Middleware\EnsureUserHasRole` (regis
 | `GET /` (login), `POST /`, `POST /login` | public + `throttle:5,1` | ✅ | ✅ | ✅ |
 | `POST /logout`, `GET /dashboard`, `GET /profile` | `auth` (any role) | ✅ | ✅ | ✅ |
 | Purchases, Dispensing, Till closings, Adjustments, Returns, Drugs, Categories, Products, Product categories, Suppliers, Customers, Alerts, `search-drug` | `role:owner_admin,branch_manager,pharmacist_clerk` | ✅ | ✅ | ✅ |
-| Transfers, Branches, Accounts, Journal entries, Reports (inventory/financial/sales/export) | `role:owner_admin,branch_manager` | ✅ | ✅ | ❌ |
+| Accounts, Journal entries, Reports (inventory/financial/sales/export) | `role:owner_admin,branch_manager` | ✅ | ✅ | ❌ |
 | Supplier Owed / Pay supplier, Expenses, Expense categories, Settings branding, Users, Activity logs | `role:owner_admin` | ✅ | ❌ | ❌ |
 
 Notes:
@@ -854,17 +854,24 @@ Live values observed: `vat_rate_percent = 15`, `business_name = TRUSTMED Pharmac
 
 ## 10. Business rules enforced in code
 
-**Stock deduction order (FEFO)**
-- `InventoryService::selectBatchesForDispensing()` selects batches for the item at the branch with `quantity_remaining > 0` and not expired, ordered by `expiry_date ASC, purchase_date ASC` — first-expiry-first-out.
-- `TransferService::transfer()` uses the same ordering when picking source batches.
+**Stock deduction order (FEFO, with FIFO inside a shared expiry date)**
+- `InventoryService::selectBatchesForDispensing()` selects batches for the item at the branch with `quantity_remaining > 0` and not expired, ordered by **`expiry_date ASC, purchase_date ASC, id ASC`** — first-expiry-first-out, and within one expiry date oldest-purchased-first.
+- The `id` tiebreaker is what makes the order deterministic. Without it, several batches bought on the same day with the same expiry date tie on both date columns and MySQL is free to return them in any order. `purchase_date` is a DATE column, so on its own it is not precise enough.
+- Every sale line already records which physical batch it consumed (`issued_items.purchase_batch_id`, `stock_cards.purchase_batch_id`), so traceability never depended on this ordering.
 - Out-of-stock is rejected: `if ($batches->sum('quantity_remaining') < $qtyNeeded) throw "Insufficient stock available."`.
+
+**The dispensing marker (`#1 · 40 left`)**
+- `InventoryService::dispenseMarkers()` renders next to each item name on the sale screen: which batch goes out first, and how much is left on it.
+- It is **recomputed from the batches on every page load** — there is no stored sequence column, so nothing needs renumbering when a batch is deleted or written off.
+- It uses `ROW_NUMBER() OVER (ORDER BY expiry_date ASC, purchase_date ASC, id ASC)` — deliberately the same ORDER BY as `selectBatchesForDispensing()`, so the batch the seller is shown is always the batch that is actually consumed.
+- Markers are keyed by `catalog_key` (`drug:12` / `product:3`), not by bare id, because a drug id and a product id can be the same number.
 
 **Locking (`lockForUpdate`)**
 - `InventoryService::selectBatchesForDispensing()` locks the candidate batch rows.
 - `InventoryService::writeOff()`, `restockCustomerReturn()`, `returnToSupplier()` lock the batch (and issued item) before mutating.
 - `SupplierPaymentController::store()` locks the supplier's open pay-later lines before allocating.
-- `TransferService::transfer()` locks the source batches.
 - All of these run inside `DB::transaction(...)`.
+- The outermost stock transaction in each request path allows **3 attempts**, so a transient InnoDB deadlock or lock-wait timeout rolls back and retries instead of surfacing an error to the seller. Retries are on the outermost transaction because that is the only level Laravel retries at (nested calls use savepoints).
 
 **Overpayment / balance checks**
 - Supplier payment: `if ($amount > $totalOwed + 0.001)` → validation error "You can't pay more than what is owed". `overpayment` is therefore always 0 by construction.

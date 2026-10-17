@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Drug;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\IssuedItem;
@@ -44,12 +45,31 @@ class DispenseController extends Controller
     {
         $drugs = Drug::all();
         $products = Product::where('active', true)->orderBy('name')->get();
+        $branchId = auth()->user()->branch_id ?: Branch::current()?->id;
+        $paymentMethods = Payment::METHODS;
+
+        // Dispensing marker next to each item name: "#1 · 40 left" — the batch
+        // that goes out first and its remaining quantity, recomputed on every
+        // page load. Keyed by catalog_key, not by id, because a drug id and a
+        // product id can be the same number.
+        $markers = [];
+        foreach (['drug' => $drugs, 'product' => $products] as $type => $collection) {
+            $ids = $collection->pluck('id')->all();
+            foreach ($this->inventoryService->dispenseMarkers($type, $ids, $branchId) as $id => $marker) {
+                $markers[$type . ':' . $id] = $marker;
+            }
+        }
+
         foreach ($drugs as $drug) $drug->catalog_key = 'drug:' . $drug->id;
         foreach ($products as $product) $product->catalog_key = 'product:' . $product->id;
-        $drugs = $drugs->concat($products);
+
+        $items = $drugs->concat($products);
+        foreach ($items as $item) {
+            $marker = $markers[$item->catalog_key] ?? null;
+            $item->dispense_marker = $marker ? sprintf('#%d · %d left', $marker['rank'], $marker['quantity']) : null;
+        }
+
         $recurringCustomers = Customer::where('is_recurring', true)->orderBy('name')->get();
-        $branchId = auth()->user()->branch_id;
-        $paymentMethods = Payment::METHODS;
         return view('dispense.create', compact('drugs', 'recurringCustomers', 'branchId', 'paymentMethods'));
     }
 
@@ -85,7 +105,7 @@ class DispenseController extends Controller
         ]);
 
         try {
-            $branchId = auth()->user()->branch_id;
+            $branchId = auth()->user()->branch_id ?: Branch::current()?->id;
 
             $customerId = null;
             if ($request->customer_mode === 'existing') {

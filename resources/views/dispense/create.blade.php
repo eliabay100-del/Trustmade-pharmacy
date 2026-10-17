@@ -82,6 +82,9 @@
                                     @if($drug->strength ?? false)
                                         ({{ $drug->strength }})
                                     @endif
+                                    @if($drug->dispense_marker ?? false)
+                                        — {{ $drug->dispense_marker }}
+                                    @endif
                                 </option>
                             @endforeach
                         </select>

@@ -23,6 +23,7 @@ class InventoryService {
             ->where(fn ($query) => $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', Carbon::today()))
             ->orderBy('expiry_date', 'asc')
             ->orderBy('purchase_date', 'asc')
+            ->orderBy('id', 'asc') // deterministic: ties on expiry+purchase go oldest-first
             ->lockForUpdate()
             ->get();
 
@@ -48,6 +49,52 @@ class InventoryService {
             $total += $item['qty'] * $item['batch']->cost_per_unit;
         }
         return round($total, 2);
+    }
+
+    /**
+     * The dispensing marker shown next to an item on the sale screen: which
+     * batch goes out first (#1) and how much is left on it.
+     *
+     * Recomputed from the batches on every call — nothing is stored, so there
+     * is nothing to renumber when a batch is deleted or written off. The
+     * ORDER BY is deliberately identical to selectBatchesForDispensing(),
+     * including the id tiebreaker, so the number the seller sees is always the
+     * batch that will actually be consumed.
+     *
+     * @param  string  $itemType  'drug' or 'product'
+     * @param  array<int,int>  $itemIds
+     * @return array<int, array{rank:int, quantity:int}>  keyed by item id
+     */
+    public function dispenseMarkers(string $itemType, array $itemIds, $branchId): array
+    {
+        if (empty($itemIds)) {
+            return [];
+        }
+
+        $foreignKey = $itemType === 'product' ? 'product_id' : 'drug_id';
+
+        $batches = PurchaseBatch::query()
+            ->select('id', $foreignKey, 'quantity_remaining')
+            ->selectRaw('ROW_NUMBER() OVER (ORDER BY expiry_date ASC, purchase_date ASC, id ASC) AS dispense_rank')
+            ->whereIn($foreignKey, $itemIds)
+            ->where('branch_id', $branchId)
+            ->where('quantity_remaining', '>', 0)
+            ->where(fn ($query) => $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', Carbon::today()))
+            ->get()
+            ->groupBy($foreignKey);
+
+        $markers = [];
+        foreach ($batches as $itemId => $itemBatches) {
+            // The window numbers rows across every item at once, so take this
+            // item's own lowest rank.
+            $next = $itemBatches->sortBy('dispense_rank')->first();
+            $markers[(int) $itemId] = [
+                'rank' => (int) $next->dispense_rank,
+                'quantity' => (int) $next->quantity_remaining,
+            ];
+        }
+
+        return $markers;
     }
 
     public function recordIssuance($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId = null, $itemType = 'drug', $itemId = null) {
