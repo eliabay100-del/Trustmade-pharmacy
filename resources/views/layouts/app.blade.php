@@ -99,7 +99,7 @@
             </x-nav-section>
 
             {{-- Catalog --}}
-            <x-nav-section label="Catalog" :badge="$owedBadgeCount ?? 0" :routes="['drugs.*', 'products.*', 'product-categories.*', 'categories.*', 'suppliers.*', 'supplier-owed.*', 'supplier-payments.*', 'expenses.*', 'expense-categories.*', 'customers.*']">
+            <x-nav-section label="Catalog" :badge="$owedBadgeCount ?? 0" :routes="['drugs.*', 'products.*', 'product-categories.*', 'categories.*', 'suppliers.*', 'supplier-owed.*', 'supplier-payments.*', 'expenses.*', 'expense-categories.*', 'customers.*', 'batch-prices.*']">
                 <x-nav-link route="drugs.index" label="Drugs">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 4H9L8 4zm0 4v10a2 2 0 002 2h4a2 2 0 002-2V8H8z" />
                 </x-nav-link>
@@ -142,6 +142,9 @@
                 @endif
                 <x-nav-link route="customers.index" label="Customers">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-4a4 4 0 100-8 4 4 0 000 8zm6 4a4 4 0 00-8 0" />
+                </x-nav-link>
+                <x-nav-link route="batch-prices.index" label="Batch Prices">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h11m0 0l-3-3m3 3l-3 3M7 17H4m3 0l-3-3m3 3l3-3" />
                 </x-nav-link>
             </x-nav-section>
 

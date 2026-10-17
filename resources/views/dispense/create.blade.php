@@ -10,6 +10,10 @@
                 'base' => $drug->baseUnitLabel(),
                 'strip' => $drug->unitsPerStrip(),
                 'pack' => $drug->unitsPerPack(),
+                // Locked shelf price, per BASE unit. The server re-derives this
+                // from the newest stocked batch; it is sent here only so the
+                // box can show it the moment an item is picked.
+                'price' => $drug->shelf_price,
             ],
         ];
     });
@@ -116,7 +120,8 @@
                         >
                     </div>
 
-                    <!-- Price -->
+                    <!-- Price — locked. Comes from the newest batch in stock;
+                         change it on the batch price screen, not per sale. -->
                     <div class="col-span-2">
                         <input
                             type="number"
@@ -124,9 +129,16 @@
                             min="0"
                             name="items[0][selling_price]"
                             placeholder="Price"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
+                            readonly
+                            title="Taken from the newest batch in stock. To change it, edit that batch's price."
+                            class="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2.5 text-sm min-h-[42px] cursor-not-allowed"
                             required
                         >
+                        @if(auth()->user()->role === \App\Models\User::ROLE_OWNER_ADMIN)
+                            <input type="number" step="0.01" min="0" name="items[0][discount]"
+                                   placeholder="Discount (owner only)"
+                                   class="mt-2 w-full border border-amber-200 bg-amber-50 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-300/50">
+                        @endif
                     </div>
 
                     <!-- Remove -->
@@ -643,6 +655,17 @@
         @json($packingData);
 
 
+    // Discounts are an Owner/Admin-only lever, so the field is only rendered
+    // for them. The server refuses a discount from anyone else regardless.
+    const canDiscount =
+        @json(auth()->user()->role === \App\Models\User::ROLE_OWNER_ADMIN);
+
+    const discountField =
+        canDiscount
+            ? `<input type="number" step="0.01" min="0" name="items[\${lineIndex}][discount]" placeholder="Discount (owner only)" class="mt-2 w-full border border-amber-200 bg-amber-50 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-300/50">`
+            : '';
+
+
     let lineIndex = 1;
 
 
@@ -704,6 +727,41 @@
                 current;
 
         }
+
+        syncPrice(row);
+
+    }
+
+
+    // The price is locked: it comes from the newest batch that still has stock
+    // (per base unit) and is only shown so the seller can see it. The server
+    // re-derives the same number on submit, so this box cannot be used to
+    // change what a customer is charged.
+    function syncPrice(row) {
+
+        const drugSelect = row.querySelector('select[name*="[drug_id]"]');
+        const priceInput = row.querySelector('input[name*="[selling_price]"]');
+
+        if (!drugSelect || !priceInput) {
+            return;
+        }
+
+        if (!drugSelect.value) {
+            priceInput.value = '';
+            return;
+        }
+
+        const data = packing[drugSelect.value];
+        if (!data || data.price === null || data.price === undefined) {
+            priceInput.value = '';
+            return;
+        }
+
+        const unitSelect = row.querySelector('.unit-select');
+        const unit = unitSelect ? unitSelect.value : 'tablet';
+        const factor = unit === 'strip' ? data.strip : unit === 'pack' ? data.pack : 1;
+
+        priceInput.value = (parseFloat(data.price) * factor).toFixed(2);
 
     }
 
@@ -789,9 +847,13 @@
                         min="0"
                         name="items[${lineIndex}][selling_price]"
                         placeholder="Price"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
+                        readonly
+                        title="Taken from the newest batch in stock. To change it, edit that batch's price."
+                        class="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2.5 text-sm min-h-[42px] cursor-not-allowed"
                         required
                     >
+
+                    ${discountField}
 
                 </div>
 
@@ -893,6 +955,10 @@
                 e.target.matches(
                     'input[name*="[selling_price]"]'
                 )
+                ||
+                e.target.matches(
+                    'input[name*="[discount]"]'
+                )
             ) {
 
                 updateCartTotal();
@@ -971,8 +1037,23 @@
                         : 0;
 
 
+                const discountInput =
+                    row.querySelector(
+                        'input[name*="[discount]"]'
+                    );
+
+
+                // Discount is entered per selected unit, same as the price.
+                const discount =
+                    discountInput
+                        ? parseFloat(
+                            discountInput.value
+                        ) || 0
+                        : 0;
+
+
                 total +=
-                    qty * price;
+                    qty * Math.max(0, price - discount);
 
             });
 

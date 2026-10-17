@@ -14,13 +14,14 @@ class IssuedItem extends Model
     protected $fillable = [
         'order_id',
         'purchase_batch_id', 'product_id', 'customer_id', 'branch_id',
-        'quantity_issued', 'selling_price_per_unit', 'total_amount', 'issue_date'
+        'quantity_issued', 'selling_price_per_unit', 'unit_discount', 'total_amount', 'issue_date'
     ];
 
     protected $casts = [
         'issue_date' => 'datetime',
         'quantity_issued' => 'integer',
         'selling_price_per_unit' => 'decimal:2',
+        'unit_discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
 

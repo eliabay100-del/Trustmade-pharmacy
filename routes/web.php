@@ -29,6 +29,7 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\BatchPriceController;
 
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -176,6 +177,10 @@ Route::middleware(['auth'])->group(function () {
     // visibility and manual bookkeeping tools.
     // ============================================================
     Route::middleware(['role:owner_admin,branch_manager'])->group(function () {
+
+        Route::get('/stock/prices', [BatchPriceController::class, 'index'])->name('batch-prices.index');
+        Route::put('/stock/prices/{batch}', [BatchPriceController::class, 'update'])->name('batch-prices.update');
+        Route::put('/stock/prices/{batch}/apply', [BatchPriceController::class, 'applyToItem'])->name('batch-prices.apply');
 
         Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/accounts/create', [AccountController::class, 'create'])->name('accounts.create');

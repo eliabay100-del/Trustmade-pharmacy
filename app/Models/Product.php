@@ -47,5 +47,6 @@ class Product extends Model
     public function unitsPerStrip(): int { return 1; }
     public function unitsPerPack(): int { return 1; }
     public function toBaseQuantity(int $qty, string $unit): int { return $qty; }
+    public function baseUnitsPer(string $unit): int { return 1; }
     public function pricePerBase(float $price, string $unit): float { return $price; }
 }

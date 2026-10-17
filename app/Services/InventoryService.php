@@ -52,6 +52,60 @@ class InventoryService {
     }
 
     /**
+     * The one shelf price for an item: the base-unit selling price of the
+     * NEWEST batch that still has usable stock (most recent purchase first,
+     * id breaking a same-day tie).
+     *
+     * Deliberately the newest batch, not the batch FEFO will consume. A sale
+     * can span two batches bought at different prices, and the customer must
+     * see one price for one item - otherwise the same tablet is sold at two
+     * prices on one ticket. Taking the newest (the most recent markup) also
+     * makes the price independent of the quantity typed, which is what allows
+     * the price box to be locked.
+     *
+     * FEFO still decides which batch leaves the shelf; this only decides what
+     * it is charged at.
+     *
+     * @param  string  $itemType  'drug' or 'product'
+     * @param  array<int,int>  $itemIds
+     * @return array<int, float>  base-unit price keyed by item id
+     */
+    public function shelfPrices(string $itemType, array $itemIds, $branchId): array
+    {
+        if (empty($itemIds)) {
+            return [];
+        }
+
+        $foreignKey = $itemType === 'product' ? 'product_id' : 'drug_id';
+
+        $batches = PurchaseBatch::query()
+            ->select('id', $foreignKey, 'selling_price_per_unit')
+            ->whereIn($foreignKey, $itemIds)
+            ->where('branch_id', $branchId)
+            ->where('quantity_remaining', '>', 0)
+            ->where(fn ($query) => $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', Carbon::today()))
+            ->orderByDesc('purchase_date')
+            ->orderByDesc('id')
+            ->get();
+
+        $prices = [];
+        foreach ($batches as $batch) {
+            $itemId = (int) $batch->{$foreignKey};
+            // Rows arrive newest-first, so the first hit for an item wins.
+            if (! array_key_exists($itemId, $prices)) {
+                $prices[$itemId] = (float) $batch->selling_price_per_unit;
+            }
+        }
+
+        return $prices;
+    }
+
+    public function shelfPrice(string $itemType, int $itemId, $branchId): ?float
+    {
+        return $this->shelfPrices($itemType, [$itemId], $branchId)[$itemId] ?? null;
+    }
+
+    /**
      * The dispensing marker shown next to an item on the sale screen: which
      * batch goes out first (#1) and how much is left on it.
      *
@@ -97,8 +151,8 @@ class InventoryService {
         return $markers;
     }
 
-    public function recordIssuance($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId = null, $itemType = 'drug', $itemId = null) {
-        return DB::transaction(function () use ($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId, $itemType, $itemId) {
+    public function recordIssuance($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId = null, $itemType = 'drug', $itemId = null, $unitDiscount = 0.0) {
+        return DB::transaction(function () use ($allocations, $customerId, $branchId, $sellingPricePerUnit, $orderId, $itemType, $itemId, $unitDiscount) {
             $totalAmount = 0;
             foreach ($allocations as $item) {
                 $batch = $item['batch'];
@@ -115,6 +169,7 @@ class InventoryService {
                     'branch_id' => $branchId,
                     'quantity_issued' => $qty,
                     'selling_price_per_unit' => $sellingPricePerUnit,
+                    'unit_discount' => round((float) $unitDiscount, 2),
                     'total_amount' => $lineTotal,
                     'issue_date' => now(),
                 ]);
