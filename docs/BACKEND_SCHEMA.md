@@ -789,6 +789,33 @@ Notes on the above:
 - A customer return creates **up to two** entries (`customer_return` refund + `customer_return` COGS reversal) with the same `ref_id`.
 - A sale always creates **two** entries (`sale` revenue + `sale` COGS), with the revenue entry debiting one line per payment method.
 
+### 6.1 How the financial report derives its figures
+
+`FinancialSummaryService` (app/Services/FinancialSummaryService.php) builds both statements by summing `ledgers` grouped by `account_id`, joined to `journal_entries` for the date. Nothing is stored in a report table and nothing is typed in, so the statements cannot drift from the voucher list underneath them.
+
+| Report line | Accounts |
+|---|---|
+| Sales revenue | every `accounts.type = 'revenue'` |
+| Cost of goods sold | `5000` |
+| Operating expenses | every `accounts.type = 'expense'` **except** `5000` (so `5100` shrinkage, `5200` till variance and the `60xx` running costs) |
+| Net profit | revenue − COGS − operating expenses |
+| Cash, Telebirr and bank | `1001`, `1010`–`1013` |
+| Accounts receivable | `1002` |
+| Inventory | `1200` |
+| Accounts payable (owed to suppliers) | `2000` |
+| Owner equity | `3000` |
+| Profit kept in the business | cumulative revenue − cumulative expenses |
+
+Sign convention: assets and expenses take a debit-natured balance, revenue, liabilities and equity a credit-natured one.
+
+The profit and loss covers the selected period. The balance sheet is a **snapshot at the end of it** (cumulative from the beginning of the books up to that date), so filtering to an earlier month shows what the pharmacy was worth then.
+
+Because every posted entry balances, `total assets` must equal `total liabilities and equity`. The report prints a warning strip if they ever disagree by more than a cent, which can only happen if a ledger line was written outside `AccountingService`.
+
+`FinancialSummaryService::terms()` holds the plain-English glossary shown at the top of the page — "accounts payable" is explained as *owed to suppliers* rather than left as accounting jargon.
+
+Both reports take their month/year filter from `App\Support\ReportPeriod`, so the Sales and Financial screens cannot drift apart. A null `branch_id` means the consolidated Owner/Admin view across every branch.
+
 ---
 
 ## 7. Enums and status values

@@ -8,11 +8,17 @@ use App\Models\JournalEntry;
 use App\Models\Ledger;
 use App\Models\Account;
 use App\Exports\MonthlyAccountingExport;
+use App\Services\FinancialSummaryService;
+use App\Support\ReportPeriod;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        protected FinancialSummaryService $summary,
+    ) {}
+
     public function inventory()
     {
         $user = auth()->user();
@@ -30,39 +36,42 @@ class ReportController extends Controller
         return view('reports.inventory', compact('stock'));
     }
 
-    public function financial()
+    public function financial(Request $request)
     {
         $user = auth()->user();
+        $period = ReportPeriod::fromRequest($request, $user->branch_id);
+
         $query = JournalEntry::query();
         if ($user->branch_id) {
             $query->where('branch_id', $user->branch_id);
         }
-        $entries = $query->latest()->paginate(20);
+        if ($range = $period->range()) {
+            $query->whereBetween('date', $range);
+        }
 
-        return view('reports.financial', compact('entries'));
+        $entries = $query->latest()->paginate(20)->withQueryString();
+
+        // Totals for the collapsed summary bar - the whole period, not the
+        // twenty rows on screen, or the bar would contradict the table.
+        $totals = (clone $query)
+            ->reorder()
+            ->selectRaw('COALESCE(SUM(total_debit), 0) as debit, COALESCE(SUM(total_credit), 0) as credit, COUNT(*) as entries')
+            ->first();
+
+        $summary = $this->summary;
+        $profitAndLoss = $summary->profitAndLoss($user->branch_id, $period->range());
+        $balanceSheet = $summary->balanceSheet($user->branch_id, $period->end());
+        $terms = FinancialSummaryService::terms();
+
+        return view('reports.financial', compact(
+            'entries', 'totals', 'period', 'profitAndLoss', 'balanceSheet', 'terms'
+        ));
     }
 
     public function sales(Request $request)
     {
         $user = auth()->user();
-
-        // Optional month / year narrowing. Values are sanitised rather than
-        // validated: a hand-edited URL that says month=13 should quietly mean
-        // "all months", not bounce the user off the report with an error.
-        $month = $request->integer('month');
-        $month = $month >= 1 && $month <= 12 ? $month : null;
-
-        $year = $request->integer('year');
-        $year = $year >= 2000 && $year <= 2100 ? $year : null;
-
-        // A month on its own means the current year - nobody wants "every
-        // March since we opened". A year on its own covers all twelve months.
-        // Leaving both blank keeps the all-time view this screen always showed.
-        if ($month && ! $year) {
-            $year = (int) now()->year;
-        }
-
-        $range = $this->monthRange($month, $year);
+        $period = ReportPeriod::fromRequest($request, $user->branch_id);
 
         $query = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product', 'customer']);
         $totalQuery = IssuedItem::query();
@@ -70,7 +79,7 @@ class ReportController extends Controller
             $query->where('branch_id', $user->branch_id);
             $totalQuery->where('branch_id', $user->branch_id);
         }
-        if ($range) {
+        if ($range = $period->range()) {
             $query->whereBetween('issue_date', $range);
             $totalQuery->whereBetween('issue_date', $range);
         }
@@ -79,38 +88,7 @@ class ReportController extends Controller
         $total = (float) $totalQuery->sum('total_amount');
         $sales = $query->latest()->paginate(20)->withQueryString();
 
-        // Every year from the first sale up to this one, so a figure typed into
-        // the URL by hand still selects something sensible.
-        $firstSale = $totalQuery->min('issue_date');
-        $firstYear = $firstSale ? (int) \Carbon\Carbon::parse($firstSale)->year : (int) now()->year;
-        $currentYear = (int) now()->year;
-        $years = range($currentYear, max(2000, min($firstYear, $currentYear)));
-
-        return view('reports.sales', compact('sales', 'total', 'month', 'year', 'years'));
-    }
-
-    /**
-     * Half-open-ish date range covering a whole month or a whole year, or null
-     * when nothing was picked.
-     *
-     * @return array{0: \Carbon\Carbon, 1: \Carbon\Carbon}|null
-     */
-    protected function monthRange(?int $month, ?int $year): ?array
-    {
-        if ($month && $year) {
-            $start = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
-
-            return [$start, $start->copy()->endOfMonth()->endOfDay()];
-        }
-
-        if ($year) {
-            return [
-                \Carbon\Carbon::create($year, 1, 1)->startOfDay(),
-                \Carbon\Carbon::create($year, 12, 31)->endOfDay(),
-            ];
-        }
-
-        return null;
+        return view('reports.sales', compact('sales', 'total', 'period'));
     }
 
     public function exportForm()
