@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.app')
 
 @section('content')
@@ -19,7 +18,9 @@
     });
 @endphp
 
-<div class="max-w-3xl mx-auto">
+{{-- Wide enough that the item dropdown can show the full name plus its
+     dispensing marker ("#1 · 40 left") without truncating. --}}
+<div class="max-w-5xl mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-1">New Sale</h1>
 
     <p class="text-sm text-[#64748b] mb-6">
@@ -46,8 +47,8 @@
             </div>
 
             <!-- Cart column headings -->
-            <div class="hidden sm:grid grid-cols-12 gap-3 mb-2 px-1">
-                <div class="col-span-5 text-xs font-medium text-[#64748b]">
+            <div class="hidden sm:grid grid-cols-[repeat(14,minmax(0,1fr))] gap-3 mb-2 px-1">
+                <div class="col-span-7 text-xs font-medium text-[#64748b]">
                     Item
                 </div>
 
@@ -69,10 +70,10 @@
             <div id="cart-lines" class="space-y-2">
 
                 <!-- First cart line -->
-                <div class="grid grid-cols-12 gap-3 items-center cart-line">
+                <div class="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-3 items-center cart-line">
 
                     <!-- Drug -->
-                    <div class="col-span-5">
+                    <div class="col-span-7">
                         <select
                             name="items[0][drug_id]"
                             class="drug-select w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
@@ -781,12 +782,12 @@
             // IMPORTANT:
             // Always keep every drug on ONE horizontal row.
             row.className =
-                'grid grid-cols-12 gap-3 items-center cart-line';
+                'grid grid-cols-[repeat(14,minmax(0,1fr))] gap-3 items-center cart-line';
 
 
             row.innerHTML = `
 
-                <div class="col-span-5">
+                <div class="col-span-7">
 
                     <select
                         name="items[${lineIndex}][drug_id]"
@@ -1263,4 +1264,3 @@
 </script>
 
 @endsection
-```
