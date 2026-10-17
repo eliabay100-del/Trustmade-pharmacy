@@ -42,9 +42,27 @@ class ReportController extends Controller
         return view('reports.financial', compact('entries'));
     }
 
-    public function sales()
+    public function sales(Request $request)
     {
         $user = auth()->user();
+
+        // Optional month / year narrowing. Values are sanitised rather than
+        // validated: a hand-edited URL that says month=13 should quietly mean
+        // "all months", not bounce the user off the report with an error.
+        $month = $request->integer('month');
+        $month = $month >= 1 && $month <= 12 ? $month : null;
+
+        $year = $request->integer('year');
+        $year = $year >= 2000 && $year <= 2100 ? $year : null;
+
+        // A month on its own means the current year - nobody wants "every
+        // March since we opened". A year on its own covers all twelve months.
+        // Leaving both blank keeps the all-time view this screen always showed.
+        if ($month && ! $year) {
+            $year = (int) now()->year;
+        }
+
+        $range = $this->monthRange($month, $year);
 
         $query = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product', 'customer']);
         $totalQuery = IssuedItem::query();
@@ -52,10 +70,47 @@ class ReportController extends Controller
             $query->where('branch_id', $user->branch_id);
             $totalQuery->where('branch_id', $user->branch_id);
         }
-        $sales = $query->latest()->paginate(20);
-        $total = $totalQuery->sum('total_amount');
+        if ($range) {
+            $query->whereBetween('issue_date', $range);
+            $totalQuery->whereBetween('issue_date', $range);
+        }
 
-        return view('reports.sales', compact('sales', 'total'));
+        // The grand total has to cover every matching row, not just the page.
+        $total = (float) $totalQuery->sum('total_amount');
+        $sales = $query->latest()->paginate(20)->withQueryString();
+
+        // Every year from the first sale up to this one, so a figure typed into
+        // the URL by hand still selects something sensible.
+        $firstSale = $totalQuery->min('issue_date');
+        $firstYear = $firstSale ? (int) \Carbon\Carbon::parse($firstSale)->year : (int) now()->year;
+        $currentYear = (int) now()->year;
+        $years = range($currentYear, max(2000, min($firstYear, $currentYear)));
+
+        return view('reports.sales', compact('sales', 'total', 'month', 'year', 'years'));
+    }
+
+    /**
+     * Half-open-ish date range covering a whole month or a whole year, or null
+     * when nothing was picked.
+     *
+     * @return array{0: \Carbon\Carbon, 1: \Carbon\Carbon}|null
+     */
+    protected function monthRange(?int $month, ?int $year): ?array
+    {
+        if ($month && $year) {
+            $start = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
+
+            return [$start, $start->copy()->endOfMonth()->endOfDay()];
+        }
+
+        if ($year) {
+            return [
+                \Carbon\Carbon::create($year, 1, 1)->startOfDay(),
+                \Carbon\Carbon::create($year, 12, 31)->endOfDay(),
+            ];
+        }
+
+        return null;
     }
 
     public function exportForm()
