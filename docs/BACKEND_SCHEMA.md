@@ -781,7 +781,7 @@ New categories created through the UI are mapped to `6090` (Other Expense).
 | 11 | **Supplier return** | 2000 Accounts Payable | 1200 Inventory | `supplier_return` | `supplier_returns.id` | `ReturnController::storeSupplier` → `recordSupplierReturn` (`AccountingService.php:104`) |
 | 12 | **Manual journal entry** | user-selected accounts | user-selected accounts | `manual` | `null` | `JournalEntryController::store` (`JournalEntryController.php:66`) |
 | 13 | **Till closing** | 1001 Cash (overage) / 5200 Cash Over/Short (shortage) | 5200 (overage) / 1001 (shortage) | `till_closing` | `till_closings.id` | `TillClosingController::store` → `AccountingService::recordTillVariance` (`AccountingService.php`). No entry when the drawer matches. |
-| 14 | **Opening balances** | `1001`/`1010`–`1013`/`1002`/`1200` (assets) | `2000` Accounts Payable (liabilities), `3000` Owner Equity (derived) | `opening_balance` | `null` | `OpeningBalanceController::store`. Posts the difference needed to reach the entered figures; owner's capital balances the entry. |
+| ~~14~~ | ~~**Opening balances**~~ | — | — | — | — | **Removed.** The dedicated Owner/Admin screen is gone, replaced by the per-shift drawer count (see §6.2). Its non-cash lines moved the balance sheet without creating anything the app could act on: entering "stock on hand" showed ETB 8,000 of inventory in the Financial report while the Inventory report listed zero batches. |
 
 Notes on the above:
 
@@ -813,8 +813,22 @@ The profit and loss covers the selected period. The balance sheet is a **snapsho
 Because every posted entry balances, `total assets` must equal `total liabilities and equity`. The report prints a warning strip if they ever disagree by more than a cent, which can only happen if a ledger line was written outside `AccountingService`.
 
 `FinancialSummaryService::terms()` holds the plain-English glossary shown at the top of the page — "accounts payable" is explained as *owed to suppliers* rather than left as accounting jargon.
-
 Both reports take their month/year filter from `App\Support\ReportPeriod`, so the Sales and Financial screens cannot drift apart. A null `branch_id` means the consolidated Owner/Admin view across every branch.
+
+### 6.2 Shift openings — the drawer count
+
+`shift_openings` (migration `2026_10_18_000001`) records one row per cashier shift: `user_id`, `branch_id`, `opened_at`, `opening_cash`, and `closed_at` / `till_closing_id` once the till is closed. `closed_at IS NULL` is what "on shift right now" means.
+
+`EnsureShiftIsOpen` (middleware alias `shift`, applied to the whole authenticated group) redirects to `shift.open` when the signed-in user has no open shift. `shift.*` and `logout` are exempt, so nobody can be locked out.
+
+**It posts nothing to the ledger.** `opening_cash` is a baseline, not a transaction: the float is already in account `1001` from wherever it came from, and booking it again each morning would double-count it forever. A test asserts `journal_entries` and `ledgers` stay empty after a shift opens.
+
+**Why it matters:** `TillClosingController` used to compute `expected_cash` as *cash collected during the shift only*. With any float in the drawer, a perfect day reported a shortage equal to the whole float. Expected cash is now `shift.opening_cash + cash collected − cash refunds`, so the variance measures today's mistakes. `period_start` is the shift's `opened_at` rather than the previous close, and closing the till stamps `closed_at`, which is what makes the next login ask for a fresh count.
+
+Two consequences worth knowing:
+
+- Cash in the Financial report does **not** include the opening float — it is what the books have taken in, less till variances. That is deliberate: counting the float as revenue would overstate the pharmacy.
+- The other Opening Balances lines (receivables, stock, payables) were dropped rather than relocated. Stock has to be entered through **Purchases**, which creates real, sellable, expiry-tracked batches; receivables through a credit sale; payables through the purchase that created the debt.
 
 ---
 

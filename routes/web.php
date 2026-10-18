@@ -15,7 +15,7 @@ use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\JournalEntryController;
-use App\Http\Controllers\OpeningBalanceController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityLogController;
@@ -39,8 +39,17 @@ Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest')
 Route::post('/', [AuthController::class, 'login'])->name('login.legacy')->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit')->middleware('throttle:5,1');
 
-// --- Protected Routes (Requires Login) ---
+// --- Shift opening: the drawer count that starts a shift ---
+// Deliberately outside the 'shift' middleware below, or it would guard the
+// very screen it sends people to.
 Route::middleware(['auth'])->group(function () {
+    Route::get('/shift/open', [ShiftController::class, 'create'])->name('shift.open');
+    Route::post('/shift/open', [ShiftController::class, 'store'])->name('shift.store');
+});
+
+// --- Protected Routes (Requires Login) ---
+// 'shift' makes every screen below wait until the drawer has been counted.
+Route::middleware(['auth', 'shift'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -164,13 +173,11 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update')->middleware('throttle:15,1');
 
         // ============================================================
-        // Opening balances. Owner/Admin only: the day-one figures
-        // (cash, wallets/bank, stock, receivables, payables) posted
-        // as a single balanced entry, with owner's capital derived.
+        // Opening balances. Replaced by the shift-opening drawer count
+        // (ShiftController): the cash figure is asked for at the start of
+        // every shift, and the other lines - receivables, stock, payables -
+        // were numbers the books could report on but not act on.
         // ============================================================
-        Route::get('/opening-balances', [OpeningBalanceController::class, 'edit'])->name('opening-balances.edit');
-        Route::post('/opening-balances', [OpeningBalanceController::class, 'store'])->name('opening-balances.store');
-
         // ============================================================
         // Batch prices. Owner/Admin only, for the same reason discounts
         // are: a price change is money. This screen backs the locked

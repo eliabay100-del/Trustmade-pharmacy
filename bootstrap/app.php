@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'shift' => \App\Http\Middleware\EnsureShiftIsOpen::class,
         ]);
         // Defense in depth: safe headers everywhere, strict headers + HTTPS
         // redirect in production. Never breaks the app's own behaviour.

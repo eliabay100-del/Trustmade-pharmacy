@@ -15,10 +15,33 @@
                 From {{ $periodStart->format('M d, Y g:i A') }} to now
             </p>
 
-            <div class="flex justify-between items-baseline mb-1">
-                <span class="text-sm text-[#64748b]">Expected cash in till</span>
-                <span class="text-2xl font-bold text-[var(--brand-primary)]">${{ number_format($expectedCash, 2) }}</span>
-            </div>
+            {{-- Spelled out, because a single "expected" number hides the one
+                 thing that goes wrong most: a mismatch between what the shift
+                 started with and what the books think. --}}
+            <dl class="mb-4 divide-y divide-gray-100 border-y border-gray-100">
+                <div class="flex justify-between items-baseline py-2">
+                    <dt class="text-sm text-[#64748b]">
+                        Cash you started this shift with
+                        @if($shift)
+                            <span class="block text-xs text-[#8a98a8]">Counted {{ $shift->opened_at->format('g:i A') }}</span>
+                        @else
+                            <span class="block text-xs text-red-600">No shift-opening count recorded.</span>
+                        @endif
+                    </dt>
+                    <dd class="text-sm font-semibold text-[#1E2530]">ETB {{ number_format($openingCash, 2) }}</dd>
+                </div>
+                <div class="flex justify-between items-baseline py-2">
+                    <dt class="text-sm text-[#64748b]">
+                        Cash taken during the shift
+                        <span class="block text-xs text-[#64748b]">Cash sales, less cash refunds</span>
+                    </dt>
+                    <dd class="text-sm font-semibold text-[#1E2530]">ETB {{ number_format($collected, 2) }}</dd>
+                </div>
+                <div class="flex justify-between items-baseline py-2">
+                    <dt class="text-sm font-semibold text-[#1E2530]">So the drawer should hold</dt>
+                    <dd class="text-2xl font-bold text-[var(--brand-primary)]">ETB {{ number_format($expectedCash, 2) }}</dd>
+                </div>
+            </dl>
             <p class="text-xs text-[#64748b] mb-4">Cash-method payments only. Digital payments never enter the drawer.</p>
 
             @if(!empty($otherPayments))

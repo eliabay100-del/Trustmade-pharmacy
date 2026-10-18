@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\CustomerReturn;
 use App\Models\Payment;
+use App\Models\ShiftOpening;
 use App\Models\TillClosing;
 use App\Services\AccountingService;
 use Carbon\Carbon;
@@ -22,8 +23,15 @@ class TillClosingController extends Controller
         $user = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
-        $periodStart = $this->periodStart($user->id, $branchId);
-        $expectedCash = $this->cashCollected($user->id, $branchId, $periodStart);
+        $shift = ShiftOpening::currentFor($user, $branchId);
+        $periodStart = $this->periodStart($user->id, $branchId, $shift);
+
+        // The float the shift started with. Without it the "expected" figure
+        // ignores whatever was already sitting in the drawer, so a perfectly
+        // ordinary day reports a shortage equal to the entire opening float.
+        $openingCash = $shift ? (float) $shift->opening_cash : 0.0;
+        $collected = $this->cashCollected($user->id, $branchId, $periodStart);
+        $expectedCash = round($openingCash + $collected, 2);
         $otherPayments = $this->nonCashCollected($user->id, $branchId, $periodStart);
 
         $historyQuery = TillClosing::with(['user', 'branch'])->latest('closed_at');
@@ -37,6 +45,9 @@ class TillClosingController extends Controller
 
         return view('till-closings.index', compact(
             'branchId',
+            'shift',
+            'openingCash',
+            'collected',
             'periodStart',
             'expectedCash',
             'otherPayments',
@@ -60,10 +71,13 @@ class TillClosingController extends Controller
 
         try {
             DB::transaction(function () use ($request, $user, $branchId) {
+                $shift = ShiftOpening::currentFor($user, $branchId);
+
                 // Recompute inside the transaction so two overlapping
                 // closes can't both lock in the same expected figure.
-                $periodStart = $this->periodStart($user->id, $branchId);
-                $expectedCash = $this->cashCollected($user->id, $branchId, $periodStart);
+                $periodStart = $this->periodStart($user->id, $branchId, $shift);
+                $collected = $this->cashCollected($user->id, $branchId, $periodStart);
+                $expectedCash = round(((float) ($shift->opening_cash ?? 0)) + $collected, 2);
                 $counted = round((float) $request->counted_cash, 2);
 
                 $closing = TillClosing::create([
@@ -80,9 +94,18 @@ class TillClosingController extends Controller
                 // Put the cash difference in the books so the ledger cash
                 // balance matches the physical drawer. No-op when it balances.
                 $this->accountingService->recordTillVariance($closing->variance, $branchId, $closing->id);
+
+                // Closing the till ends the shift. The next login then asks for
+                // a fresh drawer count rather than reusing this one.
+                if ($shift) {
+                    $shift->update([
+                        'closed_at' => now(),
+                        'till_closing_id' => $closing->id,
+                    ]);
+                }
             });
 
-            return redirect()->route('till-closings.index')->with('success', 'Till closed.');
+            return redirect()->route('till-closings.index')->with('success', 'Shift closed. Your till was balanced against the drawer count you started with.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
@@ -98,8 +121,17 @@ class TillClosingController extends Controller
         return $requested ? (int) $requested : Branch::current()?->id;
     }
 
-    private function periodStart(int $userId, ?int $branchId): Carbon
+    /**
+     * When this shift began. The drawer count is the real start of the shift.
+     * Falling back to the previous close keeps the page working for a cashier
+     * who somehow has no open shift.
+     */
+    private function periodStart(int $userId, ?int $branchId, ?ShiftOpening $shift = null): Carbon
     {
+        if ($shift) {
+            return $shift->opened_at->copy();
+        }
+
         // Next close starts after the previous close for this cashier
         // at this branch; if they've never closed, start of today.
         $query = TillClosing::where('user_id', $userId);
