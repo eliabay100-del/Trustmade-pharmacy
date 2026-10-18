@@ -3,8 +3,8 @@
 @section('content')
 <div class="max-w-3xl mx-auto">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-[#1E2530]">Till Close</h1>
-        <p class="text-sm text-[#64748b] mt-1">Count the cash drawer against cash collected since your last close.</p>
+        <h1 class="text-2xl font-bold text-[#1E2530]">End shift</h1>
+        <p class="text-sm text-[#64748b] mt-1">Count the drawer one last time. Recording this closes your shift.</p>
     </div>
 
     {{-- Single-branch install: no branch picker, the close is stamped with
@@ -74,7 +74,7 @@
                            placeholder="e.g. short a 50 note">
                 </div>
                 <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">
-                    Record till close
+                    End shift
                 </button>
                 <p class="text-xs text-[#64748b]">
                     Any difference between counted and expected cash is posted to Cash Over/Short in the accounts.

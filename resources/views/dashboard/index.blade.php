@@ -15,9 +15,26 @@
                 <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{{ $greeting }}, {{ explode(' ', trim(auth()->user()->name))[0] }}.</h1>
                 <p class="mt-2 max-w-xl text-sm text-white/65">Here is the live picture of your pharmacy today.</p>
             </div>
-            <div class="shrink-0 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-left backdrop-blur-sm sm:text-right">
-                <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
-                <p class="mt-1 text-sm font-semibold">{{ \App\Models\Setting::value('business_name', config('pmas.default_business_name')) }}</p>
+            <div class="shrink-0 space-y-3 text-left sm:text-right">
+                <div class="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
+                    <p class="mt-1 text-sm font-semibold">{{ \App\Models\Setting::value('business_name', config('pmas.default_business_name')) }}</p>
+                </div>
+
+                {{-- Ending a shift is the last thing you do in a day, so it
+                     lives here rather than buried in the sidebar. It carries
+                     the two numbers you need to judge the count you are about
+                     to make: what the drawer started with, and what it should
+                     hold now. --}}
+                @if($shift)
+                    <a href="{{ route('till-closings.index') }}"
+                       class="flex items-center justify-between gap-3 rounded-xl bg-[#72d4c5] px-4 py-3 text-[#10253b] shadow-sm transition hover:bg-[#8fe0d3] sm:block">
+                        <span class="block text-sm font-bold">End shift</span>
+                        <span class="mt-0.5 block text-xs font-medium text-[#10253b]/70">
+                            Started {{ $shift->opened_at->format('g:i A') }} with ETB {{ number_format((float) $shift->opening_cash, 2) }}
+                        </span>
+                    </a>
+                @endif
             </div>
         </div>
     </section>

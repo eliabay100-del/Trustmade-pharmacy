@@ -79,16 +79,15 @@
                 </x-nav-link>
             </x-nav-section>
 
-            {{-- Operations --}}
-            <x-nav-section label="Operations" :routes="['dispense.*', 'purchases.*', 'till-closings.*', 'adjustments.*', 'returns.*']">
+            {{-- Operations. Till Close is deliberately absent: ending a shift is
+                 the last thing you do in a day, so it is the "End shift" button
+                 on the dashboard rather than a line in the sidebar. --}}
+            <x-nav-section label="Operations" :routes="['dispense.*', 'purchases.*', 'adjustments.*', 'returns.*']">
                 <x-nav-link route="dispense.index" label="Dispense">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </x-nav-link>
                 <x-nav-link route="purchases.index" label="Purchases">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </x-nav-link>
-                <x-nav-link route="till-closings.index" label="Till Close">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </x-nav-link>
                 <x-nav-link route="adjustments.index" label="Adjustments">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />

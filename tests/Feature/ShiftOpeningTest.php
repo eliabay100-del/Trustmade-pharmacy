@@ -272,4 +272,40 @@ class ShiftOpeningTest extends TestCase
             collect(app('router')->getRoutes())->contains(fn ($route) => $route->getName() === 'opening-balances.edit')
         );
     }
+
+    public function test_the_dashboard_offers_end_shift_while_a_shift_is_open(): void
+    {
+        // Ending a shift is the last thing you do in a day, so it belongs on
+        // the dashboard rather than buried in the sidebar.
+        $this->openShiftFor($this->clerk, 3200);
+
+        $this->actingAsWithoutShift($this->clerk)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('End shift')
+            ->assertSee(route('till-closings.index'))
+            // Carries the figure needed to judge the count you are about to make.
+            ->assertSee('3,200.00');
+    }
+
+    public function test_the_button_leads_to_a_page_that_says_end_shift(): void
+    {
+        // "No button without a shift" cannot be tested through the browser: with
+        // no open shift the gate redirects to the drawer count before the
+        // dashboard is ever rendered. The @if is belt-and-braces.
+        $this->openShiftFor($this->clerk, 100);
+
+        $this->actingAsWithoutShift($this->clerk)->get(route('till-closings.index'))
+            ->assertOk()
+            ->assertSee('End shift')
+            ->assertSee('Recording this closes your shift');
+    }
+
+    public function test_till_close_is_no_longer_in_the_operations_menu(): void
+    {
+        $this->openShiftFor($this->clerk, 100);
+
+        $this->actingAsWithoutShift($this->clerk)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Till Close', false);
+    }
 }

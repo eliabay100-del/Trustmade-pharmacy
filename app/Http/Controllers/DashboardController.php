@@ -115,6 +115,13 @@ class DashboardController extends Controller
             'billsDue' => $billsDue,
             'expiryDays' => $expiryDays,
             'expiringSoon' => collect($data['expiringSoon']),
+            // For the End shift button. Not cached: it changes when the shift
+            // starts and ends, and a stale answer would send someone to close a
+            // shift they are not on.
+            'shift' => \App\Models\ShiftOpening::currentFor(
+                $user,
+                $branchId ?: \App\Models\Branch::current()?->id
+            ),
         ]));
     }
 }	
