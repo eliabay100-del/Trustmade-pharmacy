@@ -55,6 +55,13 @@ composer install --no-dev --optimize-autoloader
 npm ci && npm run build
 ```
 
+`npm run build` is not optional and not a one-off. Tailwind only emits the
+utility classes it finds in the Blade files at the moment it runs, so any new or
+edited `.blade.php` that introduces a class the previous build never saw ships
+**unstyled** until the assets are rebuilt. The same applies locally: after
+pulling changes that add a screen, run `npm run build` (or keep `npm run dev`
+running) before judging how the page looks.
+
 ---
 
 ## 4. Application key — do not reuse the development key
