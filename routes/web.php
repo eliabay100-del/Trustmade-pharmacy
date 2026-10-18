@@ -170,6 +170,18 @@ Route::middleware(['auth'])->group(function () {
         // ============================================================
         Route::get('/opening-balances', [OpeningBalanceController::class, 'edit'])->name('opening-balances.edit');
         Route::post('/opening-balances', [OpeningBalanceController::class, 'store'])->name('opening-balances.store');
+
+        // ============================================================
+        // Batch prices. Owner/Admin only, for the same reason discounts
+        // are: a price change is money. This screen backs the locked
+        // price box on the sale screen, so anyone who can raise a price
+        // here can raise what every future sale charges. Branch managers
+        // keep the rest of Tier 2 (accounts, journals, reports) but do
+        // not set prices.
+        // ============================================================
+        Route::get('/stock/prices', [BatchPriceController::class, 'index'])->name('batch-prices.index');
+        Route::put('/stock/prices/{batch}', [BatchPriceController::class, 'update'])->name('batch-prices.update');
+        Route::put('/stock/prices/{batch}/apply', [BatchPriceController::class, 'applyToItem'])->name('batch-prices.apply');
     });
 
     // ============================================================
@@ -177,10 +189,6 @@ Route::middleware(['auth'])->group(function () {
     // visibility and manual bookkeeping tools.
     // ============================================================
     Route::middleware(['role:owner_admin,branch_manager'])->group(function () {
-
-        Route::get('/stock/prices', [BatchPriceController::class, 'index'])->name('batch-prices.index');
-        Route::put('/stock/prices/{batch}', [BatchPriceController::class, 'update'])->name('batch-prices.update');
-        Route::put('/stock/prices/{batch}/apply', [BatchPriceController::class, 'applyToItem'])->name('batch-prices.apply');
 
         Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
         Route::get('/accounts/create', [AccountController::class, 'create'])->name('accounts.create');

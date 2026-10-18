@@ -147,6 +147,41 @@ class SalePricingTest extends TestCase
         $this->assertEquals(50, (int) PurchaseBatch::first()->quantity_remaining, 'The sale rolled back.');
     }
 
+    public function test_a_branch_manager_cannot_discount_either(): void
+    {
+        // A branch manager sees the Finance screens, so it would be easy to
+        // assume pricing is theirs too. It is not: discounts are the owner's.
+        $manager = User::create([
+            'name' => 'Manager',
+            'username' => 'manager',
+            'email' => 'manager@example.com',
+            'password' => 'secret1234',
+            'role' => 'branch_manager',
+            'branch_id' => $this->branch->id,
+        ]);
+
+        $this->batch('B', 20.00, 50);
+
+        $this->sell($manager, 1, 15.00, ['discount' => 5])->assertSessionHasErrors();
+
+        $this->assertSame(0, IssuedItem::count());
+        $this->assertEquals(50, (int) PurchaseBatch::first()->quantity_remaining);
+    }
+
+    public function test_the_discount_box_is_not_rendered_for_a_clerk(): void
+    {
+        $this->batch('B', 20.00, 50);
+
+        // Hiding the field is convenience; the server refusing it is the rule.
+        $this->actingAs($this->clerk)->get(route('dispense.create'))
+            ->assertOk()
+            ->assertDontSee('items[0][discount]');
+
+        $this->actingAs($this->owner)->get(route('dispense.create'))
+            ->assertOk()
+            ->assertSee('items[0][discount]');
+    }
+
     public function test_discount_is_per_selected_unit_and_scales_down_to_base(): void
     {
         $this->batch('B', 100.00, 500); // per BASE unit; a strip of 10 = 1000

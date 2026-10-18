@@ -847,11 +847,13 @@ Role middleware alias: `role` → `App\Http\Middleware\EnsureUserHasRole` (regis
 | `POST /logout`, `GET /dashboard`, `GET /profile` | `auth` (any role) | ✅ | ✅ | ✅ |
 | Purchases, Dispensing, Till closings, Adjustments, Returns, Drugs, Categories, Products, Product categories, Suppliers, Customers, Alerts, `search-drug` | `role:owner_admin,branch_manager,pharmacist_clerk` | ✅ | ✅ | ✅ |
 | Accounts, Journal entries, Reports (inventory/financial/sales/export) | `role:owner_admin,branch_manager` | ✅ | ✅ | ❌ |
-| Supplier Owed / Pay supplier, Expenses, Expense categories, Settings branding, Users, Activity logs | `role:owner_admin` | ✅ | ❌ | ❌ |
+| Supplier Owed / Pay supplier, Expenses, Expense categories, **Batch prices**, Settings branding, Users, Activity logs | `role:owner_admin` | ✅ | ❌ | ❌ |
 
 Notes:
 
-- The `role:owner_admin` groups in the file are three separate `Route::middleware(['role:owner_admin'])` blocks (Part B supplier payments, Part C expenses + Part D settings, and staff accounts) — the same tier.
+- The `role:owner_admin` groups in the file are three separate `Route::middleware(['role:owner_admin'])` blocks (Part B supplier payments, Part C expenses + Part D settings, and staff accounts) — the same tier. **Batch prices** sits in the Part D block.
+- Pricing is an Owner/Admin lever as a whole, split in two on purpose. A **discount** is per-sale and enforced inside `DispenseController::store` (`role !== ROLE_OWNER_ADMIN` → exception, so a forged post is refused rather than ignored), while a **batch price** is persistent and enforced by the route group. Branch managers keep Accounts, Journal entries and the Reports, but can neither set a price nor discount a sale.
+- The sidebar renders the Batch Prices link only for `owner_admin`, so the other two roles are never shown a link that would 403.
 - `JournalEntryController::index` does `where('branch_id', auth()->user()->branch_id)`. For an Owner/Admin with `branch_id = NULL` this becomes `WHERE branch_id IS NULL` and returns **nothing**, even though the route is reachable — see §12.
 - Owner/Admin "all branches" behaviour depends on `branch_id` being NULL and controllers wrapping filters in `if ($user->branch_id)`.
 

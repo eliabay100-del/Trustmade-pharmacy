@@ -143,9 +143,14 @@
                 <x-nav-link route="customers.index" label="Customers">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-4a4 4 0 100-8 4 4 0 000 8zm6 4a4 4 0 00-8 0" />
                 </x-nav-link>
+                {{-- Batch Prices is Owner/Admin only. The link is hidden rather
+                     than left to 403, so a clerk or branch manager is never shown
+                     a door they cannot open. --}}
+                @if(auth()->user()->role === 'owner_admin')
                 <x-nav-link route="batch-prices.index" label="Batch Prices">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h11m0 0l-3-3m3 3l-3 3M7 17H4m3 0l-3-3m3 3l3-3" />
                 </x-nav-link>
+                @endif
             </x-nav-section>
 
             {{-- Finance — the accounting screens use accounting terms, so the
