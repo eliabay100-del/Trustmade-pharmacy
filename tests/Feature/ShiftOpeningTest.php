@@ -282,9 +282,7 @@ class ShiftOpeningTest extends TestCase
         $this->actingAsWithoutShift($this->clerk)->get(route('dashboard'))
             ->assertOk()
             ->assertSee('End shift')
-            ->assertSee(route('till-closings.index'))
-            // Carries the figure needed to judge the count you are about to make.
-            ->assertSee('3,200.00');
+            ->assertSee(route('till-closings.index'));
     }
 
     public function test_the_button_leads_to_a_page_that_says_end_shift(): void
@@ -298,6 +296,25 @@ class ShiftOpeningTest extends TestCase
             ->assertOk()
             ->assertSee('End shift')
             ->assertSee('Recording this closes your shift');
+    }
+
+    public function test_the_button_is_small_and_carries_no_caption(): void
+    {
+        // "Started 8:15 AM with ETB 4,250.00" was clutter on a button. Those
+        // figures belong on the page it opens, not on the way to it.
+        $this->openShiftFor($this->clerk, 4250);
+
+        $html = $this->actingAsWithoutShift($this->clerk)->get(route('dashboard'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<a href="[^"]*\/till-closings"[^>]*>\s*End shift\s*<\/a>/',
+            $html,
+            'The button should carry the label and nothing else.'
+        );
+
+        $this->assertStringNotContainsString('Started', $html);
     }
 
     public function test_till_close_is_no_longer_in_the_operations_menu(): void

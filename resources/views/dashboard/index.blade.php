@@ -15,29 +15,24 @@
                 <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{{ $greeting }}, {{ explode(' ', trim(auth()->user()->name))[0] }}.</h1>
                 <p class="mt-2 max-w-xl text-sm text-white/65">Here is the live picture of your pharmacy today.</p>
             </div>
-            <div class="shrink-0 space-y-3 text-left sm:text-right">
-                <div class="rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
-                    <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
-                    <p class="mt-1 text-sm font-semibold">{{ \App\Models\Setting::value('business_name', config('pmas.default_business_name')) }}</p>
-                </div>
-
-                {{-- Ending a shift is the last thing you do in a day, so it
-                     lives here rather than buried in the sidebar. It carries
-                     the two numbers you need to judge the count you are about
-                     to make: what the drawer started with, and what it should
-                     hold now. --}}
-                @if($shift)
-                    <a href="{{ route('till-closings.index') }}"
-                       class="flex items-center justify-between gap-3 rounded-xl bg-[#72d4c5] px-4 py-3 text-[#10253b] shadow-sm transition hover:bg-[#8fe0d3] sm:block">
-                        <span class="block text-sm font-bold">End shift</span>
-                        <span class="mt-0.5 block text-xs font-medium text-[#10253b]/70">
-                            Started {{ $shift->opened_at->format('g:i A') }} with ETB {{ number_format((float) $shift->opening_cash, 2) }}
-                        </span>
-                    </a>
-                @endif
+            <div class="shrink-0 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-left backdrop-blur-sm sm:text-right">
+                <p class="text-xs text-white/55">{{ now()->format('l, d M Y') }}</p>
+                <p class="mt-1 text-sm font-semibold">{{ \App\Models\Setting::value('business_name', config('pmas.default_business_name')) }}</p>
             </div>
         </div>
     </section>
+
+    {{-- Ending a shift is the last thing you do in a day. On its own row at
+         the top right rather than inside the dark banner, so the button can be
+         a colour you can actually read. --}}
+    @if($shift)
+        <div class="flex justify-end">
+            <a href="{{ route('till-closings.index') }}"
+               class="inline-flex items-center rounded-lg bg-[#15803d] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#166534]">
+                End shift
+            </a>
+        </div>
+    @endif
 
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Pharmacy summary">
         <a href="{{ route('drugs.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-primary)] hover:shadow-md">
@@ -53,58 +48,181 @@
         <a href="{{ route('alerts.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-red-400 hover:shadow-md"><span class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Expiring soon</span><p class="mt-5 text-3xl font-bold {{ $expiringSoonCount ? 'text-red-600' : 'text-[#182230]' }}">{{ $expiringSoonCount }}</p><p class="mt-1 text-xs text-[#64748b]">Next {{ $expiryDays }} days</p></a>
     </section>
 
-    <section class="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_.8fr]">
-        <div class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Today's pulse</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Keep the shelves moving</h2></div><a href="{{ route('reports.sales') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">Sales report</a></div>
-            <div class="mt-7 space-y-5">
-                <div><div class="mb-2 flex justify-between text-sm"><span class="text-[#64748b]">Sales, last 7 days</span><strong class="text-[#182230]">ETB {{ number_format($recentSales, 2) }}</strong></div><div class="h-2 overflow-hidden rounded-full bg-[#e8eef1]"><div class="h-full rounded-full bg-[var(--brand-primary)]" style="width: {{ min(100, max(4, (float) $recentSales / max(1, (float) $recentSales + (float) $recentPurchases) * 100)) }}%"></div></div></div>
-                <div><div class="mb-2 flex justify-between text-sm"><span class="text-[#64748b]">Purchases, last 7 days</span><strong class="text-[#182230]">ETB {{ number_format($recentPurchases, 2) }}</strong></div><div class="h-2 overflow-hidden rounded-full bg-[#e8eef1]"><div class="h-full rounded-full bg-[#e8a43a]" style="width: {{ min(100, max(4, (float) $recentPurchases / max(1, (float) $recentSales + (float) $recentPurchases) * 100)) }}%"></div></div></div>
+    @php
+        $activeKeys = array_column($shortcuts, 'key');
+        $pickable = array_values(array_filter(
+            $shortcutChoices,
+            fn ($choice) => ! in_array($choice['key'], $activeKeys, true)
+        ));
+    @endphp
+    <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Shortcuts</p>
+                <h2 class="mt-1 text-xl font-bold text-[#182230]">Common tasks</h2>
             </div>
-            <div class="mt-7 grid grid-cols-2 gap-3 border-t border-[#edf1f3] pt-5"><div><p class="text-xs text-[#64748b]">Total units on hand</p><p class="mt-1 text-lg font-bold text-[#182230]">{{ number_format($totalQuantity) }}</p></div><div><p class="text-xs text-[#64748b]">Product sales</p><p class="mt-1 text-lg font-bold text-[#182230]">ETB {{ number_format($productSales, 2) }}</p></div></div>
+            <div class="flex items-center gap-2">
+                @if(count($activeKeys) !== count(\App\Http\Controllers\DashboardController::DEFAULT_SHORTCUTS))
+                    <form method="POST" action="{{ route('dashboard.shortcuts.reset') }}">
+                        @csrf
+                        <button type="submit" class="rounded-lg px-3 py-2 text-xs font-semibold text-[#64748b] hover:bg-gray-100 hover:text-[#1E2530]">Reset</button>
+                    </form>
+                @endif
+            </div>
         </div>
-        <div class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-start justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Shortcuts</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Common tasks</h2></div><span class="text-xl text-[var(--brand-primary)]">+</span></div><div class="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1"><a href="{{ route('dispense.create') }}" class="rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm font-semibold text-[#08796f] hover:bg-[#d7f1ed]">Start a sale <span class="float-right">→</span></a><a href="{{ route('purchases.create') }}" class="rounded-lg bg-[#fff2dc] px-4 py-3 text-sm font-semibold text-[#8a5700] hover:bg-[#ffebc8]">Record purchase <span class="float-right">→</span></a><a href="{{ route('adjustments.create') }}" class="rounded-lg bg-[#eef1f5] px-4 py-3 text-sm font-semibold text-[#405166] hover:bg-[#e5eaf0]">Adjust stock <span class="float-right">→</span></a></div></div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+            @forelse($shortcuts as $shortcut)
+                <div class="flex items-stretch overflow-hidden rounded-lg {{ $shortcut['classes'] }}">
+                    <a href="{{ $shortcut['url'] }}" class="min-h-[44px] flex-1 px-4 py-3 text-sm font-semibold">{{ $shortcut['label'] }} <span class="float-right">&rarr;</span></a>
+                    <form method="POST" action="{{ route('dashboard.shortcuts.remove') }}" class="flex">
+                        @csrf
+                        <input type="hidden" name="shortcut" value="{{ $shortcut['key'] }}">
+                        <button type="submit" title="Remove {{ $shortcut['label'] }}" aria-label="Remove {{ $shortcut['label'] }}"
+                                class="px-2 text-lg leading-none opacity-50 transition hover:opacity-100">&times;</button>
+                    </form>
+                </div>
+            @empty
+                <p class="text-sm text-[#64748b]">No shortcuts yet. Add one below.</p>
+            @endforelse
+        </div>
+
+        {{-- The "+" is a disclosure, not decoration: it opens the full list,
+             ticked for what is already on the dashboard. --}}
+        @if(!empty($pickable))
+            <details class="mt-4">
+                <summary class="inline-flex min-h-[44px] cursor-pointer items-center rounded-lg border border-dashed border-[#cbd5e1] px-4 py-2 text-sm font-semibold text-[#64748b] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]">
+                    + Add a shortcut
+                </summary>
+                <form method="POST" action="{{ route('dashboard.shortcuts.update') }}" class="mt-4">
+                    @csrf
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        @foreach($shortcutChoices as $choice)
+                            <label class="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border border-[#e8eef1] px-4 py-2 hover:bg-gray-50">
+                                <input type="checkbox" name="shortcuts[]" value="{{ $choice['key'] }}"
+                                       @checked(in_array($choice['key'], $activeKeys, true))
+                                       class="h-4 w-4 rounded border-[#cbd5e1] text-[var(--brand-primary)] focus:ring-[var(--brand-primary)]">
+                                <span class="text-sm font-medium text-[#1E2530]">{{ $choice['label'] }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button type="submit" class="min-h-[44px] rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">Save shortcuts</button>
+                        <a href="{{ route('dashboard') }}" class="inline-flex min-h-[44px] items-center rounded-lg px-3 py-2 text-sm font-semibold text-[#64748b] hover:bg-gray-100">Cancel</a>
+                    </div>
+                </form>
+            </details>
+        @else
+            <p class="mt-4 text-xs text-[#64748b]">Every available shortcut is already on your dashboard.</p>
+        @endif
     </section>
 
-    <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Attention needed</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Recent alerts</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">View all</a></div>@if($expiringSoonCount || $lowStockCount)<div class="mt-5 grid gap-3 sm:grid-cols-2">@if($expiringSoonCount)<div class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ $expiringSoonCount }} drug{{ $expiringSoonCount === 1 ? ' expires' : 's expire' }} within {{ $expiryDays }} days</div>@endif @if($lowStockCount)<div class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ $lowStockCount }} item{{ $lowStockCount === 1 ? ' needs' : 's need' }} restocking</div>@endif</div>@else<div class="mt-5 rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm text-[#08796f]">Everything is in good shape. No active alerts.</div>@endif</section>
+    {{--
+        One card, several segments. Stock/expiry, bills and supplier debt used
+        to be three separate cards, which meant three headings and three "see
+        all" links scattered down the page for one idea: things that need you.
+        Each segment now disappears entirely when it has nothing in it, and
+        when every segment is empty you get the all-clear line instead.
+    --}}
+    @php
+        $stockAlerts = array_filter([
+            $expiringSoonCount ? 'expiring' : null,
+            $lowStockCount ? 'low' : null,
+        ]);
+        $supplierOverdue = !empty($supplierReminders) ? count($supplierReminders['overdue']) : 0;
+        $supplierSoon = !empty($supplierReminders) ? count($supplierReminders['due_soon']) : 0;
+        $supplierAlerts = ($supplierOverdue + $supplierSoon) > 0;
+        $billCount = !empty($billsDue) ? $billsDue->count() : 0;
+        $anyAlerts = $stockAlerts || $billCount || $supplierAlerts;
+    @endphp
+    <section class="rounded-xl border border-[#dfe7ed] bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-3 p-6 pb-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Attention needed</p>
+                <h2 class="mt-1 text-xl font-bold text-[#182230]">
+                    {{ $anyAlerts ? 'Things that need you' : 'All clear' }}
+                </h2>
+            </div>
+            <a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">View all</a>
+        </div>
 
-    {{-- Monthly bills due (owner/admin only). Same helper as the Alerts page
-         and the sidebar badge, so the three always agree. --}}
-    @if(!empty($billsDue) && $billsDue->count())
-        <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Monthly bills</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Bills to pay</h2></div><a href="{{ route('alerts.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">See all</a></div>
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                @foreach($billsDue as $bill)
-                    <a href="{{ route('expenses.create', ['bill' => $bill->id]) }}" class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm min-h-[44px] {{ $bill->isOverdue() ? 'border-red-100 bg-red-50 text-red-800 hover:border-red-300' : 'border-sky-100 bg-sky-50 text-sky-900 hover:border-sky-300' }}">
-                        <span class="flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full {{ $bill->isOverdue() ? 'bg-red-500' : 'bg-sky-500' }}"></span>
-                            {{ $bill->category->name ?? 'Bill' }} — ETB {{ number_format($bill->reminderAmount(), 2) }}<span class="block text-xs opacity-80">{{ $bill->paid_months > 1 ? 'per month' : '' }}</span>
-                        </span>
-                        <span class="text-xs font-medium whitespace-nowrap">
-                            @if($bill->isOverdue())
-                                Overdue
-                            @else
-                                Due {{ $bill->reminderDate()?->format('d M') }}
+        @if(!$anyAlerts)
+            <div class="px-6 pb-6">
+                <div class="rounded-lg bg-[#e7f7f4] px-4 py-3 text-sm text-[#08796f]">
+                    Nothing needs attention right now. Stock levels, expiry dates and bills are all in order.
+                </div>
+            </div>
+        @else
+            <div class="divide-y divide-[#edf1f3] border-t border-[#edf1f3]">
+                @if($stockAlerts)
+                    <div class="p-5">
+                        <div class="mb-3 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Stock and expiry</p>
+                            <a href="{{ route('alerts.index') }}" class="text-xs font-semibold text-[var(--brand-primary)] hover:underline">See all</a>
+                        </div>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            @if(in_array('expiring', $stockAlerts, true))
+                                <a href="{{ route('alerts.index') }}" class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800 hover:border-red-300 min-h-[44px]">
+                                    <span class="h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
+                                    {{ $expiringSoonCount }} drug{{ $expiringSoonCount === 1 ? ' expires' : 's expire' }} within {{ $expiryDays }} days
+                                </a>
                             @endif
-                        </span>
-                    </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
+                            @if(in_array('low', $stockAlerts, true))
+                                <a href="{{ route('alerts.index') }}" class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:border-amber-300 min-h-[44px]">
+                                    <span class="h-2 w-2 shrink-0 rounded-full bg-amber-500"></span>
+                                    {{ $lowStockCount }} item{{ $lowStockCount === 1 ? ' needs' : 's need' }} restocking
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
 
-    {{-- PART B — Owed to suppliers reminders (owner/admin only). Live numbers, no cron. --}}
-    @if(!empty($supplierReminders) && (count($supplierReminders['overdue']) || count($supplierReminders['due_soon'])))
-        <section class="rounded-xl border border-[#dfe7ed] bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Owed to suppliers</p><h2 class="mt-1 text-xl font-bold text-[#182230]">Payments coming due</h2></div><a href="{{ route('supplier-owed.index') }}" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">See all</a></div>
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                @if(count($supplierReminders['overdue']))
-                    <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800 hover:border-red-300 min-h-[44px]"><span class="h-2 w-2 rounded-full bg-red-500"></span>{{ count($supplierReminders['overdue']) }} payment{{ count($supplierReminders['overdue']) === 1 ? '' : 's' }} overdue — ETB {{ number_format(array_sum(array_column($supplierReminders['overdue'], 'balance')), 2) }}</a>
+                @if($billCount)
+                    <div class="p-5">
+                        <div class="mb-3 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Bills to pay</p>
+                            <a href="{{ route('alerts.index') }}" class="text-xs font-semibold text-[var(--brand-primary)] hover:underline">See all</a>
+                        </div>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            @foreach($billsDue as $bill)
+                                <a href="{{ route('expenses.create', ['bill' => $bill->id]) }}" class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm min-h-[44px] {{ $bill->isOverdue() ? 'border-red-100 bg-red-50 text-red-800 hover:border-red-300' : 'border-sky-100 bg-sky-50 text-sky-900 hover:border-sky-300' }}">
+                                    <span class="flex items-center gap-2">
+                                        <span class="h-2 w-2 shrink-0 rounded-full {{ $bill->isOverdue() ? 'bg-red-500' : 'bg-sky-500' }}"></span>
+                                        {{ $bill->category->name ?? 'Bill' }} — ETB {{ number_format($bill->reminderAmount(), 2) }}<span class="block text-xs opacity-80">{{ $bill->paid_months > 1 ? 'per month' : '' }}</span>
+                                    </span>
+                                    <span class="text-xs font-medium whitespace-nowrap">
+                                        @if($bill->isOverdue()) Overdue @else Due {{ $bill->reminderDate()?->format('d M') }} @endif
+                                    </span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
-                @if(count($supplierReminders['due_soon']))
-                    <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:border-amber-300 min-h-[44px]"><span class="h-2 w-2 rounded-full bg-amber-500"></span>{{ count($supplierReminders['due_soon']) }} due within {{ $supplierReminders['soon_days'] }} days — ETB {{ number_format(array_sum(array_column($supplierReminders['due_soon'], 'balance')), 2) }}</a>
+
+                @if($supplierAlerts)
+                    <div class="p-5">
+                        <div class="mb-3 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Owed to suppliers</p>
+                            <a href="{{ route('supplier-owed.index') }}" class="text-xs font-semibold text-[var(--brand-primary)] hover:underline">See all</a>
+                        </div>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            @if($supplierOverdue)
+                                <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-800 hover:border-red-300 min-h-[44px]">
+                                    <span class="h-2 w-2 shrink-0 rounded-full bg-red-500"></span>
+                                    {{ $supplierOverdue }} payment{{ $supplierOverdue === 1 ? '' : 's' }} overdue — ETB {{ number_format(array_sum(array_column($supplierReminders['overdue'], 'balance')), 2) }}
+                                </a>
+                            @endif
+                            @if($supplierSoon)
+                                <a href="{{ route('supplier-owed.index') }}" class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 hover:border-amber-300 min-h-[44px]">
+                                    <span class="h-2 w-2 shrink-0 rounded-full bg-amber-500"></span>
+                                    {{ $supplierSoon }} due within {{ $supplierReminders['soon_days'] }} days — ETB {{ number_format(array_sum(array_column($supplierReminders['due_soon'], 'balance')), 2) }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
                 @endif
             </div>
-        </section>
-    @endif
+        @endif
+    </section>
 </div>
 @endsection

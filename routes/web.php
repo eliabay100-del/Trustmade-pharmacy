@@ -56,6 +56,18 @@ Route::middleware(['auth', 'shift'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
 
     // ============================================================
+    // Dashboard shortcuts. Personal, so no role gate: every signed-in
+    // person configures their own. The controller drops any key that
+    // does not exist or that this role cannot open.
+    // ============================================================
+    Route::post('/dashboard/shortcuts', [DashboardController::class, 'updateShortcuts'])
+        ->name('dashboard.shortcuts.update')->middleware('throttle:30,1');
+    Route::post('/dashboard/shortcuts/remove', [DashboardController::class, 'removeShortcut'])
+        ->name('dashboard.shortcuts.remove')->middleware('throttle:30,1');
+    Route::post('/dashboard/shortcuts/reset', [DashboardController::class, 'resetShortcuts'])
+        ->name('dashboard.shortcuts.reset');
+
+    // ============================================================
     // TIER 1 — Any logged-in role (Owner/Admin, Branch Manager,
     // Pharmacist/Clerk). Day-to-day operational work.
     // ============================================================

@@ -194,8 +194,12 @@ class SupplierOwedTest extends TestCase
         // Alerts page shows them to the owner...
         $this->actingAs($this->owner)->get(route('alerts.index'))
             ->assertOk()->assertSee('Overdue')->assertSee('Soon Supply');
-        // ...and the dashboard too.
-        $this->actingAs($this->owner)->get(route('dashboard'))->assertOk()->assertSee('Payments coming due');
+        // ...and the dashboard too, now inside the single alerts card as its
+        // own segment rather than a card of its own.
+        $this->actingAs($this->owner)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Things that need you')
+            ->assertSee('1 payment overdue');
     }
 
     public function test_clerk_cannot_access_owed_pages_or_record_payments(): void

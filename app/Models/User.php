@@ -32,6 +32,7 @@ class User extends Authenticatable
         'role',
         'branch_id',
         'active',
+        'dashboard_shortcuts',
     ];
 
     protected $hidden = [
@@ -43,6 +44,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'active' => 'boolean',
+        'dashboard_shortcuts' => 'array',
     ];
 
     /**
