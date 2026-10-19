@@ -5,33 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Setting;
 use App\Services\DatabaseBackupService;
+use App\Support\BackupHealth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Owner/Admin only. Hands out a complete copy of the database as a download.
+ * Owner/Admin only. Hands out a complete copy of the database as a download,
+ * and keeps the most recent few on the server as a second line of defence.
  *
  * The live site is hosted on a panel with no SSH access and no scheduled tasks,
  * and the panel's own backup feature is limited to paid remote storage, so this
  * screen is the pharmacy's practical way to get its data off the server.
+ *
+ * The database lives on a different machine from the web server, so a copy
+ * held here survives a database failure rather than sharing its fate.
  */
 class BackupController extends Controller
 {
-    /** Files older than this many days are cleaned up on each run. */
-    private const KEEP_DAYS = 2;
+    /** How many recent dumps to keep on the server. */
+    private const KEEP = 5;
+
+    private const DIRECTORY = 'backups';
 
     public function index(): View
     {
         return view('backups.index', [
             'lastBackupAt' => Setting::value('last_backup_at'),
             'lastBackupBy' => Setting::value('last_backup_by'),
+            'warning' => BackupHealth::message(),
+            'retained' => $this->retained(),
         ]);
     }
 
-    public function download(DatabaseBackupService $backups): BinaryFileResponse|RedirectResponse
+    public function download(DatabaseBackupService $backups): StreamedResponse|RedirectResponse
     {
         // The hosting panel locks max_execution_time to 30s. Raising it is
         // refused there, but on a normal host it gives a growing database
@@ -39,13 +49,10 @@ class BackupController extends Controller
         @set_time_limit(180);
 
         $disk = Storage::disk('local');
-        $directory = 'backups';
-        $disk->makeDirectory($directory);
-
-        $this->pruneOldFiles($disk, $directory);
+        $disk->makeDirectory(self::DIRECTORY);
 
         $filename = 'trustmed_' . now()->format('Y-m-d_His') . '.sql';
-        $path = $disk->path($directory . '/' . $filename);
+        $path = $disk->path(self::DIRECTORY . '/' . $filename);
 
         try {
             $result = $backups->writeTo($path);
@@ -73,28 +80,107 @@ class BackupController extends Controller
             ],
         ]);
 
-        return response()
-            ->download($path, $filename, ['Content-Type' => 'application/sql'])
-            ->deleteFileAfterSend(true);
+        // Keep this one (pruning keeps the newest, so it survives) and let the
+        // browser take a copy as well.
+        $this->prune($disk, $filename);
+
+        return $disk->download(self::DIRECTORY . '/' . $filename, $filename, [
+            'Content-Type' => 'application/sql',
+        ]);
     }
 
     /**
-     * A download that is interrupted (browser closed, connection dropped)
-     * leaves its file behind, because nothing calls deleteFileAfterSend. Clear
-     * those out so the storage folder cannot grow without limit.
+     * Re-download one of the copies still held on the server - useful if the
+     * original download never arrived, or was saved somewhere unhelpful.
      */
-    private function pruneOldFiles($disk, string $directory): void
+    public function fetch(string $file): StreamedResponse|RedirectResponse
     {
-        $cutoff = now()->subDays(self::KEEP_DAYS)->getTimestamp();
+        $name = $this->safeName($file);
 
-        foreach ($disk->files($directory) as $file) {
-            if (!str_ends_with($file, '.sql')) {
+        if ($name === null || !Storage::disk('local')->exists(self::DIRECTORY . '/' . $name)) {
+            return redirect()
+                ->route('backups.index')
+                ->with('error', 'That backup is no longer on the server. Take a new one.');
+        }
+
+        return Storage::disk('local')->download(self::DIRECTORY . '/' . $name, $name, [
+            'Content-Type' => 'application/sql',
+        ]);
+    }
+
+    /**
+     * The copies held on the server, newest first.
+     *
+     * @return array<int, array{name:string, bytes:int, taken_at:Carbon, url:string}>
+     */
+    private function retained(): array
+    {
+        $disk = Storage::disk('local');
+
+        return collect($this->dumpFiles($disk))
+            ->sortByDesc(fn (string $file) => $disk->lastModified($file))
+            ->map(function (string $file) use ($disk) {
+                $name = basename($file);
+                $at = Carbon::createFromTimestamp($disk->lastModified($file));
+
+                return [
+                    'name' => $name,
+                    'bytes' => (int) $disk->size($file),
+                    'taken_at' => $at,
+                    'url' => route('backups.fetch', ['file' => $name]),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int, string> */
+    private function dumpFiles($disk): array
+    {
+        return collect($disk->files(self::DIRECTORY))
+            ->filter(fn (string $file) => $this->safeName(basename($file)) !== null)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Delete all but the newest KEEP dumps. $keep is protected so the file
+     * being sent to the browser is never the one pruned.
+     */
+    private function prune($disk, ?string $keep = null): void
+    {
+        $files = collect($this->dumpFiles($disk))
+            ->sortByDesc(fn (string $file) => $disk->lastModified($file))
+            ->values();
+
+        $stale = $files->slice(self::KEEP);
+
+        foreach ($stale as $file) {
+            if ($keep !== null && basename($file) === $keep) {
                 continue;
             }
 
-            if ($disk->lastModified($file) < $cutoff) {
-                $disk->delete($file);
-            }
+            $disk->delete($file);
         }
+    }
+
+    /**
+     * A dump filename, or null if it is anything else.
+     *
+     * The route parameter is user input, so this is the only thing standing
+     * between the URL and the rest of the filesystem.
+     */
+    private function safeName(string $file): ?string
+    {
+        // basename() equality rejects any attempt to walk out of the folder.
+        if ($file === '' || basename($file) !== $file) {
+            return null;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9_.-]+\.sql(\.gz)?$/', $file)) {
+            return null;
+        }
+
+        return $file;
     }
 }

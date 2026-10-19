@@ -197,6 +197,13 @@ Route::middleware(['auth', 'shift'])->group(function () {
         // ============================================================
         Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
         Route::get('/backups/download', [BackupController::class, 'download'])->name('backups.download')->middleware('throttle:10,1');
+        // Must come after /backups/download, or "download" would be read as a
+        // filename. The constraint keeps a crafted URL from reaching anything
+        // but a dump name.
+        Route::get('/backups/{file}', [BackupController::class, 'fetch'])
+            ->where('file', '[A-Za-z0-9_.-]+')
+            ->name('backups.fetch')
+            ->middleware('throttle:30,1');
 
         // ============================================================
         // Opening balances. Replaced by the shift-opening drawer count

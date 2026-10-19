@@ -17,6 +17,15 @@
         <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{{ session('error') }}</div>
     @endif
 
+    @if($warning)
+        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-4">
+            <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <p class="text-sm text-[#92400e]">{{ $warning }}</p>
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <h2 class="text-base font-semibold text-[#1E2530] mb-1">Download a backup</h2>
         <p class="text-sm text-[#64748b] mb-4">
@@ -42,12 +51,41 @@
         </p>
     </div>
 
+    @if(count($retained))
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mt-4">
+            <h2 class="text-base font-semibold text-[#1E2530] mb-1">Copies kept on the server</h2>
+            <p class="text-sm text-[#64748b] mb-4">
+                The last {{ count($retained) }} {{ count($retained) === 1 ? 'backup is' : 'backups are' }} also kept
+                on the server itself. These are a safety net, not a substitute for a copy you hold:
+                they sit on the same machine as the website. Older ones are cleared automatically.
+            </p>
+
+            <ul class="divide-y divide-gray-100 border-t border-gray-100">
+                @foreach($retained as $backup)
+                    <li class="flex items-center justify-between gap-4 py-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-[#1E2530] truncate">{{ $backup['taken_at']->format('D, d M Y · H:i') }}</p>
+                            <p class="text-xs text-[#64748b]">
+                                {{ $backup['bytes'] >= 1048576
+                                    ? number_format($backup['bytes'] / 1048576, 1) . ' MB'
+                                    : number_format($backup['bytes'] / 1024, 0) . ' KB' }}
+                            </p>
+                        </div>
+                        <a href="{{ $backup['url'] }}"
+                           class="flex-shrink-0 text-sm font-medium text-[var(--brand-primary)] hover:underline">Download</a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mt-4">
         <h2 class="text-base font-semibold text-[#1E2530] mb-2">How often?</h2>
         <p class="text-sm text-[#64748b]">
             Once a week is plenty for most pharmacies, and once a month is the absolute minimum.
             A useful habit: download one at closing time on the last day of each month and keep it
-            with your paper records.
+            with your paper records. A reminder appears on the dashboard once it has been more than
+            two weeks.
         </p>
     </div>
 

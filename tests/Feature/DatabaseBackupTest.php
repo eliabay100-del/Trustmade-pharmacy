@@ -235,4 +235,104 @@ class DatabaseBackupTest extends TestCase
             'Backups must never be reachable over the web.'
         );
     }
+
+    // ------------------------------------------------------------------
+    // Copies kept on the server
+    // ------------------------------------------------------------------
+
+    public function test_the_server_keeps_only_the_most_recent_few_backups(): void
+    {
+        $dir = storage_path('app/private/backups');
+        @mkdir($dir, 0775, true);
+
+        // Seven older dumps, one per day, oldest first.
+        for ($day = 1; $day <= 7; $day++) {
+            $path = $dir . '/trustmed_2026-01-0' . $day . '_120000.sql';
+            file_put_contents($path, "-- an older backup\n");
+            touch($path, now()->subDays(10 - $day)->getTimestamp());
+        }
+
+        // The oldest are the ones that should go.
+        $oldest = $dir . '/trustmed_2026-01-01_120000.sql';
+        $newest = $dir . '/trustmed_2026-01-07_120000.sql';
+
+        $this->assertCount(7, glob($dir . '/*.sql'));
+
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        // Five kept: the four newest of the old ones plus the one just taken.
+        $this->assertCount(5, glob($dir . '/*.sql'));
+        $this->assertFileDoesNotExist($oldest, 'The oldest backup should be cleared out.');
+        $this->assertFileExists($newest, 'Recent backups must survive the tidy-up.');
+    }
+
+    public function test_the_owner_can_download_a_copy_kept_on_the_server(): void
+    {
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        $name = basename(glob(storage_path('app/private/backups/*.sql'))[0]);
+
+        $this->actingAs($this->owner)
+            ->get(route('backups.fetch', ['file' => $name]))
+            ->assertOk()
+            ->assertDownload($name);
+    }
+
+    public function test_the_kept_copies_are_listed_on_the_page(): void
+    {
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        $this->actingAs($this->owner)
+            ->get(route('backups.index'))
+            ->assertOk()
+            ->assertSee('Copies kept on the server');
+    }
+
+    /**
+     * The route parameter is user input. A file sitting in the same folder
+     * that is not a dump must be neither served nor advertised.
+     */
+    public function test_it_will_not_hand_out_anything_but_a_dump(): void
+    {
+        $disk = Storage::disk('local');
+        $disk->makeDirectory('backups');
+        $disk->put('backups/secret.txt', 'this is not a backup');
+
+        $this->actingAs($this->owner)
+            ->get(route('backups.fetch', ['file' => 'secret.txt']))
+            ->assertRedirect(route('backups.index'));
+
+        $this->actingAs($this->owner)
+            ->get(route('backups.index'))
+            ->assertOk()
+            ->assertDontSee('secret.txt');
+    }
+
+    public function test_a_backup_that_is_gone_is_reported_rather_than_served(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(route('backups.fetch', ['file' => 'trustmed_2020-01-01_000000.sql']))
+            ->assertRedirect(route('backups.index'))
+            ->assertSessionHas('error');
+    }
+
+    public function test_a_traversal_attempt_does_not_reach_outside_the_folder(): void
+    {
+        // The route only matches a bare filename, so a path cannot even get
+        // as far as the controller.
+        $this->actingAs($this->owner)
+            ->get('/backups/..%2F.env')
+            ->assertNotFound();
+    }
+
+    public function test_a_clerk_cannot_download_a_kept_backup(): void
+    {
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        $name = basename(glob(storage_path('app/private/backups/*.sql'))[0]);
+
+        $this->actingAs($this->clerk)
+            ->get(route('backups.fetch', ['file' => $name]))
+            ->assertForbidden();
+    }
 }

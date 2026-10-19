@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use App\Support\BackupHealth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -168,6 +169,9 @@ class DashboardController extends Controller
                 $user,
                 $branchId ?: \App\Models\Branch::current()?->id
             ),
+            // Only the owner can take a backup, so only the owner is told
+            // about a lapsed one. Null means nothing to say.
+            'backupWarning' => $user->role === 'owner_admin' ? BackupHealth::message() : null,
             'shortcuts' => $this->shortcutsFor($user),
             'shortcutChoices' => $this->availableShortcutsFor($user),
         ]));

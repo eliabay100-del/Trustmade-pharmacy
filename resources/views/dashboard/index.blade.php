@@ -34,6 +34,26 @@
         </div>
     @endif
 
+    @if($backupWarning ?? null)
+        {{-- Deliberately on the screen everyone lands on after signing in.
+             A backup nobody remembers to take is the same as no backup. --}}
+        <div class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-3">
+                <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <div>
+                    <p class="text-sm font-semibold text-[#92400e]">Backup reminder</p>
+                    <p class="mt-0.5 text-sm text-[#92400e]/90">{{ $backupWarning }}</p>
+                </div>
+            </div>
+            <a href="{{ route('backups.index') }}"
+               class="inline-flex flex-shrink-0 items-center rounded-lg bg-[#92400e] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#7c2d12]">
+                Take a backup
+            </a>
+        </div>
+    @endif
+
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Pharmacy summary">
         <a href="{{ route('drugs.index') }}" class="group rounded-xl border border-[#dfe7ed] bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:border-[var(--brand-primary)] hover:shadow-md">
             <span class="text-xs font-semibold uppercase tracking-wide text-[#64748b]">Drugs</span>

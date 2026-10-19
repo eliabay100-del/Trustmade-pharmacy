@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Support\BackupHealth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -62,6 +63,14 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('owedBadgeCount', $badge);
             $view->with('billsDueCount', $billsBadge);
+
+            // A lapsed backup is the one risk the app cannot fix on the
+            // owner's behalf, so it shows on the sidebar link rather than
+            // waiting to be looked for. Only the owner can act on it.
+            $view->with(
+                'backupStale',
+                ($user && $user->role === 'owner_admin') ? BackupHealth::isStale() : false
+            );
         });
     }
 }
