@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'payment_verifier' => [
+        'webhook_secret' => env('PAYMENT_VERIFIER_WEBHOOK_SECRET'),
+    ],
+
 ];

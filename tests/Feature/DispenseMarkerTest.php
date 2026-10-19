@@ -17,17 +17,20 @@ use Tests\TestCase;
  * The dispensing marker on the sale screen ("#1 - 40 left") and the FEFO/FIFO
  * order it promises.
  *
- * The marker is recomputed from the batches on every page load (nothing is
+ * The marker is recomputed from the batches on every request (nothing is
  * stored), and its ORDER BY is deliberately identical to
  * InventoryService::selectBatchesForDispensing(), so the batch the seller is
  * told about is always the batch that is actually consumed.
+ *
+ * The marker is served by the /search-drug endpoint rather than rendered into
+ * the sale screen. The screen used to embed the whole catalogue so the browser
+ * could filter it, which cost ~450 KB and over a second at 800 drugs; the
+ * marker moved to the search results with it. These tests therefore assert
+ * against the endpoint that now produces it.
  */
 class DispenseMarkerTest extends TestCase
 {
     use RefreshDatabase;
-
-    /** The exact string the sale screen renders next to an item name. */
-    private const MARKER = '#1 · %d left';
 
     protected User $clerk;
     protected Branch $branch;
@@ -77,11 +80,11 @@ class DispenseMarkerTest extends TestCase
         $this->batch('SOON', now()->addDays(30)->toDateString(), 40);
         $this->batch('LATER', now()->addDays(300)->toDateString(), 100);
 
-        $response = $this->actingAs($this->clerk)->get(route('dispense.create'));
+        $response = $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']));
 
         $response->assertOk();
-        $response->assertSee(sprintf(self::MARKER, 40), false);
-        $response->assertDontSee('100 left', false);
+        $this->assertSame(['#1 - 40 left'], array_column($response->json('results'), 'marker'));
+        $this->assertStringNotContainsString('100 left', $response->getContent());
     }
 
     /**
@@ -96,9 +99,10 @@ class DispenseMarkerTest extends TestCase
         $second = $this->batch('TWO', $expiry, 20);
         $third = $this->batch('THREE', $expiry, 30);
 
-        $this->actingAs($this->clerk)->get(route('dispense.create'))
+        $markers = $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']))
             ->assertOk()
-            ->assertSee(sprintf(self::MARKER, 10), false);
+            ->json('results');
+        $this->assertSame(['#1 - 10 left'], array_column($markers, 'marker'));
 
         $this->actingAs($this->clerk)->post(route('dispense.store'), [
             'customer_mode' => 'anonymous',
@@ -122,21 +126,23 @@ class DispenseMarkerTest extends TestCase
     {
         $this->batch('GONE', now()->addYear()->toDateString(), 0);
 
-        $this->actingAs($this->clerk)->get(route('dispense.create'))
+        // No marker at all, rather than a misleading "#1 - 0 left".
+        $results = $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']))
             ->assertOk()
-            // No marker prefix at all, rather than a misleading "#1 · 0 left".
-            ->assertDontSee('#1 · ', false);
-    }
+            ->json('results');
+        $this->assertCount(1, $results);
+        $this->assertNull($results[0]['marker']);    }
 
     public function test_marker_ignores_expired_batches(): void
     {
         $this->batch('DEAD', now()->subDay()->toDateString(), 999);
         $this->batch('LIVE', now()->addYear()->toDateString(), 7);
 
-        $this->actingAs($this->clerk)->get(route('dispense.create'))
+        $markers = $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']))
             ->assertOk()
-            ->assertSee(sprintf(self::MARKER, 7), false)
-            ->assertDontSee('999 left', false);
+            ->json('results');
+        $this->assertSame(['#1 - 7 left'], array_column($markers, 'marker'));
+        $this->assertStringNotContainsString('999 left', json_encode($markers));
     }
 
     public function test_marker_recomputes_when_the_first_batch_is_used_up(): void
@@ -145,14 +151,18 @@ class DispenseMarkerTest extends TestCase
         $first = $this->batch('ONE', $expiry, 2);
         $this->batch('TWO', $expiry, 50);
 
-        $this->actingAs($this->clerk)->get(route('dispense.create'))
-            ->assertSee(sprintf(self::MARKER, 2), false);
+        $this->assertSame(['#1 - 2 left'], array_column(
+            $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']))->json('results'),
+            'marker'
+        ));
 
         // Sell the first batch dry, then reload: the marker must move to #1 on
         // what is now the next batch out, with no stored state to renumber.
         $first->update(['quantity_remaining' => 0]);
 
-        $this->actingAs($this->clerk)->get(route('dispense.create'))
-            ->assertSee(sprintf(self::MARKER, 50), false);
+        $this->assertSame(['#1 - 50 left'], array_column(
+            $this->actingAs($this->clerk)->getJson(route('search.drug', ['q' => 'Parac']))->json('results'),
+            'marker'
+        ));
     }
 }

@@ -183,6 +183,8 @@ Route::middleware(['auth', 'shift'])->group(function () {
         // ============================================================
         Route::get('/settings/branding', [SettingController::class, 'edit'])->name('settings.branding');
         Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update')->middleware('throttle:15,1');
+        Route::get('/settings/integration', [SettingController::class, 'editIntegration'])->name('settings.integration');
+        Route::put('/settings/integration', [SettingController::class, 'updateIntegration'])->name('settings.integration.update')->middleware('throttle:15,1');
 
         // ============================================================
         // Opening balances. Replaced by the shift-opening drawer count

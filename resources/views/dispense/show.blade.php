@@ -63,9 +63,24 @@
                 <p class="text-xs font-semibold text-[#64748b] uppercase tracking-wide mb-2">Payments</p>
                 <ul class="space-y-1 text-sm">
                     @foreach($order->payments as $payment)
-                        <li class="flex justify-between">
+                        <li class="flex justify-between items-center">
                             <span class="text-[#64748b]">{{ $payment->methodLabel() }}</span>
-                            <span class="text-[#1E2530]">${{ number_format($payment->amount, 2) }}</span>
+                            <span class="flex items-center gap-2">
+                                @if($payment->isVerified())
+                                    <span class="inline-flex items-center gap-1 text-emerald-600" title="Verified by P-Check">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </span>
+                                @elseif($payment->verification_status === 'declined')
+                                    <span class="inline-flex items-center gap-1 text-red-500" title="Verification declined">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </span>
+                                @endif
+                                <span class="text-[#1E2530]">${{ number_format($payment->amount, 2) }}</span>
+                            </span>
                         </li>
                     @endforeach
                 </ul>

@@ -15,6 +15,7 @@ use App\Services\InventoryService;
 use App\Services\AccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DispenseController extends Controller
 {
@@ -43,41 +44,30 @@ class DispenseController extends Controller
         return view('dispense.index', compact('orders'));
     }
 
+    /**
+     * The sale screen.
+     *
+     * Deliberately does not load the catalogue. It used to render one
+     * <option> per drug and build a JSON packing map covering every row, which
+     * measured at roughly 450 KB and 1.2 seconds with 800 drugs - growing
+     * linearly, on the screen a cashier opens all day, on the slowest
+     * connection the pharmacy has. Items are now found through searchDrug() as
+     * the cashier types, and that endpoint returns the same packing, marker
+     * and shelf-price data for the handful of rows that actually match.
+     */
     public function create()
     {
-        $drugs = Drug::all();
-        $products = Product::where('active', true)->orderBy('name')->get();
         $branchId = auth()->user()->branch_id ?: Branch::current()?->id;
         $paymentMethods = Payment::METHODS;
-
-        // One query each for the dispensing marker ("#1 · 40 left") and the
-        // locked shelf price. Both are recomputed on every page load.
-        // Keyed by catalog_key, not by id, because a drug id and a product id
-        // can be the same number.
-        $markers = [];
-        $prices = [];
-        foreach (['drug' => $drugs, 'product' => $products] as $type => $collection) {
-            $ids = $collection->pluck('id')->all();
-            foreach ($this->inventoryService->dispenseMarkers($type, $ids, $branchId) as $id => $marker) {
-                $markers[$type . ':' . $id] = $marker;
-            }
-            foreach ($this->inventoryService->shelfPrices($type, $ids, $branchId) as $id => $price) {
-                $prices[$type . ':' . $id] = $price;
-            }
-        }
-
-        foreach ($drugs as $drug) $drug->catalog_key = 'drug:' . $drug->id;
-        foreach ($products as $product) $product->catalog_key = 'product:' . $product->id;
-
-        $items = $drugs->concat($products);
-        foreach ($items as $item) {
-            $marker = $markers[$item->catalog_key] ?? null;
-            $item->dispense_marker = $marker ? sprintf('#%d · %d left', $marker['rank'], $marker['quantity']) : null;
-            $item->shelf_price = $prices[$item->catalog_key] ?? null;
-        }
-
         $recurringCustomers = Customer::where('is_recurring', true)->orderBy('name')->get();
-        return view('dispense.create', compact('drugs', 'recurringCustomers', 'branchId', 'paymentMethods'));
+
+        // Only used to decide whether to show the "nothing in the catalogue
+        // yet" nudge on a fresh install. The catalogue itself is not loaded, so
+        // this has to be answered on its own - but an EXISTS is cheap next to
+        // the page it saves.
+        $hasCatalogueItems = Drug::exists() || Product::where('active', true)->exists();
+
+        return view('dispense.create', compact('recurringCustomers', 'branchId', 'paymentMethods', 'hasCatalogueItems'));
     }
 
     public function store(Request $request)
@@ -110,6 +100,7 @@ class DispenseController extends Controller
             'payments' => 'required|array|min:1',
             'payments.*.payment_method' => 'required|in:' . implode(',', array_keys(Payment::METHODS)),
             'payments.*.amount' => 'required|numeric|min:0.01',
+            'payments.*.transaction_reference' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -230,11 +221,12 @@ class DispenseController extends Controller
                     );
                 }
 
-                foreach ($paymentRows as $payment) {
+                foreach ($paymentRows as $i => $payment) {
                     Payment::create([
                         'order_id' => $order->id,
                         'payment_method' => $payment['payment_method'],
                         'amount' => $payment['amount'],
+                        'transaction_reference' => $request->payments[$i]['transaction_reference'] ?? null,
                     ]);
                 }
 
@@ -262,14 +254,108 @@ class DispenseController extends Controller
         return view('dispense.show', compact('order'));
     }
 
+    /**
+     * Type-ahead for the sale screen.
+     *
+     * The sale screen used to carry the entire catalogue in its HTML so the
+     * browser could filter it, which cost ~450 KB and over a second at 800
+     * drugs. This replaces it: the browser asks for what has been typed so far
+     * and gets back only the rows that match, each already carrying its unit
+     * packing, dispensing marker and locked shelf price, so a line can be
+     * priced and unit-synchronised without a second round trip.
+     *
+     * Searches drugs AND products. Products have always been sellable through
+     * store() - they carry the same "product:<id>" key - but the old preloaded
+     * <select> listed only drugs, so there was no way to reach one on screen.
+     *
+     * The term is escaped so that a user typing "%" searches for a literal
+     * percent sign instead of matching every row.
+     */
     public function searchDrug(Request $request)
     {
-        $query = Str::of((string) $request->input('q'))
-            ->replace(['%', '_'], ['\%', '\_'])
-            ->value();
-        $results = Drug::where('name', 'like', "%{$query}%")->limit(5)->get([
-            'id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack',
-        ]);
-        return response()->json($results);
+        $term = trim((string) $request->input('q', ''));
+
+        // One or two characters matches most of a pharmacy's catalogue and is
+        // never what the cashier meant.
+        if (mb_strlen($term) < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $term = Str::of($term)->replace(['%', '_'], ['\%', '\_'])->value();
+        $like = "%{$term}%";
+
+        $branchId = auth()->user()->branch_id ?: Branch::current()?->id;
+        $limit = 20;
+
+        $drugs = Drug::where(function ($query) use ($like) {
+            $query->where('name', 'like', $like)
+                ->orWhere('generic_name', 'like', $like)
+                ->orWhere('strength', 'like', $like);
+        })
+            ->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack']);
+
+        $products = Product::where('active', true)
+            ->where(function ($query) use ($like) {
+                $query->where('name', 'like', $like)->orWhere('sku', 'like', $like);
+            })
+            ->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name']);
+
+        // Markers and prices are worked out for the rows that matched, not for
+        // the whole catalogue on every keystroke.
+        $drugIds = $drugs->pluck('id')->all();
+        $productIds = $products->pluck('id')->all();
+        $drugMarkers = $this->inventoryService->dispenseMarkers('drug', $drugIds, $branchId);
+        $drugPrices = $this->inventoryService->shelfPrices('drug', $drugIds, $branchId);
+        $productMarkers = $this->inventoryService->dispenseMarkers('product', $productIds, $branchId);
+        $productPrices = $this->inventoryService->shelfPrices('product', $productIds, $branchId);
+
+        $results = [];
+
+        foreach ($drugs as $drug) {
+            $results[] = $this->catalogEntry(
+                'drug:' . $drug->id, $drug->name, $drug->strength,
+                $drug->baseUnitLabel(), $drug->unitsPerStrip(), $drug->unitsPerPack(),
+                $drugMarkers[$drug->id] ?? null, $drugPrices[$drug->id] ?? null
+            );
+        }
+
+        foreach ($products as $product) {
+            // A product has no strip/pack geometry - it is counted in whole
+            // pieces - so its unit list stays "piece (base)".
+            $results[] = $this->catalogEntry(
+                'product:' . $product->id, $product->name, null,
+                'piece', 1, 1,
+                $productMarkers[$product->id] ?? null, $productPrices[$product->id] ?? null
+            );
+        }
+
+        return response()->json(['results' => array_slice($results, 0, $limit)]);
+    }
+
+    /**
+     * One catalogue row in the shape the sale screen consumes.
+     *
+     * @param  array{rank: int, quantity: int}|null  $marker
+     */
+    protected function catalogEntry(string $key, string $name, ?string $strength, string $base, int $strip, int $pack, ?array $marker, $price): array
+    {
+        return [
+            'key' => $key,
+            'name' => $name,
+            'strength' => $strength,
+            'label' => trim($name . ($strength ? " ({$strength})" : '')),
+            'base' => $base,
+            'strip' => $strip,
+            'pack' => $pack,
+            // "#1 - 40 left": the batch FEFO will actually reach for.
+            'marker' => $marker ? sprintf('#%d - %d left', $marker['rank'], $marker['quantity']) : null,
+            // Locked shelf price per base unit. Re-derived server-side on save;
+            // this only fills the read-only box as soon as the item is picked.
+            'price' => $price === null ? null : round((float) $price, 2),
+        ];
     }
 }

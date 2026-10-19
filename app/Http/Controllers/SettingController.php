@@ -102,4 +102,42 @@ class SettingController extends Controller
 
         return back()->with('success', 'Settings saved. The whole system now uses your business name, logo and colors.');
     }
+
+    public function editIntegration()
+    {
+        $settings = [
+            'payment_verifier_enabled' => Setting::value('payment_verifier_enabled', '0'),
+            'payment_verifier_webhook_secret' => Setting::value('payment_verifier_webhook_secret', ''),
+        ];
+
+        $webhookUrl = url('/api/payment-verifier/webhook');
+
+        return view('settings.integration', compact('settings', 'webhookUrl'));
+    }
+
+    public function updateIntegration(Request $request)
+    {
+        $data = $request->validate([
+            'payment_verifier_enabled' => 'required|in:0,1',
+            // Turning the integration on without a shared secret would leave a
+            // verifier able to reach us with nobody able to tell them apart, so
+            // the form refuses that combination outright. 16 characters keeps a
+            // pasted value from being something guessable like "secret".
+            'payment_verifier_webhook_secret' => [
+                'required_if:payment_verifier_enabled,1',
+                'nullable',
+                'string',
+                'min:16',
+                'max:255',
+            ],
+        ], [
+            'payment_verifier_webhook_secret.required_if' => 'Set a webhook secret before turning the integration on - without one, anyone could post to the webhook.',
+            'payment_verifier_webhook_secret.min' => 'The webhook secret must be at least 16 characters.',
+        ]);
+
+        Setting::put('payment_verifier_enabled', $data['payment_verifier_enabled']);
+        Setting::put('payment_verifier_webhook_secret', $data['payment_verifier_webhook_secret'] ?? '');
+
+        return back()->with('success', 'P-Check integration settings saved.');
+    }
 }

@@ -60,6 +60,21 @@ class Order extends Model
         return $this->hasMany(CustomerReturn::class);
     }
 
+    public function hasVerifiedPayment(): bool
+    {
+        return $this->payments->contains(fn (Payment $p) => $p->isVerified());
+    }
+
+    public function hasDeclinedPayment(): bool
+    {
+        return $this->payments->contains(fn (Payment $p) => $p->verification_status === 'declined');
+    }
+
+    public function digitalPayments()
+    {
+        return $this->payments->filter(fn (Payment $p) => $p->isDigital());
+    }
+
     /**
      * What the customer paid already includes VAT, so VAT is taken back out of
      * each amount (amount x rate / (100 + rate)) for the receipt. Per-line VAT

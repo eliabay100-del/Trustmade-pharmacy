@@ -43,6 +43,8 @@ class Payment extends Model
         'order_id',
         'payment_method',
         'amount',
+        'transaction_reference',
+        'verification_status',
     ];
 
     protected $casts = [
@@ -57,6 +59,16 @@ class Payment extends Model
     public function methodLabel(): string
     {
         return self::METHODS[$this->payment_method] ?? ucfirst($this->payment_method);
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->verification_status === 'verified';
+    }
+
+    public function isDigital(): bool
+    {
+        return in_array($this->payment_method, ['telebirr', 'cbe_birr', 'bank_transfer', 'card']);
     }
 
     public static function accountCodeFor(string $method): string

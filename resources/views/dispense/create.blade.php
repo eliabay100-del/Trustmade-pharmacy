@@ -3,19 +3,11 @@
 @section('content')
 
 @php
-    $packingData = $drugs->mapWithKeys(function ($drug) {
-        return [
-            $drug->catalog_key => [
-                'base' => $drug->baseUnitLabel(),
-                'strip' => $drug->unitsPerStrip(),
-                'pack' => $drug->unitsPerPack(),
-                // Locked shelf price, per BASE unit. The server re-derives this
-                // from the newest stocked batch; it is sent here only so the
-                // box can show it the moment an item is picked.
-                'price' => $drug->shelf_price,
-            ],
-        ];
-    });
+    // Packing, marker and shelf price per item, filled in by the browser as the
+    // cashier searches. This used to be built from every drug in the catalogue
+    // and shipped to the client as JSON, which is most of what made the page
+    // half a megabyte.
+    $packingData = [];
 @endphp
 
 {{-- Wide enough that the item dropdown can show the full name plus its
@@ -79,19 +71,10 @@
                             class="drug-select w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                             required
                         >
-                            <option value="">-- Select Item --</option>
-
-                            @foreach($drugs as $drug)
-                                <option value="{{ $drug->catalog_key }}">
-                                    {{ $drug->name }}
-                                    @if($drug->strength ?? false)
-                                        ({{ $drug->strength }})
-                                    @endif
-                                    @if($drug->dispense_marker ?? false)
-                                        — {{ $drug->dispense_marker }}
-                                    @endif
-                                </option>
-                            @endforeach
+                            {{-- Options are added by the browser as the cashier
+                                 searches below. Rendering the whole catalogue
+                                 into this select was the bulk of the page. --}}
+                            <option value="">-- Search above to pick an item --</option>
                         </select>
                     </div>
 
@@ -162,7 +145,7 @@
                 + Add another item
             </button>
 
-            @if($drugs->isEmpty())
+            @if(! $hasCatalogueItems)
                 <p class="text-sm text-red-600 mt-2">
                     No drugs or products in the catalog yet —
                     <a
@@ -395,7 +378,7 @@
                     class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end payment-line"
                 >
 
-                    <div class="sm:col-span-7">
+                    <div class="sm:col-span-5">
 
                         <label class="block text-xs text-[#64748b] mb-1">
                             Payment method
@@ -403,7 +386,7 @@
 
                         <select
                             name="payments[0][payment_method]"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
+                            class="payment-method-select w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                             required
                         >
 
@@ -423,7 +406,7 @@
                     </div>
 
 
-                    <div class="sm:col-span-4">
+                    <div class="sm:col-span-3">
 
                         <label class="block text-xs text-[#64748b] mb-1">
                             Amount
@@ -437,6 +420,22 @@
                             placeholder="Amount"
                             class="payment-amount w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                             required
+                        >
+
+                    </div>
+
+
+                    <div class="sm:col-span-3 transaction-ref-field hidden">
+
+                        <label class="block text-xs text-[#64748b] mb-1">
+                            Transaction ref
+                        </label>
+
+                        <input
+                            type="text"
+                            name="payments[0][transaction_reference]"
+                            placeholder="Provider txn ID"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                         >
 
                     </div>
@@ -582,19 +581,52 @@
     const addLineBtn =
         document.getElementById('add-line-btn');
 
-    const firstDrugSelect =
-        document.querySelector('.drug-select');
-
-
-    const drugOptionsHtml =
-        firstDrugSelect
-            ? firstDrugSelect.innerHTML
-            : '';
+    // ============================================================
+    // CATALOGUE SEARCH
+    //
+    // The catalogue used to be rendered into the first line's <select> and
+    // filtered in the browser. That cost roughly 450 KB and 1.2 seconds with
+    // 800 drugs, and grew from there. Rows are now fetched a few at a time as
+    // the cashier types, and each match arrives already carrying its unit
+    // packing, dispensing marker and locked shelf price - so choosing an item
+    // still costs exactly one request.
+    // ============================================================
 
     const catalogSearch = document.getElementById('catalog-search');
     const catalogStatus = document.getElementById('catalog-search-status');
+    const catalogResults = document.getElementById('catalog-results');
+    const SEARCH_URL = @json(route('search.drug'));
 
-    function addCatalogItem(value) {
+    // New lines start with the placeholder only; options are added as items
+    // are picked, for the same reason the page does not preload them.
+    const drugOptionsHtml = @json('<option value="">-- Search above to pick an item --</option>');
+
+    // Packing data for items already seen this session. Empty on load.
+    const packing = @json((object) $packingData);
+
+    function rememberItem(item) {
+        packing[item.key] = {
+            base: item.base,
+            strip: item.strip,
+            pack: item.pack,
+            price: item.price
+        };
+    }
+
+    // Each cart line has its own <select>, so an option offered by one line is
+    // not automatically offered by another.
+    function ensureOption(select, item) {
+        if (select.querySelector('option[value="' + CSS.escape(item.key) + '"]')) {
+            return;
+        }
+
+        const option = document.createElement('option');
+        option.value = item.key;
+        option.textContent = item.marker ? item.label + ' — ' + item.marker : item.label;
+        select.appendChild(option);
+    }
+
+    function addCatalogItem(item) {
         let row = [...document.querySelectorAll('.cart-line')].find(function (cartRow) {
             return !cartRow.querySelector('.drug-select').value;
         });
@@ -604,40 +636,118 @@
             row = cartLines.lastElementChild;
         }
 
+        rememberItem(item);
+
         const select = row.querySelector('.drug-select');
-        select.value = value;
+        ensureOption(select, item);
+        select.value = item.key;
         syncLineUnits(row);
         select.dispatchEvent(new Event('change', { bubbles: true }));
         catalogSearch.value = '';
+        catalogResults.innerHTML = '';
         catalogResults.classList.add('hidden');
-        catalogStatus.textContent = 'Added';
+        catalogStatus.textContent = 'Added ' + item.label;
         updateCartTotal();
         row.querySelector('input[name*="[quantity]"]')?.focus();
     }
 
-    function searchCatalog() {
-        const term = catalogSearch.value.trim().toLowerCase();
+    function renderResults(items) {
         catalogResults.innerHTML = '';
-        if (!term) {
+
+        if (!items.length) {
+            catalogStatus.textContent = 'No match';
             catalogResults.classList.add('hidden');
-            catalogStatus.textContent = '';
             return;
         }
 
-        const matches = [...firstDrugSelect.options].filter(option => option.value && option.textContent.toLowerCase().includes(term));
-        catalogStatus.textContent = matches.length + ' match' + (matches.length === 1 ? '' : 'es');
-        matches.slice(0, 8).forEach(function (option) {
+        catalogStatus.textContent = items.length + ' match' + (items.length === 1 ? '' : 'es');
+
+        items.slice(0, 8).forEach(function (item) {
             const result = document.createElement('button');
             result.type = 'button';
             result.className = 'block w-full rounded-lg px-3 py-2 text-left text-sm text-[#182230] hover:bg-[#e7f7f4]';
-            result.textContent = option.textContent.trim();
-            result.addEventListener('click', () => addCatalogItem(option.value));
+
+            // textContent, never innerHTML: item names come from the catalogue
+            // and a name like "<script>" must not become markup.
+            const title = document.createElement('span');
+            title.textContent = item.label;
+            result.appendChild(title);
+
+            if (item.marker) {
+                const marker = document.createElement('span');
+                marker.className = 'ml-2 text-xs text-[#64748b]';
+                marker.textContent = item.marker;
+                result.appendChild(marker);
+            }
+
+            if (item.price !== null && item.price !== undefined) {
+                const price = document.createElement('span');
+                price.className = 'float-right text-xs text-[#64748b]';
+                price.textContent = 'ETB ' + Number(item.price).toFixed(2);
+                result.appendChild(price);
+            }
+
+            result.addEventListener('click', function () {
+                addCatalogItem(item);
+            });
+
             catalogResults.appendChild(result);
         });
-        catalogResults.classList.toggle('hidden', matches.length === 0);
+
+        catalogResults.classList.remove('hidden');
     }
 
-    const catalogResults = document.getElementById('catalog-results');
+    let searchTimer = null;
+    let searchController = null;
+
+    function searchCatalog() {
+        const term = catalogSearch.value.trim();
+
+        // Debounced, so typing "amoxicillin" fires one request instead of ten,
+        // and the previous one is aborted rather than racing the newest.
+        clearTimeout(searchTimer);
+
+        if (term.length < 2) {
+            catalogResults.innerHTML = '';
+            catalogResults.classList.add('hidden');
+            catalogStatus.textContent = term ? 'Keep typing' : '';
+            return;
+        }
+
+        catalogStatus.textContent = 'Searching...';
+
+        searchTimer = setTimeout(function () {
+            if (searchController) {
+                searchController.abort();
+            }
+
+            searchController = new AbortController();
+
+            fetch(SEARCH_URL + '?q=' + encodeURIComponent(term), {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                signal: searchController.signal
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    const items = data.results || [];
+                    items.forEach(rememberItem);
+                    renderResults(items);
+                })
+                .catch(function (error) {
+                    if (error.name === 'AbortError') {
+                        return;
+                    }
+                    catalogStatus.textContent = 'Search failed';
+                    catalogResults.classList.add('hidden');
+                });
+        }, 200);
+    }
+
     catalogSearch.addEventListener('input', searchCatalog);
     catalogSearch.addEventListener('keydown', function (event) {
         if (event.key === 'Enter') {
@@ -649,11 +759,6 @@
     document.addEventListener('click', function (event) {
         if (!event.target.closest('#catalog-search') && !event.target.closest('#catalog-results')) catalogResults.classList.add('hidden');
     });
-
-
-    // Packing data prepared safely by PHP.
-    const packing =
-        @json($packingData);
 
 
     // Discounts are an Owner/Admin-only lever, so the field is only rendered
@@ -1130,7 +1235,7 @@
 
             row.innerHTML = `
 
-                <div class="sm:col-span-7">
+                <div class="sm:col-span-5">
 
                     <label class="block text-xs text-[#64748b] mb-1">
                         Payment method
@@ -1139,7 +1244,7 @@
 
                     <select
                         name="payments[${paymentIndex}][payment_method]"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
+                        class="payment-method-select w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                         required
                     >
                         ${paymentMethodOptionsHtml}
@@ -1148,7 +1253,7 @@
                 </div>
 
 
-                <div class="sm:col-span-4">
+                <div class="sm:col-span-3">
 
                     <label class="block text-xs text-[#64748b] mb-1">
                         Amount
@@ -1163,6 +1268,22 @@
                         placeholder="Amount"
                         class="payment-amount w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                         required
+                    >
+
+                </div>
+
+
+                <div class="sm:col-span-3 transaction-ref-field hidden">
+
+                    <label class="block text-xs text-[#64748b] mb-1">
+                        Transaction ref
+                    </label>
+
+                    <input
+                        type="text"
+                        name="payments[${paymentIndex}][transaction_reference]"
+                        placeholder="Provider txn ID"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm min-h-[42px]"
                     >
 
                 </div>
@@ -1241,9 +1362,25 @@
         function (e) {
             if (e.target.matches('select')) {
                 updatePaymentBalance();
+                toggleTransactionRef(e.target.closest('.payment-line'));
             }
         }
     );
+
+
+    function toggleTransactionRef(line) {
+        if (!line) return;
+        const select = line.querySelector('.payment-method-select');
+        const refField = line.querySelector('.transaction-ref-field');
+        if (!select || !refField) return;
+        if (select.value === 'cash' || select.value === 'check') {
+            refField.classList.add('hidden');
+        } else {
+            refField.classList.remove('hidden');
+        }
+    }
+
+    document.querySelectorAll('.payment-line').forEach(toggleTransactionRef);
 
 
     // ============================================================

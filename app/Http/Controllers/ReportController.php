@@ -73,7 +73,7 @@ class ReportController extends Controller
         $user = auth()->user();
         $period = ReportPeriod::fromRequest($request, $user->branch_id);
 
-        $query = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product', 'customer']);
+        $query = IssuedItem::with(['purchaseBatch.drug', 'purchaseBatch.product', 'customer', 'order.payments']);
         $totalQuery = IssuedItem::query();
         if ($user->branch_id) {
             $query->where('branch_id', $user->branch_id);
