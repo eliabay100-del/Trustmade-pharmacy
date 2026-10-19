@@ -2,15 +2,69 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
+use App\Models\Branch;
+use App\Models\Setting;
+use App\Models\User;
+use App\Services\DatabaseBackupService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
+/**
+ * The pharmacy must be able to get its own data off the server.
+ *
+ * The production host gives no SSH, no scheduled tasks, and gates its own
+ * backup feature behind paid remote storage, so this screen is the practical
+ * way out. It is Owner/Admin only because the dump holds every staff account
+ * (password hashes included) and the whole business history.
+ */
 class DatabaseBackupTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected Branch $branch;
+    protected User $owner;
+    protected User $manager;
+    protected User $clerk;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->branch = Branch::create(['name' => 'Main Branch']);
+
+        $make = fn (string $role, string $name) => User::create([
+            'name' => $name,
+            'username' => strtolower($name),
+            'email' => strtolower($name) . '@example.com',
+            'password' => 'secret1234',
+            'role' => $role,
+            'branch_id' => $this->branch->id,
+        ]);
+
+        $this->owner = $make('owner_admin', 'Owner');
+        $this->manager = $make('branch_manager', 'Manager');
+        $this->clerk = $make('pharmacist_clerk', 'Clerk');
+    }
+
+    protected function tearDown(): void
+    {
+        // A download that is never "sent" (as in these tests) leaves its file
+        // behind, because deleteFileAfterSend only fires on a real send.
+        foreach (glob(storage_path('app/private/backups/*.sql')) ?: [] as $file) {
+            @unlink($file);
+        }
+
+        parent::tearDown();
+    }
+
     public function test_backup_command_is_registered(): void
     {
         $this->assertArrayHasKey(
             'pmas:backup',
-            \Illuminate\Support\Facades\Artisan::all()
+            Artisan::all()
         );
     }
 
@@ -27,5 +81,158 @@ class DatabaseBackupTest extends TestCase
         }
 
         $this->artisan('pmas:backup')->assertExitCode(1);
+    }
+
+    // ------------------------------------------------------------------
+    // Who may take a backup
+    // ------------------------------------------------------------------
+
+    public function test_the_owner_can_open_the_backup_screen(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(route('backups.index'))
+            ->assertOk()
+            ->assertSee('Download backup now');
+    }
+
+    public function test_an_owner_can_download_a_backup_file(): void
+    {
+        $response = $this->actingAs($this->owner)->get(route('backups.download'));
+
+        $response->assertOk();
+
+        // assertDownload() wants the exact filename, and this one is stamped
+        // with the time, so check the shape of the header instead.
+        $disposition = (string) $response->headers->get('content-disposition');
+
+        $this->assertMatchesRegularExpression(
+            '/attachment; filename=trustmed_\d{4}-\d{2}-\d{2}_\d{6}\.sql/',
+            $disposition
+        );
+    }
+
+    public function test_a_branch_manager_cannot_reach_the_backup_screen(): void
+    {
+        // A manager runs the shop; they do not walk out with the accounts.
+        $this->actingAs($this->manager)->get(route('backups.index'))->assertForbidden();
+        $this->actingAs($this->manager)->get(route('backups.download'))->assertForbidden();
+    }
+
+    public function test_a_clerk_cannot_reach_the_backup_screen(): void
+    {
+        $this->actingAs($this->clerk)->get(route('backups.index'))->assertForbidden();
+        $this->actingAs($this->clerk)->get(route('backups.download'))->assertForbidden();
+    }
+
+    public function test_the_sidebar_link_only_appears_for_the_owner(): void
+    {
+        $this->actingAs($this->owner)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('backups.index'));
+
+        $this->actingAs($this->manager)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('backups.index'));
+
+        $this->actingAs($this->clerk)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('backups.index'));
+    }
+
+    // ------------------------------------------------------------------
+    // What comes out of it
+    // ------------------------------------------------------------------
+
+    /**
+     * Unlike pmas:backup (which shells out to mysqldump), the button's dumper
+     * is pure PHP so it still works where exec() is unavailable. This test
+     * pins the shape of what it writes.
+     */
+    public function test_the_dump_contains_the_structure_and_the_data(): void
+    {
+        $path = storage_path('app/private/backups/test-dump.sql');
+        @mkdir(dirname($path), 0775, true);
+
+        $result = app(DatabaseBackupService::class)->writeTo($path);
+        $sql = (string) file_get_contents($path);
+
+        $this->assertGreaterThan(0, $result['tables'], 'Every table should be dumped.');
+        $this->assertGreaterThan(0, $result['rows'], 'The dumped tables should not all be empty.');
+
+        // Restorable shape: drop first, then recreate, then insert.
+        $this->assertStringContainsString('DROP TABLE IF EXISTS', $sql);
+        $this->assertStringContainsString('CREATE TABLE', $sql);
+        $this->assertStringContainsString('INSERT INTO', $sql);
+
+        // The actual data, not just the empty schema.
+        $this->assertStringContainsString('Main Branch', $sql);
+        $this->assertStringContainsString('owner@example.com', $sql);
+
+        // A dump that has to be imported in one specific table order is a
+        // trap; foreign key checks must be deferred around it.
+        if ($result['driver'] === 'mysql') {
+            $this->assertStringContainsString('SET FOREIGN_KEY_CHECKS = 0', $sql);
+            $this->assertStringContainsString('SET FOREIGN_KEY_CHECKS = 1', $sql);
+        }
+
+        // Password hashes belong in a backup, but never in plain text.
+        $this->assertStringNotContainsString('secret1234', $sql);
+
+        @unlink($path);
+    }
+
+    public function test_the_page_remembers_when_the_last_backup_was_taken(): void
+    {
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        $this->assertNotNull(Setting::value('last_backup_at'));
+        $this->assertSame('owner', Setting::value('last_backup_by'));
+
+        $this->actingAs($this->owner)->get(route('backups.index'))
+            ->assertOk()
+            ->assertSee(Setting::value('last_backup_at'));
+    }
+
+    /**
+     * Taking a copy of every account and every sale is exactly the kind of
+     * thing that should leave a trace.
+     */
+    public function test_taking_a_backup_is_written_to_the_activity_log(): void
+    {
+        $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
+
+        $log = ActivityLog::query()->where('action', 'backup')->first();
+
+        $this->assertNotNull($log, 'A backup should be recorded in the activity log.');
+        $this->assertSame($this->owner->id, $log->user_id);
+        $this->assertSame('Backup', $log->model_type);
+        $this->assertArrayHasKey('file', $log->changes);
+        $this->assertGreaterThan(0, $log->changes['tables']);
+
+        // And it reads as English on the log screen, not as a raw row.
+        $this->actingAs($this->owner)
+            ->get(route('activity-logs.index'))
+            ->assertOk()
+            ->assertSee('Database backup');
+    }
+
+    public function test_the_download_is_not_a_page_that_leaks_the_dump_into_html(): void
+    {
+        $response = $this->actingAs($this->owner)->get(route('backups.download'));
+
+        // Sent as a file, not rendered as a web page.
+        $this->assertStringContainsString('attachment', $response->headers->get('content-disposition'));
+    }
+
+    public function test_backups_are_written_outside_the_public_folder(): void
+    {
+        // Anything under public/ is served to the world by the web server.
+        $disk = Storage::disk('local');
+
+        $this->assertStringNotContainsString(
+            DIRECTORY_SEPARATOR . 'public',
+            $disk->path('backups'),
+            'Backups must never be reachable over the web.'
+        );
     }
 }

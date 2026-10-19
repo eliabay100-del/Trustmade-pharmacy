@@ -30,6 +30,7 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\BatchPriceController;
+use App\Http\Controllers\BackupController;
 
 // --- Public Routes (Login) ---
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -185,6 +186,17 @@ Route::middleware(['auth', 'shift'])->group(function () {
         Route::put('/settings/branding', [SettingController::class, 'update'])->name('settings.branding.update')->middleware('throttle:15,1');
         Route::get('/settings/integration', [SettingController::class, 'editIntegration'])->name('settings.integration');
         Route::put('/settings/integration', [SettingController::class, 'updateIntegration'])->name('settings.integration.update')->middleware('throttle:15,1');
+
+        // ============================================================
+        // Backups. Owner/Admin only, like the settings above: a backup
+        // file contains every account in the system.
+        //
+        // The hosting panel gives no SSH access and no scheduled tasks,
+        // and its own backup feature only writes to paid remote storage,
+        // so this is how the pharmacy gets its data off the server.
+        // ============================================================
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::get('/backups/download', [BackupController::class, 'download'])->name('backups.download')->middleware('throttle:10,1');
 
         // ============================================================
         // Opening balances. Replaced by the shift-opening drawer count
