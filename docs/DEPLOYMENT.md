@@ -9,6 +9,47 @@ scheduler only does housekeeping (cache pruning and nightly backups).
 
 ---
 
+## 0. The domain first, because nothing else matters until it exists
+
+**`trustmed.pharmacy.et` does not resolve.** Checked on 18 October 2026: no A
+record, no NS, no delegation. The `.et` zone itself is fine, so this is not a
+broken DNS provider — the name simply has not been registered or pointed.
+
+No amount of server configuration can work around this. Until the name exists
+in DNS, staff typing it get a browser error and `php artisan pmas:preflight`
+will warn that it does not resolve.
+
+Do this first, and in this order:
+
+1. **Register `pharmacy.et`** (or `trustmed.pharmacy.et` if the registry allows
+   a third-level registration directly). `.et` is Ethiopia's country domain, so
+   registration is handled through the local registry, not an ordinary global
+   registrar. Expect to be asked for Ethiopian contact details, and expect
+   renewal to be annual.
+2. **Point an A record at the host's IP.** One record, `trustmed.pharmacy.et`.
+   Give it a low TTL (300) while you are still moving things.
+3. **Decide on `www`.** Either add a second A record for
+   `www.trustmed.pharmacy.et` and redirect it to the bare name, or add a CNAME.
+   Pick one and redirect the other, so there is exactly one address staff
+   bookmark.
+4. **Confirm it resolves from outside your office.** This matters more than it
+   sounds. A machine on the pharmacy's own network can resolve a name from a
+   local cache or hosts file that the rest of the world cannot. Check from a
+   phone on mobile data, not from the office Wi-Fi.
+5. **Only then** apply for the certificate (step 8). Let's Encrypt validates
+   over HTTP, so the name must already resolve, or issuance fails.
+
+Nothing in the application is hardcoded to this name. It appears in exactly two
+places, both of them data:
+
+- `TRUSTMED_DOMAIN` in `.env` — drives documentation and cache-busting only.
+- `APP_URL` in `.env` — what actually generates absolute links and redirects.
+
+Rename the site later and you change those two values plus the certificate.
+No code change, no migration.
+
+---
+
 ## 1. Server requirements
 
 - PHP 8.4 with `pdo_mysql`, `gd`, `zip`, `fileinfo`, `openssl`, `mbstring`.
@@ -171,35 +212,131 @@ recovery.
 
 ## 8. Serving over HTTPS
 
-The template assumes plain HTTP on the local network
-(`SESSION_SECURE_COOKIE=false`). Before exposing the app beyond the LAN,
-terminate TLS at a reverse proxy and:
+### 8a. Which web server
 
-- set `SESSION_SECURE_COOKIE=true`,
-- set `TRUSTED_PROXIES` to the proxy's address(es) if the proxy is not on the
-  same host, so `X-Forwarded-Proto`/`Host` are honoured and links are `https`,
-- re-run `php artisan optimize` (or `optimize:clear`) so the new config is used.
+Ask Ethio Telecom before configuring anything; shared hosting in Ethiopia is
+most often Apache, but nginx is common too, and the setting differs. Ready-made
+configurations for both are in the repository:
+
+| Server | File |
+| --- | --- |
+| nginx | `deploy/nginx-trustmed.pharmacy.et.conf` |
+| Apache | `deploy/apache-trustmed.pharmacy.et.conf` |
+
+If the control panel only offers a "document root" field, you are on Apache:
+set it to **`…/trustmed/public`**, never the project root. Pointing the server
+at the project root would serve `.env`, the database backups and `vendor/` to
+anyone who guessed a URL — `public/.htaccess` already denies dotfiles and the
+server configs repeat the rule, but neither helps if the root is wrong.
+
+Two things to get from support, whichever server it is:
+
+- **`AllowOverride All`** (Apache). Without it `public/.htaccess` is ignored and
+  every URL except `/` returns 404.
+- **The PHP version** (8.3 or 8.4) and the **FastCGI socket path** for nginx.
+
+### 8b. The proxy
+
+If anything sits in front of PHP — almost always true on shared hosting, where
+the control panel's own front end terminates the request — set:
+
+- `SESSION_SECURE_COOKIE=true`, so the session cookie is never sent over plain
+  HTTP. This is a **fail**: with it false, the cookie that identifies a
+  signed-in staff member travels in clear text.
+- `TRUSTED_PROXIES` to the proxy's address, so `X-Forwarded-Proto` is honoured.
+  **Leave this blank and the HTTPS redirect in `SecurityHeaders` will loop
+  forever** — every request looks like plain HTTP, so it redirects to HTTPS,
+  which looks like plain HTTP again.
+- re-run `php artisan optimize` so the new configuration is picked up.
+
+Prefer a single IP over `*`. Use `*` only if nothing untrusted can reach PHP
+directly.
+
+### 8c. Certificate
+
+Once step 0 is done and the name resolves:
+
+```bash
+sudo certbot certonly --webroot -w /path/to/trustmed/public -d trustmed.pharmacy.et
+nginx -t && systemctl reload nginx     # or apache2ctl configtest && systemctl reload apache2
+```
+
+Certbot edits the server config for you. Afterwards the HTTP block should
+redirect rather than serve, and `Strict-Transport-Security` (already set by
+both `SecurityHeaders` and the server configs) starts doing its job.
+
+`SESSION_SECURE_COOKIE=true` also depends on this: a secure-only cookie is not
+sent at all over HTTP, so **enabling it before the certificate exists logs
+everyone out and looks like a broken login.**
 
 ---
 
 ## 9. Go-live checklist
 
+Run these in order. The first block has to happen before the host is useful at
+all; the second is the last thing to do before telling anyone the address.
+
+**Name and certificate**
+
+- [ ] `pharmacy.et` registered through the local registry.
+- [ ] `A` record for `trustmed.pharmacy.et` pointing at the host.
+- [ ] `www` decided on, and the other form redirects to it.
+- [ ] Name verified to resolve **from a phone on mobile data**, not office Wi-Fi.
+- [ ] Certificate issued and the HTTP block now redirects to HTTPS.
+- [ ] `SESSION_SECURE_COOKIE=true` **after** the certificate exists.
+
+**Install**
+
 - [ ] `.env` filled in, `APP_ENV=production`, `APP_DEBUG=false`.
-- [ ] Fresh `APP_KEY` generated on the server (step 4).
-- [ ] `migrate --force` and `ProductionSeeder` completed without errors.
+- [ ] `APP_URL` has **no trailing slash**: `https://trustmed.pharmacy.et`.
+- [ ] Fresh `APP_KEY` generated on the server (step 4). The key that was
+      committed to git before `.env` was untracked must **not** be reused — it is
+      in the public repository history.
+- [ ] `migrate --force` and the seeders completed without errors.
 - [ ] Logged in as the seeded administrator and **changed its password**.
-- [ ] Opening balances entered (Finance → **Opening Balances**) *before* any real
-      sales or purchases — cash, wallets/bank, stock at cost, receivables, payables.
+- [ ] Document root is `…/trustmed/public`, and `AllowOverride All` is set if
+      the host is Apache.
+- [ ] `TRUSTED_PROXIES` set if anything fronts PHP.
+
+**Business**
+
 - [ ] Confirmed you can record a purchase, make a sale, and take an expense
       without errors (proves the chart of accounts is complete).
 - [ ] Business Settings: correct name, logo, VAT rate and receipt footer.
 - [ ] `storage:link` done; logo shows on the login page.
+- [ ] Staff accounts created with roles matched to what each person may do, and
+      the owner account is **not** left on the default password.
+- [ ] Opened the site once and answered the drawer count at the prompt. It is
+      remembered, not posted to the books — the opening float is a baseline for
+      the shift's variance, not a transaction.
+
+**Operations**
+
 - [ ] Scheduler cron installed; `php artisan schedule:list` shows the jobs.
-- [ ] `php artisan pmas:backup` produces a file, and you can restore it.
-- [ ] Backups copied off the machine.
-- [ ] HTTPS enabled and `SESSION_SECURE_COOKIE=true` if reachable beyond the LAN.
-- [ ] Health endpoint `GET /up` returns 200.
+- [ ] `php artisan pmas:backup` produces a file, **restored onto a scratch
+      database** to prove it works, then copied off the machine.
 - [ ] `php artisan optimize` run; `php artisan about` reports production.
+- [ ] Health endpoint `GET /up` returns 200 from outside the office.
+
+**The one command that checks most of this**
+
+```bash
+php artisan pmas:preflight
+```
+
+It reads the live configuration and refuses to call the install ready while
+anything blocking is wrong — debug on, the leaked `APP_KEY` still in use, a
+plain-HTTP `APP_URL`, a non-secure session cookie, missing migrations, an
+unwritable `storage/`. It exits non-zero when something fails, so it can gate a
+deploy script:
+
+```bash
+php artisan optimize && php artisan pmas:preflight || echo "DEPLOY BLOCKED"
+```
+
+Add `--json` for machine-readable output, or `--skip-dns` on a box with no
+outbound DNS. Read the warnings too — they will not fail the run, but "no backup
+exists" and "storage link missing" are both worth knowing about before opening.
 
 ---
 
