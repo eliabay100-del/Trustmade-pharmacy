@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Services\DatabaseBackupService;
 use App\Support\BackupHealth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -92,10 +93,13 @@ class BackupController extends Controller
     /**
      * Re-download one of the copies still held on the server - useful if the
      * original download never arrived, or was saved somewhere unhelpful.
+     *
+     * The name arrives as ?file=... rather than a path segment: see the note
+     * on the route. Nothing here may trust it.
      */
-    public function fetch(string $file): StreamedResponse|RedirectResponse
+    public function fetch(Request $request): StreamedResponse|RedirectResponse
     {
-        $name = $this->safeName($file);
+        $name = $this->safeName((string) $request->query('file', ''));
 
         if ($name === null || !Storage::disk('local')->exists(self::DIRECTORY . '/' . $name)) {
             return redirect()

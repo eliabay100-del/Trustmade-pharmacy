@@ -97,11 +97,6 @@ class RouteSmokeTest extends TestCase
             '{product}' => $product->id, '{productCategory}' => $productCategory->id,
             '{supplier}' => $supplier->id, '{customer}' => $customer->id,
             '{user}' => $this->users['pharmacist_clerk']->id, '{expense}' => $expense->id,
-            // The backup re-download route takes a dump filename rather than a
-            // row id. A name that is well-formed but no longer on disk gets the
-            // "that backup has gone" redirect, which is enough for the sweep to
-            // exercise the role gate without leaving files behind.
-            '{file}' => 'trustmed_2020-01-01_000000.sql',
         ];
     }
 

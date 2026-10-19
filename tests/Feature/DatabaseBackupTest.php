@@ -266,6 +266,22 @@ class DatabaseBackupTest extends TestCase
         $this->assertFileExists($newest, 'Recent backups must survive the tidy-up.');
     }
 
+    /**
+     * The host fronts the site with nginx, which returns its own 403 for any
+     * request whose *path* ends in ".sql" - long before the application sees
+     * it. A re-download link built as "/backups/trustmed_....sql" therefore
+     * looked perfectly correct and could never have worked, and the failure
+     * would have looked like a permissions problem.
+     */
+    public function test_the_redownload_link_carries_the_filename_outside_the_path(): void
+    {
+        $url = route('backups.fetch', ['file' => 'trustmed_2026-01-01_120000.sql']);
+        $path = parse_url($url, PHP_URL_PATH);
+
+        $this->assertStringNotContainsString('.sql', $path, 'A .sql path is blocked by the web server.');
+        $this->assertStringContainsString('file=', $url, 'The filename has to travel in the query string.');
+    }
+
     public function test_the_owner_can_download_a_copy_kept_on_the_server(): void
     {
         $this->actingAs($this->owner)->get(route('backups.download'))->assertOk();
