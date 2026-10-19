@@ -129,6 +129,7 @@ everyone who has a clone.
 ```bash
 php artisan migrate --force
 php artisan db:seed --class=Database\Seeders\ProductionSeeder --force
+php artisan db:seed --class=Database\Seeders\MayamedCatalogueSeeder --force   # the real catalogue
 ```
 
 - `migrate` builds the schema. It also guarantees the core posting accounts the
@@ -138,6 +139,21 @@ php artisan db:seed --class=Database\Seeders\ProductionSeeder --force
   needs: the Main Branch, the chart of accounts, the default expense categories,
   branding defaults and one administrator. It does **not** insert the demo
   drugs/products.
+- `MayamedCatalogueSeeder` adds the pharmacy's actual catalogue — 15 drugs and 8
+  retail products read off the Mayamed Trading PLC invoices, plus the five drug
+  categories they need (Anthelmintics, Neurology and Antiepileptics, Respiratory,
+  Dermatology, Ophthalmology) and a "Vitamins and Supplements" product category.
+  It is idempotent, matches on natural keys, and **will not duplicate or
+  overwrite** rows that already exist. Run it after `ProductionSeeder` and after
+  any manual catalogue corrections you have already made; it only touches the
+  rows it owns.
+
+  Two things in it are deliberate and worth reviewing after go-live:
+  **minimum stock levels are placeholders** (the invoices carry no reorder
+  level, so without them the low-stock alerts would fire on everything), and
+  **drugs are stocked as whole sealed packs** — you cannot yet sell a single
+  tablet out of a strip. Both are per-row and changeable.
+
 - If `ADMIN_PASSWORD` is blank, the seeder generates a strong password and
   prints it once. Copy it, then sign in with the administrator **username**
   (`ADMIN_USERNAME`, default `admin`) and change the password immediately
