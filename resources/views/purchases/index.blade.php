@@ -40,7 +40,7 @@
                     <td class="px-5 py-3.5 text-sm font-mono text-[#64748b]">{{ $batch->batch_number }}</td>
                     <td class="px-5 py-3.5 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? $batch->product->name ?? '—' }}</td>
                     <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $batch->supplier->name ?? '—' }}</td>
-                    <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->quantity_remaining }} {{ $batch->drug?->baseUnitLabel() ?? 'unit' }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right text-[#1E2530]">{{ $batch->drug ? $batch->drug->describeQuantity($batch->quantity_remaining) : $batch->quantity_remaining . ' units' }}</td>
                     <td class="px-5 py-3.5 text-sm text-right text-[#64748b]">ETB {{ number_format($batch->cost_per_unit, 2) }}</td>
                     {{-- Part A: how this purchase is being paid (plain language). --}}
                     <td class="px-5 py-3.5 text-sm text-[#64748b]">

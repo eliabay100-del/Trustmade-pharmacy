@@ -129,7 +129,7 @@
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-sm text-[#64748b]">Batch {{ $batch->batch_number }}</td>
-                            <td class="px-5 py-3 text-sm text-right text-[#64748b]">{{ $batch->quantity_remaining }} units</td>
+                            <td class="px-5 py-3 text-sm text-right text-[#64748b]">{{ $batch->drug ? $batch->drug->describeQuantity($batch->quantity_remaining) : $batch->quantity_remaining . ' units' }}</td>
                             <td class="px-5 py-3 text-sm text-right">
                                 <a href="{{ route('adjustments.create', ['batch_id' => $batch->id]) }}" class="text-[var(--brand-primary)] hover:underline text-xs font-medium">Write off</a>
                             </td>
@@ -168,7 +168,7 @@
                         <tr class="hover:bg-gray-50/50">
                             <td class="px-5 py-3 text-sm font-medium text-[#1E2530]">{{ $batch->drug->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-sm text-[#64748b]">Batch {{ $batch->batch_number }}</td>
-                            <td class="px-5 py-3 text-sm text-right text-[#64748b]">{{ $batch->quantity_remaining }} units</td>
+                            <td class="px-5 py-3 text-sm text-right text-[#64748b]">{{ $batch->drug ? $batch->drug->describeQuantity($batch->quantity_remaining) : $batch->quantity_remaining . ' units' }}</td>
                             <td class="px-5 py-3 text-sm text-right">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">
                                     {{ \Carbon\Carbon::parse($batch->expiry_date)->format('M d, Y') }}

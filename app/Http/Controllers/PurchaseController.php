@@ -181,7 +181,7 @@ class PurchaseController extends Controller
                     : Payment::accountCodeFor($paymentMethod);
                 $creditLabel = $isPayLater ? 'Owed to supplier' : (Payment::METHODS[$paymentMethod] ?? $paymentMethod);
 
-                $this->accountingService->postEntry('Purchase: ' . $item->name, $request->branch_id, 'purchase', $batch->id, [
+                $this->accountingService->postEntry('Purchase: ' . $item->name, $branchId, 'purchase', $batch->id, [
                     ['account_code' => '1200', 'debit' => $totalCost, 'credit' => 0, 'desc' => 'Inventory'],
                     ['account_code' => $creditCode, 'debit' => 0, 'credit' => $totalCost, 'desc' => $creditLabel],
                 ]);

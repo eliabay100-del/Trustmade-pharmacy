@@ -100,12 +100,24 @@ class DashboardController extends Controller
                 ->distinct('drug_id')
                 ->count('drug_id');
 
-            $lowStockCount = $scope(DB::table('drugs as d')->join('purchase_batches as pb', 'd.id', '=', 'pb.drug_id'), 'pb.branch_id')
-                ->where('pb.quantity_remaining', '>', 0)
-                ->where('pb.expiry_date', '>=', Carbon::today())
-                ->whereRaw('pb.quantity_remaining <= d.minimum_stock_level * d.units_per_top')
-                ->distinct('d.id')
-                ->count('d.id');
+            // Low stock is a property of the drug, not of one batch: two
+            // batches of 60 are 120 on the shelf even though each is under a
+            // 100-tablet minimum. This asks the same question as the Alerts
+            // page (sum, then compare) so the count on this card always equals
+            // the list it links to.
+            $lowStockCount = DB::query()->fromSub(
+                DB::table('drugs as d')
+                    ->leftJoin('purchase_batches as pb', function ($join) use ($branchId) {
+                        $join->on('d.id', '=', 'pb.drug_id');
+                        if ($branchId) {
+                            $join->where('pb.branch_id', $branchId);
+                        }
+                    })
+                    ->select('d.id')
+                    ->groupBy('d.id', 'd.minimum_stock_level', 'd.units_per_top')
+                    ->havingRaw('COALESCE(SUM(pb.quantity_remaining), 0) <= d.minimum_stock_level * d.units_per_top'),
+                'low_stock_drugs'
+            )->count();
 
             // Counted directly rather than by loading the rows: the dashboard
             // only ever showed the number, and a "limit 5" fetch followed by
@@ -125,9 +137,19 @@ class DashboardController extends Controller
 
             $totalProducts = $scope(DB::table('purchase_batches'))
                 ->whereNotNull('product_id')->where('quantity_remaining', '>', 0)->distinct()->count('product_id');
-            $productLowStockCount = $scope(DB::table('products as p')->join('purchase_batches as pb', 'p.id', '=', 'pb.product_id'), 'pb.branch_id')
-                ->where('pb.quantity_remaining', '>', 0)->whereColumn('pb.quantity_remaining', '<=', 'p.minimum_stock')
-                ->distinct('p.id')->count('p.id');
+            $productLowStockCount = DB::query()->fromSub(
+                DB::table('products as p')
+                    ->leftJoin('purchase_batches as pb', function ($join) use ($branchId) {
+                        $join->on('p.id', '=', 'pb.product_id');
+                        if ($branchId) {
+                            $join->where('pb.branch_id', $branchId);
+                        }
+                    })
+                    ->select('p.id')
+                    ->groupBy('p.id', 'p.minimum_stock')
+                    ->havingRaw('COALESCE(SUM(pb.quantity_remaining), 0) <= p.minimum_stock'),
+                'low_stock_products'
+            )->count();
             $lowStockCount += $productLowStockCount;
 
             // Only what the dashboard actually renders. The "Today's pulse"
