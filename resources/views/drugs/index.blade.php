@@ -35,12 +35,7 @@
                     <td class="px-5 py-3.5 text-sm">
                         <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded-full">{{ $drug->category->name ?? '—' }}</span>
                     </td>
-                    <td class="px-5 py-3.5 text-sm text-[#64748b]">
-                        {{ $drug->baseUnitLabel() }}
-                        @if($drug->unitsPerStrip() > 1 || $drug->stripsPerPack() > 1)
-                            <span class="block text-xs">{{ $drug->unitsPerStrip() }}/strip · {{ $drug->stripsPerPack() }} strips/pack</span>
-                        @endif
-                    </td>
+                    <td class="px-5 py-3.5 text-sm text-[#64748b]">{{ $drug->packingSummary() }}</td>
                     <td class="px-5 py-3.5 text-sm text-right {{ $drug->isBelowMinimum($drug->current_stock ?? 0) ? 'text-amber-600 font-semibold' : 'text-[#1E2530]' }}">{{ $drug->describeQuantity($drug->current_stock ?? 0) }}</td>
                     <td class="px-5 py-3.5 text-sm text-right whitespace-nowrap">
                         <a href="{{ route('drugs.edit', $drug->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>

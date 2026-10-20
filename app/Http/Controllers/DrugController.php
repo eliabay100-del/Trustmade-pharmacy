@@ -63,7 +63,7 @@ class DrugController extends Controller
 
     public function update(Request $request, Drug $drug)
     {
-        $drug->update($this->validated($request));
+        $drug->update($this->validated($request, $drug));
 
         return redirect()->route('drugs.index')->with('success', 'Drug updated.');
     }
@@ -84,8 +84,21 @@ class DrugController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Drug $drug = null): array
     {
+        // A drug whose existing unit is outside the usual list must stay
+        // selectable. Otherwise opening the form and saving it would quietly
+        // rewrite that unit to whichever option happened to be first.
+        $tops = ['pack', 'box', 'bottle', 'tin', 'vial', 'tube'];
+        $bases = ['tablet', 'capsule', 'suppository'];
+
+        if ($drug?->unit_top) {
+            $tops[] = strtolower((string) $drug->unit_top);
+        }
+        if ($drug?->unit_base) {
+            $bases[] = strtolower((string) $drug->unit_base);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'generic_name' => 'nullable|string|max:255',
@@ -96,15 +109,20 @@ class DrugController extends Controller
 
             // Packing. Optional so that older callers which still post
             // unit_of_measure / units_per_strip keep working.
-            'unit_top' => ['nullable', Rule::in(['pack', 'box', 'bottle', 'tin', 'vial', 'tube'])],
+            'unit_top' => ['nullable', Rule::in(array_values(array_unique($tops)))],
             'inner' => ['nullable', Rule::in(['none', 'strip', 'sachet', 'ampoule', 'bottle', 'loose'])],
             'top_holds' => [
                 'nullable', 'integer', 'min:1', 'max:10000',
-                Rule::requiredIf(fn () => in_array($request->input('unit_top'), ['pack', 'box'], true)
-                    && $request->input('inner', 'none') !== 'none'),
+                Rule::requiredIf(fn () => $this->holdsContents($request)),
             ],
-            'middle_holds' => ['nullable', 'integer', 'min:1', 'max:10000'],
-            'unit_base' => ['nullable', Rule::in(['tablet', 'capsule', 'suppository'])],
+            'middle_holds' => [
+                'nullable', 'integer', 'min:1', 'max:10000',
+                // A strip that holds nothing would divide every price by one
+                // without saying so.
+                Rule::requiredIf(fn () => $this->holdsContents($request)
+                    && $request->input('inner') === 'strip'),
+            ],
+            'unit_base' => ['nullable', Rule::in(array_values(array_unique($bases)))],
 
             // Legacy geometry, still accepted.
             'unit_of_measure' => 'nullable|string|max:50',
@@ -131,6 +149,24 @@ class DrugController extends Controller
     }
 
     /**
+     * Does this packing describe anything countable inside the top unit?
+     *
+     * Bottles, tins, vials and tubes are sold whole. Everything else - pack,
+     * box, or a unit an existing record already uses - may hold contents,
+     * which is what the form's "contains" answer decides.
+     */
+    private function holdsContents(Request $request): bool
+    {
+        $top = strtolower((string) $request->input('unit_top'));
+
+        if (in_array($top, ['bottle', 'tin', 'vial', 'tube'], true)) {
+            return false;
+        }
+
+        return $request->input('inner', 'none') !== 'none';
+    }
+
+    /**
      * Turn the form's sentence into the rungs the model stores.
      *
      *   Bought as  Pack  containing  10  Strips
@@ -152,7 +188,10 @@ class DrugController extends Controller
         $perStrip = max(1, (int) $request->input('middle_holds'));
         $base = strtolower((string) $request->input('unit_base', 'tablet'));
 
-        $bulk = in_array($top, ['pack', 'box'], true);
+        // These four are never opened: the container is the counting unit.
+        // Everything else - pack, box, or any unit a record already uses - may
+        // hold something countable.
+        $soldWhole = in_array($top, ['bottle', 'tin', 'vial', 'tube'], true);
 
         $single = [
             'unit_top' => $top,
@@ -166,7 +205,7 @@ class DrugController extends Controller
         ];
 
         // Sold as it arrives: the container is the counting unit.
-        if (! $bulk || $inner === 'none') {
+        if ($soldWhole || $inner === 'none') {
             return $single;
         }
 

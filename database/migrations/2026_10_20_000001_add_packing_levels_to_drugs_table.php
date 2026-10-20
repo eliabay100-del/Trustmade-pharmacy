@@ -61,6 +61,18 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Put the minimum back into base units before its factor disappears.
+        // The value was rounded up on the way in, so this restores the
+        // threshold, not necessarily the exact figure that was typed.
+        DB::table('drugs')->orderBy('id')->chunk(200, function ($drugs) {
+            foreach ($drugs as $drug) {
+                DB::table('drugs')->where('id', $drug->id)->update([
+                    'minimum_stock_level' => (float) $drug->minimum_stock_level
+                        * max(1, (int) $drug->units_per_top),
+                ]);
+            }
+        });
+
         Schema::table('drugs', function (Blueprint $table) {
             $table->dropColumn([
                 'unit_top',

@@ -44,7 +44,7 @@
 
         @include('drugs.partials.packing', ['packing' => $drug])
 
-        <p class="text-xs text-[#64748b]">Changing the counts here does not convert stock already on the shelf — only how a pack, strip or tablet is described.</p>
+        <p class="text-xs text-[#64748b]">Changing this does not convert stock already on the shelf — it only changes how that stock is counted and described.</p>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">

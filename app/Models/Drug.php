@@ -150,6 +150,13 @@ class Drug extends Model
     }
 
     /**
+     * The old fixed geometry, expressed as rungs.
+     *
+     * This exists for rows that predate the packing columns and for code that
+     * still writes only units_per_strip / strips_per_pack. It follows exactly
+     * the same three rules as the migration that backfilled the real drugs, so
+     * a row built either way ends up described the same way.
+     *
      * @return array<int, array{key:string, name:string, factor:int, sellable:bool}>
      */
     private function legacyPackingLevels(): array
@@ -157,6 +164,22 @@ class Drug extends Model
         $base = strtolower((string) ($this->unit_of_measure ?: 'tablet'));
         $perStrip = $this->unitsPerStrip();
         $perPack = $this->stripsPerPack();
+
+        // Sold as it arrives: one rung, named after the container, or "pack"
+        // when the old column held something that is not a container word.
+        if ($perStrip === 1 && $perPack === 1) {
+            $only = in_array($base, self::CONTAINER_UNITS, true) ? $base : 'pack';
+
+            return [['key' => 'top', 'name' => $only, 'factor' => 1, 'sellable' => true]];
+        }
+
+        // No strip worth naming: a pack of sachets, ampoules or bottles.
+        if ($perStrip === 1) {
+            return [
+                ['key' => 'top', 'name' => 'pack', 'factor' => $perPack, 'sellable' => true],
+                ['key' => 'base', 'name' => $base, 'factor' => 1, 'sellable' => true],
+            ];
+        }
 
         return [
             ['key' => 'top', 'name' => 'pack', 'factor' => $perStrip * $perPack, 'sellable' => true],
@@ -197,21 +220,41 @@ class Drug extends Model
     /**
      * How many base units one of $unit is.
      *
-     * Accepts a level key ('top', 'middle', 'base') or the level's own name
-     * ('pack', 'strip', 'capsule'), because forms and older call-sites use
-     * both. An unknown value counts as one, which matches what this method
-     * always did for unrecognised input.
+     * Accepts a level key ('top', 'middle', 'base'), the level's own name
+     * ('box', 'strip', 'capsule'), or the three words the screens that have
+     * not been converted yet still send: pack, strip, tablet. Those three mean
+     * biggest, middle and smallest - they are positions, not names, because a
+     * purchase form calling a box a "pack" must still buy a box.
+     *
+     * An unknown rung counts as one, which matches what this method always did
+     * for unrecognised input.
      */
     public function baseUnitsPer(string $unit): int
     {
         $unit = strtolower(trim($unit));
+        $levels = $this->packingLevels();
 
-        foreach ($this->packingLevels() as $level) {
+        $position = ['pack' => 'top', 'strip' => 'middle', 'tablet' => 'base'][$unit] ?? null;
+
+        if ($position !== null) {
+            foreach ($levels as $level) {
+                if ($level['key'] === $position) {
+                    return max(1, $level['factor']);
+                }
+            }
+
+            // No such rung: fall through, in case a drug really does call one
+            // of its levels "strip" or "tablet".
+        }
+
+        foreach ($levels as $level) {
             if ($level['key'] === $unit || $level['name'] === $unit) {
                 return max(1, $level['factor']);
             }
         }
 
+        // The old screens offered all three for every drug, so a rung that
+        // does not exist has always meant "one of it".
         return 1;
     }
 
@@ -418,8 +461,13 @@ class Drug extends Model
             : null;
         $this->unit_base = strtolower(trim((string) ($this->unit_base ?: 'tablet')));
 
-        // A rung that holds nothing cannot have a count.
-        if (! $this->unit_middle) {
+        if ($this->unit_middle) {
+            // A strip that holds nothing would make every count divide by one
+            // silently. Fail closed on a sensible minimum instead.
+            $this->middle_holds = max(1, (int) $this->middle_holds);
+            $this->top_holds = max(1, (int) $this->top_holds);
+        } else {
+            // A rung that holds nothing cannot have a count.
             $this->middle_holds = null;
         }
 
@@ -477,7 +525,8 @@ class Drug extends Model
             $label = ucfirst($level['name']);
 
             if ($level['factor'] > 1) {
-                $label .= ' (' . number_format($level['factor']) . ' ' . $this->baseUnitLabel() . ')';
+                $label .= ' (' . number_format($level['factor']) . ' '
+                    . $this->plural($this->baseUnitLabel(), $level['factor']) . ')';
             }
 
             $options[$level['key']] = $label;

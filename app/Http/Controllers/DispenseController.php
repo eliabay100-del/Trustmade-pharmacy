@@ -294,7 +294,17 @@ class DispenseController extends Controller
         })
             ->orderBy('name')
             ->limit($limit)
-            ->get(['id', 'name', 'strength', 'unit_of_measure', 'units_per_strip', 'strips_per_pack']);
+            ->get([
+                'id', 'name', 'strength',
+                // The legacy columns are still read by the screens that have
+                // not been converted yet; the rungs below are what the model
+                // actually calculates from, so ask for both and let the model
+                // decide rather than trusting a mirror.
+                'unit_of_measure', 'units_per_strip', 'strips_per_pack',
+                'unit_top', 'unit_middle', 'unit_base',
+                'top_holds', 'middle_holds', 'units_per_top',
+                'sell_top', 'sell_middle', 'sell_base',
+            ]);
 
         $products = Product::where('active', true)
             ->where(function ($query) use ($like) {

@@ -33,6 +33,22 @@
         'vial' => 'Vial',
         'tube' => 'Tube',
     ];
+
+    // Keep an unusual existing unit selectable rather than letting the first
+    // option win by default, which would rewrite the drug on save.
+    if ($unitTop && ! array_key_exists($unitTop, $tops)) {
+        $tops[$unitTop] = ucfirst($unitTop);
+    }
+
+    $bases = [
+        'tablet' => 'Tablets',
+        'capsule' => 'Capsules',
+        'suppository' => 'Suppositories',
+    ];
+
+    if ($unitBase && ! array_key_exists($unitBase, $bases)) {
+        $bases[$unitBase] = ucfirst($unitBase);
+    }
 @endphp
 
 <div class="rounded-xl border border-gray-200 p-4 space-y-4" id="packing">
@@ -80,9 +96,9 @@
         <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Counted in</label>
         <select name="unit_base" id="unit_base"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm">
-            <option value="tablet" @selected($unitBase === 'tablet')>Tablets</option>
-            <option value="capsule" @selected($unitBase === 'capsule')>Capsules</option>
-            <option value="suppository" @selected($unitBase === 'suppository')>Suppositories</option>
+            @foreach($bases as $value => $label)
+                <option value="{{ $value }}" @selected($unitBase === $value)>{{ $label }}</option>
+            @endforeach
         </select>
     </div>
 
@@ -150,7 +166,10 @@
 
     function render() {
         var t = top.value;
-        var bulk = (t === 'pack' || t === 'box');
+        // Bottles, tins, vials and tubes are never opened; everything else may
+        // hold something countable, including a unit this drug already uses.
+        var soldWhole = (t === 'bottle' || t === 'tin' || t === 'vial' || t === 'tube');
+        var bulk = !soldWhole;
         var i = inner.value;
         var isStrip = bulk && i === 'strip';
         var needsCount = bulk && i !== 'none';

@@ -23,19 +23,20 @@ class PackingLevelsTest extends TestCase
 
     private DrugCategory $category;
     private User $owner;
+    private Branch $branch;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $branch = Branch::create(['name' => 'Main Branch']);
+        $this->branch = Branch::create(['name' => 'Main Branch']);
 
         $this->category = DrugCategory::create(['name' => 'Antibiotics']);
 
         $this->owner = User::create([
             'name' => 'Owner', 'username' => 'owner', 'email' => 'owner@example.com',
             'password' => 'secret1234', 'role' => 'owner_admin',
-            'branch_id' => $branch->id,
+            'branch_id' => $this->branch->id,
         ]);
     }
 
@@ -226,5 +227,190 @@ class PackingLevelsTest extends TestCase
         $this->assertSame('1 pack 5 tablets', $drug->describeQuantity(105));
         $this->assertSame('pack', $drug->packingFormState()['unit_top']);
         $this->assertSame('strip', $drug->packingFormState()['inner']);
+    }
+
+    /** A strip with no count would divide every price by one without saying so. */
+    public function test_the_form_refuses_a_strip_that_holds_nothing(): void
+    {
+        $this->actingAs($this->owner)->post(route('drugs.store'), [
+            'name' => 'Half-Described',
+            'category_id' => $this->category->id,
+            'unit_top' => 'pack',
+            'inner' => 'strip',
+            'top_holds' => 10,
+        ])->assertSessionHasErrors('middle_holds');
+
+        $this->assertDatabaseMissing('drugs', ['name' => 'Half-Described']);
+    }
+
+    /**
+     * A drug whose top unit is outside the usual six must survive a round trip
+     * through the form. Otherwise the first option (Pack) would silently win.
+     */
+    public function test_editing_keeps_a_unit_the_dropdown_does_not_normally_offer(): void
+    {
+        $drug = $this->drug([
+            'name' => 'Loose Strip Medicine',
+            'unit_top' => 'strip', 'unit_middle' => null, 'unit_base' => 'tablet',
+            'top_holds' => 12,
+        ]);
+
+        // The edit screen offers the drug's own unit rather than defaulting.
+        $this->actingAs($this->owner)
+            ->get(route('drugs.edit', $drug))
+            ->assertOk()
+            ->assertSee('<option value="strip" selected>Strip</option>', false);
+
+        // "Strip" is genuinely this drug's biggest unit, so that is what the
+        // old screens' Strip option must mean.
+        $this->assertSame(12, $drug->baseUnitsPer('strip'));
+
+        $this->actingAs($this->owner)->put(route('drugs.update', $drug), [
+            'name' => 'Loose Strip Medicine',
+            'category_id' => $this->category->id,
+            'unit_top' => 'strip',
+            'inner' => 'loose',
+            'top_holds' => 12,
+            'unit_base' => 'tablet',
+            'minimum_stock_level' => 1,
+        ])->assertRedirect(route('drugs.index'));
+
+        $drug->refresh();
+
+        $this->assertSame('strip', $drug->unit_top);
+        $this->assertSame(12, $drug->unitsPerTop());
+        $this->assertSame('1 strip', $drug->describeQuantity(12));
+    }
+
+    /** The old columns could express "1 pack = 1 tablet"; that is a pack count. */
+    public function test_a_legacy_one_to_one_drug_collapses_to_a_single_rung(): void
+    {
+        $drug = $this->drug([
+            'name' => 'Odd Legacy',
+            'unit_of_measure' => 'tablet',
+            'units_per_strip' => 1,
+            'strips_per_pack' => 1,
+        ]);
+
+        $this->assertCount(1, $drug->packingLevels());
+        $this->assertSame('pack', $drug->topUnitLabel());
+        $this->assertSame('7 packs', $drug->describeQuantity(7));
+    }
+
+    public function test_packing_options_read_like_the_shelf(): void
+    {
+        $drug = $this->drug([
+            'unit_top' => 'pack', 'unit_middle' => 'strip', 'unit_base' => 'capsule',
+            'top_holds' => 10, 'middle_holds' => 15,
+        ]);
+
+        $this->assertSame([
+            'top' => 'Pack (150 capsules)',
+            'middle' => 'Strip (15 capsules)',
+            'base' => 'Capsule',
+        ], $drug->packingOptions());
+    }
+
+    /**
+     * The screens that are not converted yet send pack / strip / tablet. Those
+     * are positions - biggest, middle, smallest - not names, or a box drug
+     * would be bought as one tablet.
+     */
+    public function test_the_old_screen_words_mean_biggest_middle_smallest(): void
+    {
+        $drug = $this->drug([
+            'unit_top' => 'box', 'unit_middle' => 'strip', 'unit_base' => 'tablet',
+            'top_holds' => 4, 'middle_holds' => 12,
+        ]);
+
+        $this->assertSame(48, $drug->baseUnitsPer('pack'));
+        $this->assertSame(12, $drug->baseUnitsPer('strip'));
+        $this->assertSame(1, $drug->baseUnitsPer('tablet'));
+
+        // The real names and the keys work too.
+        $this->assertSame(48, $drug->baseUnitsPer('box'));
+        $this->assertSame(48, $drug->baseUnitsPer('top'));
+        $this->assertSame(12, $drug->baseUnitsPer('middle'));
+        $this->assertSame(1, $drug->baseUnitsPer('base'));
+    }
+
+    /** A drug with one rung answers "one of it" to every old word, as before. */
+    public function test_old_screen_words_stay_harmless_on_a_bottle(): void
+    {
+        $drug = $this->drug([
+            'name' => 'Cough Syrup',
+            'unit_top' => 'bottle', 'unit_middle' => null, 'unit_base' => 'bottle',
+        ]);
+
+        $this->assertSame(1, $drug->baseUnitsPer('pack'));
+        $this->assertSame(1, $drug->baseUnitsPer('strip'));
+        $this->assertSame(1, $drug->baseUnitsPer('tablet'));
+        $this->assertSame(1, $drug->baseUnitsPer('bottle'));
+    }
+
+    /**
+     * The whole chain, on a packing where nothing is ten: buy two boxes, sell
+     * three strips, and check the shelf in base units afterwards.
+     */
+    public function test_a_box_of_four_strips_of_twelve_buys_and_sells_correctly(): void
+    {
+        $this->seed(\Database\Seeders\AccountSeeder::class);
+
+        $supplier = \App\Models\Supplier::create(['name' => 'Medi Supply']);
+
+        $drug = $this->drug([
+            'name' => 'Doxycycline',
+            'unit_top' => 'box', 'unit_middle' => 'strip', 'unit_base' => 'tablet',
+            'top_holds' => 4, 'middle_holds' => 12,
+            'minimum_stock_level' => 1,
+        ]);
+
+        // 240 birr a box = 60 a strip = 5 a tablet; sold at 6 a tablet.
+        // The purchase screen still says "Pack" for the biggest unit.
+        $this->actingAs($this->owner)->post(route('purchases.store'), [
+            'supplier_id' => $supplier->id,
+            'branch_id' => $this->branch->id,
+            'purchase_date' => now()->toDateString(),
+            'payment_method' => 'cash',
+            'items' => [[
+                'item_type' => 'drug',
+                'item_id' => $drug->id,
+                'batch_number' => 'BOX-1',
+                'quantity_received' => 2,
+                'quantity_unit' => 'pack',
+                'cost_per_unit' => 240,
+                'selling_price_per_unit' => 288,
+                'expiry_date' => now()->addYear()->toDateString(),
+            ]],
+        ])->assertSessionHasNoErrors();
+
+        $batch = \App\Models\PurchaseBatch::where('drug_id', $drug->id)->firstOrFail();
+
+        // Two boxes of 4 x 12 = 96 tablets, whatever the box looked like.
+        $this->assertSame(96, (int) $batch->quantity_received);
+        $this->assertEqualsWithDelta(5.0, (float) $batch->cost_per_unit, 0.001);
+        $this->assertEqualsWithDelta(6.0, (float) $batch->selling_price_per_unit, 0.001);
+
+        $this->actingAs($this->owner)->post(route('dispense.store'), [
+            'customer_mode' => 'anonymous',
+            'items' => [[
+                'drug_id' => 'drug:' . $drug->id,
+                'quantity' => 3,
+                'unit' => 'strip',
+            ]],
+            'payments' => [['payment_method' => 'cash', 'amount' => 216]],
+        ])->assertSessionHasNoErrors();
+
+        $batch->refresh();
+
+        // 96 - (3 x 12) = 60 tablets = one box and one strip.
+        $this->assertSame(60, (int) $batch->quantity_remaining);
+        $this->assertSame('1 box 1 strip', $drug->describeQuantity(60));
+
+        $this->assertEqualsWithDelta(
+            216.0,
+            (float) \App\Models\Order::query()->latest('id')->value('total_amount'),
+            0.01
+        );
     }
 }
