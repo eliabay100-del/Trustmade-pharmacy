@@ -13,9 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="{{ $brandPrimary }}">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    @if($brandLogo)<link rel="apple-touch-icon" href="{{ Storage::url($brandLogo) }}">@endif
-    <link rel="manifest" href="/manifest.webmanifest">
+    @include('partials.head-icons')
     <title>{{ $brandName }} - Pharmacy System</title>
     <meta name="description" content="{{ $brandName }} pharmacy operations: medicines, retail products, stock, sales and suppliers.">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
