@@ -77,12 +77,14 @@ class ManifestController extends Controller
         $icons = [];
 
         foreach ($declared as [$file, $sizes, $purpose]) {
-            if (! is_file(public_path('icons/' . $file))) {
+            // Served from the web root: Apache's stock `Alias /icons/` owns
+            // that path, so a public/icons/ folder would be invisible.
+            if (! is_file(public_path($file))) {
                 continue;
             }
 
             $icons[] = [
-                'src' => '/icons/' . $file,
+                'src' => '/' . $file,
                 'sizes' => $sizes,
                 'type' => 'image/png',
                 'purpose' => $purpose,

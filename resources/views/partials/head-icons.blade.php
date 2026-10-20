@@ -8,13 +8,19 @@
     blank tab until the address changes. Taking the version from the files
     themselves means regenerating the icons (tools/assets/make-icons.ps1)
     busts every cache without anyone remembering to edit a number.
+
+    The icon files sit at the web root, NOT in a public/icons/ folder. The
+    live Apache has the stock `Alias /icons/` enabled, so anything at that
+    address is answered by the web server's own sample images and never
+    reaches the application - the folder looks correct in File Manager while
+    every icon 404s.
 --}}
 @php
-    $iconVersion = @filemtime(public_path('icons/icon-32.png')) ?: '1';
+    $iconVersion = @filemtime(public_path('icon-32.png')) ?: '1';
 @endphp
 <link rel="icon" href="/favicon.ico?v={{ $iconVersion }}" sizes="16x16 32x32 48x48">
-<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png?v={{ $iconVersion }}">
-<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png?v={{ $iconVersion }}">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png?v={{ $iconVersion }}">
+<link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png?v={{ $iconVersion }}">
 {{--
     iOS ignores the manifest's icons and paints transparency black, so this is
     a flattened 180px file rather than the uploaded logo.

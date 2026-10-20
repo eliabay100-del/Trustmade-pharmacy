@@ -171,8 +171,9 @@ try {
     # ------------------------------------------------------------------
     # The icon set
     # ------------------------------------------------------------------
-    $iconsDir = Join-Path $repo 'public\icons'
-    New-Item -ItemType Directory -Path $iconsDir -Force | Out-Null
+    # The web root, not public/icons/: Apache reserves /icons/ for its own
+    # stock images, so a file there is never served by the application.
+    $iconsDir = Join-Path $repo 'public'
 
     # file, size, inset, background, purpose
     $set = @(
@@ -197,7 +198,7 @@ try {
             $bitmap.Dispose()
         }
 
-        Write-Host ("  public/icons/{0,-24} {1,4}x{1,-4} {2,7:N0} bytes   {3}" -f `
+        Write-Host ("  public/{0,-30} {1,4}x{1,-4} {2,7:N0} bytes   {3}" -f `
             $icon.File, $icon.Size, (Get-Item $path).Length, $icon.Why)
     }
 

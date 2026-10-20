@@ -91,10 +91,10 @@ class LaunchHygieneTest extends TestCase
     public function test_the_icon_files_are_the_size_they_claim(): void
     {
         $expected = [
-            'icons/icon-192.png' => 192,
-            'icons/icon-512.png' => 512,
-            'icons/icon-maskable-192.png' => 192,
-            'icons/icon-maskable-512.png' => 512,
+            'icon-192.png' => 192,
+            'icon-512.png' => 512,
+            'icon-maskable-192.png' => 192,
+            'icon-maskable-512.png' => 512,
             'apple-touch-icon.png' => 180,
         ];
 
@@ -122,7 +122,7 @@ class LaunchHygieneTest extends TestCase
         $html = $this->get('/')->getContent();
 
         $this->assertMatchesRegularExpression('#href="/favicon\.ico\?v=[^"]+"#', $html);
-        $this->assertMatchesRegularExpression('#href="/icons/icon-32\.png\?v=[^"]+"#', $html);
+        $this->assertMatchesRegularExpression('#href="/icon-32\.png\?v=[^"]+"#', $html);
         $this->assertMatchesRegularExpression('#href="/apple-touch-icon\.png\?v=[^"]+"#', $html);
     }
 
