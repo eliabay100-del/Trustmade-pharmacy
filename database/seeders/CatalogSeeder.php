@@ -80,7 +80,7 @@ class CatalogSeeder extends Seeder
 
             Drug::updateOrCreate(
                 ['name' => $drug['name'], 'generic_name' => $drug['generic_name']],
-                [...$drug, 'category_id' => $categoryId]
+                [...$this->withPacking($drug), 'category_id' => $categoryId]
             );
         }
 
@@ -139,5 +139,60 @@ class CatalogSeeder extends Seeder
                 [...$product, 'category_id' => $categoryId, 'active' => true]
             );
         }
+    }
+
+    /**
+     * Turn the table's simple tablet / strip / pack numbers into the rungs the
+     * model now stores, and move the minimum into the top unit.
+     *
+     * The rows above are kept in their original, readable form so the seed data
+     * still reads like the shelf: "10 tablets per strip, 10 strips per pack".
+     *
+     * @param  array<string, mixed>  $drug
+     * @return array<string, mixed>
+     */
+    private function withPacking(array $drug): array
+    {
+        $base = $drug['unit_of_measure'];
+        $perStrip = max(1, (int) $drug['units_per_strip']);
+        $perPack = max(1, (int) $drug['strips_per_pack']);
+
+        if ($perStrip > 1) {
+            // Pack -> strip -> tablet, the shape the old columns described.
+            $drug['unit_top'] = 'pack';
+            $drug['unit_middle'] = 'strip';
+            $drug['unit_base'] = $base;
+            $drug['top_holds'] = $perPack;
+            $drug['middle_holds'] = $perStrip;
+            $factor = $perPack * $perStrip;
+        } elseif ($perPack > 1) {
+            // A pack of sachets: something countable sits directly inside it.
+            $drug['unit_top'] = 'pack';
+            $drug['unit_middle'] = null;
+            $drug['unit_base'] = $base;
+            $drug['top_holds'] = $perPack;
+            $drug['middle_holds'] = null;
+            $factor = $perPack;
+        } else {
+            // Sold as it arrives.
+            $drug['unit_top'] = $base;
+            $drug['unit_middle'] = null;
+            $drug['unit_base'] = $base;
+            $drug['top_holds'] = null;
+            $drug['middle_holds'] = null;
+            $factor = 1;
+        }
+
+        $drug['sell_top'] = true;
+        $drug['sell_middle'] = $drug['unit_middle'] !== null;
+        $drug['sell_base'] = true;
+
+        // The table's minimum was written in base units; the column now means
+        // top units, so the number has to be divided and rounded up.
+        $drug['minimum_stock_level'] = $factor > 1
+            ? (int) ceil((int) $drug['minimum_stock_level'] / $factor)
+            : (int) $drug['minimum_stock_level'];
+
+        return $drug;
     }
 }

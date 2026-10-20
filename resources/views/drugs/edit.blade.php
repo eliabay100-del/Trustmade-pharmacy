@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-lg mx-auto">
+<div class="max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-[#1E2530] mb-6">Edit Drug</h1>
 
     <form method="POST" action="{{ route('drugs.update', $drug->id) }}" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
@@ -42,34 +42,9 @@
             </select>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Base unit</label>
-                <input type="text" name="unit_of_measure" value="{{ old('unit_of_measure', $drug->unit_of_measure) }}"
-                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-                <p class="text-xs text-[#64748b] mt-1">Existing stock is already in this unit and is not converted.</p>
-            </div>
-            <div>
-                  <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Minimum stock level</label>
-                <input type="number" step="0.01" name="minimum_stock_level" value="{{ old('minimum_stock_level', $drug->minimum_stock_level) }}"
-                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-                  <p class="text-xs text-[#64748b] mt-1">Show a low-stock alert when available stock reaches this amount.</p>
-            </div>
-        </div>
+        @include('drugs.partials.packing', ['packing' => $drug])
 
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Base units per strip</label>
-                <input type="number" min="1" name="units_per_strip" value="{{ old('units_per_strip', $drug->units_per_strip ?? 1) }}"
-                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-[#1E2530] mb-1.5">Strips per pack</label>
-                <input type="number" min="1" name="strips_per_pack" value="{{ old('strips_per_pack', $drug->strips_per_pack ?? 1) }}"
-                       class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30">
-            </div>
-        </div>
-        <p class="text-xs text-[#64748b] -mt-2">Example: 10 per strip and 10 strips per pack = 100 base units per pack.</p>
+        <p class="text-xs text-[#64748b]">Changing the counts here does not convert stock already on the shelf — only how a pack, strip or tablet is described.</p>
 
         <div class="flex gap-3 pt-2">
             <button type="submit" class="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white font-medium text-sm py-2.5 px-5 rounded-lg transition-colors">

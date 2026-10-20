@@ -41,7 +41,7 @@
                             <span class="block text-xs">{{ $drug->unitsPerStrip() }}/strip · {{ $drug->stripsPerPack() }} strips/pack</span>
                         @endif
                     </td>
-                    <td class="px-5 py-3.5 text-sm text-right font-semibold {{ (float) ($drug->current_stock ?? 0) <= (float) $drug->minimum_stock_level ? 'text-amber-600' : 'text-[#1E2530]' }}">{{ number_format((float) ($drug->current_stock ?? 0), 0) }}</td>
+                    <td class="px-5 py-3.5 text-sm text-right {{ $drug->isBelowMinimum($drug->current_stock ?? 0) ? 'text-amber-600 font-semibold' : 'text-[#1E2530]' }}">{{ $drug->describeQuantity($drug->current_stock ?? 0) }}</td>
                     <td class="px-5 py-3.5 text-sm text-right whitespace-nowrap">
                         <a href="{{ route('drugs.edit', $drug->id) }}" class="text-[var(--brand-primary)] hover:underline mr-3">Edit</a>
                         <form action="{{ route('drugs.destroy', $drug->id) }}" method="POST" class="inline"

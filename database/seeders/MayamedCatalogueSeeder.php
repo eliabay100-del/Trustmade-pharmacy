@@ -292,6 +292,19 @@ class MayamedCatalogueSeeder extends Seeder
                     'unit_of_measure' => $row['unit_of_measure'],
                     'units_per_strip' => 1,
                     'strips_per_pack' => 1,
+
+                    // Everything in this catalogue arrives sealed: a bottle of
+                    // syrup, a tin of vitamins, a pack of tablets. One rung,
+                    // counted in the container, never split.
+                    'unit_top' => $row['unit_of_measure'],
+                    'unit_middle' => null,
+                    'unit_base' => $row['unit_of_measure'],
+                    'top_holds' => null,
+                    'middle_holds' => null,
+                    'sell_top' => true,
+                    'sell_middle' => false,
+                    'sell_base' => true,
+
                     'minimum_stock_level' => self::DRUG_MIN_STOCK,
                 ]
             );

@@ -103,7 +103,7 @@ class DashboardController extends Controller
             $lowStockCount = $scope(DB::table('drugs as d')->join('purchase_batches as pb', 'd.id', '=', 'pb.drug_id'), 'pb.branch_id')
                 ->where('pb.quantity_remaining', '>', 0)
                 ->where('pb.expiry_date', '>=', Carbon::today())
-                ->whereColumn('pb.quantity_remaining', '<=', 'd.minimum_stock_level')
+                ->whereRaw('pb.quantity_remaining <= d.minimum_stock_level * d.units_per_top')
                 ->distinct('d.id')
                 ->count('d.id');
 

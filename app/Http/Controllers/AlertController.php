@@ -50,7 +50,9 @@ class AlertController extends Controller
                 'total_stock'
             )
             ->groupBy('drugs.id')
-            ->havingRaw('total_stock <= drugs.minimum_stock_level')
+            // minimum_stock_level is in the top unit (packs); stock is stored in base
+            // units, so the threshold has to be scaled to match.
+            ->havingRaw('total_stock <= drugs.minimum_stock_level * drugs.units_per_top')
             ->orderBy('name');
         $productStockQuery = Product::select('products.*')
             ->selectSub(
